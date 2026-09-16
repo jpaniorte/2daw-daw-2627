@@ -2,7 +2,7 @@
 """Genera PDF y PPTX a partir de ficheros Markdown usando Marp CLI.
 
 Uso:
-    python3 build.py all              Genera PDF y PPTX de todos los .md del directorio
+    python3 build.py all              Genera PDF y PPTX de todos los .md (recursivo, incluye subcarpetas)
     python3 build.py fichero.md       Genera PDF y PPTX solo de ese fichero
 """
 
@@ -20,21 +20,22 @@ def marp_disponible() -> bool:
 
 
 def construir(md_path: Path) -> None:
-    pdf_path = md_path.with_suffix(".pdf")
-    pptx_path = md_path.with_suffix(".pptx")
+    pdf_path = md_path.parent / "pdf" / md_path.with_suffix(".pdf").name
+    pptx_path = md_path.parent / "pptx" / md_path.with_suffix(".pptx").name
 
     for destino, flag in ((pdf_path, "--pdf"), (pptx_path, "--pptx")):
-        print(f"Generando {destino.name}...")
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        print(f"Generando {destino.parent.name}/{destino.name}...")
         resultado = subprocess.run(
             ["marp", flag, str(md_path), "-o", str(destino)],
             capture_output=True,
             text=True,
         )
         if resultado.returncode != 0:
-            print(f"  Error generando {destino.name}:")
+            print(f"  Error generando {destino.parent.name}/{destino.name}:")
             print(resultado.stderr.strip())
         else:
-            print(f"  OK -> {destino.name}")
+            print(f"  OK -> {destino.parent.name}/{destino.name}")
 
 
 def main() -> None:
@@ -49,9 +50,15 @@ def main() -> None:
     argumento = sys.argv[1]
 
     if argumento == "all":
-        ficheros_md = sorted(BASE_DIR.glob("*.md"))
+        ficheros_md = sorted(
+            p for p in BASE_DIR.rglob("*.md")
+            if not any(
+                parte.startswith(".") or parte in ("pdf", "pptx")
+                for parte in p.relative_to(BASE_DIR).parts
+            )
+        )
         if not ficheros_md:
-            print("No se han encontrado ficheros .md en el directorio.")
+            print("No se han encontrado ficheros .md en el directorio ni en sus subcarpetas.")
             sys.exit(0)
     else:
         md_path = Path(argumento)

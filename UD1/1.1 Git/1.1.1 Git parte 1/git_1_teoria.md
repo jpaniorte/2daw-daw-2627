@@ -391,7 +391,7 @@ diff --git a/README.md b/README.md
 
 ---
 
-## Buenas prácticas de commits *(extra, si hay tiempo)*
+## Buenas prácticas de commits
 
 - Mensajes en **imperativo**: "Añade validación de formulario", no "Añadido" ni "Añadiendo".
 - Un commit = **un cambio lógico**. Evita commits gigantes que mezclan varias cosas.
@@ -412,8 +412,6 @@ diff --git a/README.md b/README.md
 | `git log` / `git log --oneline` | Ver el historial de commits |
 | `.gitignore` | Excluir ficheros del control de versiones |
 | `git diff` | Ver los cambios línea a línea |
-
-Todo esto lo vas a necesitar en `1.1.1git_practicas.md`.
 
 ---
 

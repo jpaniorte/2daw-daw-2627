@@ -133,8 +133,6 @@ Después, añade `config.env` a tu `.gitignore`.
 
 ## Reto 4 — Antes de confirmar, revisa
 
-*(si has visto `git diff` en clase)*
-
 Modifica `notas.txt` sin usar aún `git add`.
 
 **Objetivo**: usa el comando adecuado para ver, línea a línea, exactamente qué has cambiado respecto a la última versión confirmada — sin ejecutar `git add` todavía.
