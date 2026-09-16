@@ -43,7 +43,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 3. Conviértela en un repositorio de git.
 4. Comprueba que se ha creado correctamente sin usar `ls -a` (piensa qué comando de los vistos en clase te lo dice).
 
-**Resultado esperado**: existe una carpeta oculta `.git` dentro de `practica-git`.
+**Resultado esperado**: `git status` muestra información. Un git status en una carpeta sin `git init` no funciona.
 
 ---
 
