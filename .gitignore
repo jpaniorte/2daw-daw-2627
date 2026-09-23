@@ -1,1 +1,11 @@
 .DS_Store
+
+# Exámenes: no se suben a git (contienen preguntas/respuestas que no deben
+# quedar públicas en el historial). Se generan localmente con el script
+# correspondiente y se imprimen desde el PDF, sin pasar por el repositorio.
+*_examen.md
+*_examen_sol.md
+*_examen.pdf
+*_examen_sol.pdf
+*_examen.pptx
+*_examen_sol.pptx

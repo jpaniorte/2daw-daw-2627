@@ -1,0 +1,15 @@
+/* @theme a4-print */
+@import 'default';
+
+/*
+ * Tema para documentos pensados para imprimirse en papel A4 (exámenes,
+ * hojas de ejercicios...), en vez de proyectarse como diapositivas.
+ * Cada "sección" de Marp pasa a ser una página A4 real (794x1123px @ 96dpi).
+ */
+section {
+  width: 794px;
+  height: 1123px;
+  font-size: 14px;
+  padding: 12mm 14mm;
+  justify-content: flex-start;
+}
