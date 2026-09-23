@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — git en remoto</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Start screen */
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Quiz screen */
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Results screen */
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — git en remoto</h1>
+    <p>20 preguntas al azar del banco de 81 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 81 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+{"n": 1, "q": "¿Qué es un repositorio remoto?", "opts": ["Una copia de tu repositorio en un servidor, accesible por Internet", "Un fichero de configuración de git", "La papelera de reciclaje de git", "Un tipo de commit especial"], "correct": 0},
+{"n": 2, "q": "¿Qué es GitHub?", "opts": ["Un lenguaje de programación", "Una plataforma para gestionar repositorios remotos", "Un comando de git", "Un tipo de licencia de software"], "correct": 1},
+{"n": 3, "q": "¿GitHub es la única plataforma que existe para gestionar repositorios remotos?", "opts": ["Sí, es la única", "No, también existen alternativas como GitLab o Bitbucket", "No, pero solo funciona con SVN", "Sí, es un estándar oficial de git"], "correct": 1},
+{"n": 4, "q": "¿Qué permite un repositorio remoto que un repositorio solo local no permite?", "opts": ["Hacer commits", "Que múltiples colaboradores contribuyan al proyecto a través de Internet", "Usar `.gitignore`", "Ver el historial con `git log`"], "correct": 1},
+{"n": 5, "q": "Para crear un repositorio nuevo en GitHub desde la web, ¿qué botón usas?", "opts": ["`Add`", "`New`", "`Create --remote`", "`Push`"], "correct": 1},
+{"n": 6, "q": "Al crear un repositorio en GitHub, ¿con qué ficheros puedes inicializarlo opcionalmente?", "opts": ["`index.html` y `styles.css`", "`README.md` o `.gitignore`", "`package.json` obligatoriamente", "Ningún fichero, siempre se crea vacío"], "correct": 1},
+{"n": 7, "q": "¿Qué hace `git clone <url>`?", "opts": ["Crea una rama nueva", "Descarga una copia completa de un repositorio remoto y configura ese remoto como `origin`", "Sube tus cambios locales al remoto", "Elimina el repositorio remoto"], "correct": 1},
+{"n": 8, "q": "Después de hacer `git clone`, ¿hace falta ejecutar `git init`?", "opts": ["Sí, siempre", "No, `git clone` ya deja el repositorio listo para trabajar", "Solo si el repositorio remoto está vacío", "Solo en Windows"], "correct": 1},
+{"n": 9, "q": "Tienes un proyecto que ya tenías en local (con commits) y quieres subirlo por primera vez a un repositorio vacío en GitHub. ¿Qué secuencia de comandos usarías?", "opts": ["`git clone` y luego `git commit`", "`git remote add origin <url>` y `git push -u origin main`", "`git pull origin main` y `git init`", "`git fetch` y `git merge`"], "correct": 1},
+{"n": 10, "q": "Si vas a subir por primera vez a GitHub un proyecto que ya tiene commits en local, ¿por qué es buena idea no inicializar el repositorio remoto con `README.md`?", "opts": ["Porque GitHub no lo permite", "Porque las dos historias (local y remota) podrían no encajar directamente al hacer push", "Porque el README ocupa demasiado espacio", "No hay ningún motivo, es indiferente"], "correct": 1},
+{"n": 11, "q": "¿Qué comando descarga un repositorio remoto entero, incluyendo su historial y ramas, a tu máquina?", "opts": ["`git pull`", "`git fetch`", "`git clone`", "`git remote`"], "correct": 2},
+{"n": 12, "q": "¿Qué remoto se configura automáticamente al hacer `git clone`?", "opts": ["`upstream`", "`origin`", "`main`", "Ninguno, hay que añadirlo a mano"], "correct": 1},
+{"n": 13, "q": "¿GitHub sigue aceptando usuario y contraseña para hacer `git push` por HTTPS?", "opts": ["Sí, siempre ha funcionado así y sigue igual", "No, desde 2021 ya no acepta contraseña; hace falta un token o SSH", "Solo los fines de semana", "Solo si el repositorio es privado"], "correct": 1},
+{"n": 14, "q": "¿Qué es un PAT en el contexto de GitHub?", "opts": ["Un tipo de rama", "Un token de acceso personal que se usa en vez de la contraseña", "Un comando de git", "El nombre del repositorio principal"], "correct": 1},
+{"n": 15, "q": "¿Dónde se genera un token de acceso personal (PAT) en GitHub?", "opts": ["En `git config --global`", "En Settings → Developer settings → Personal access tokens", "En el fichero `.gitignore`", "No se puede generar, viene por defecto"], "correct": 1},
+{"n": 16, "q": "¿Qué alternativa a los tokens existe para autenticarte con GitHub por línea de comandos?", "opts": ["Claves SSH", "`.gitignore`", "`git log --auth`", "Cambiar el nombre de la rama a `main`"], "correct": 0},
+{"n": 17, "q": "Si usas autenticación por SSH en vez de HTTPS, ¿cómo cambia la URL del remoto?", "opts": ["No cambia nada", "Usa un formato tipo `git@github.com:usuario/repo.git` en vez de `https://...`", "Deja de necesitar `git remote add`", "Solo funciona con `git clone`, nunca con `git push`"], "correct": 1},
+{"n": 18, "q": "¿Qué es un fork en GitHub?", "opts": ["Una rama local", "Una copia de un repositorio que se crea en tu propia cuenta de GitHub, a partir de un proyecto de otro usuario", "Un comando de git", "Un tipo de commit"], "correct": 1},
+{"n": 19, "q": "¿Para qué sirve hacer un fork antes de contribuir a un proyecto de código abierto?", "opts": ["Para borrar el proyecto original", "Para hacer tus modificaciones sin tocar el código original, y luego proponerlas con un pull request", "Para evitar tener que hacer commits", "Para cambiar el dueño del repositorio original"], "correct": 1},
+{"n": 20, "q": "Después de hacer fork de un repositorio, ¿en qué cuenta queda la copia?", "opts": ["En la cuenta del autor original", "En tu propia cuenta de GitHub", "En ninguna cuenta, queda anónima", "Solo en tu máquina local"], "correct": 1},
+{"n": 21, "q": "¿Cuál de estos NO es un motivo típico para hacer un fork, según lo visto en clase?", "opts": ["Contribuir a proyectos de terceros", "Personalizar un proyecto sin compartir los cambios", "Explorar y experimentar sin riesgo para el proyecto original", "Borrar el historial del repositorio original"], "correct": 3},
+{"n": 22, "q": "En el flujo típico de trabajo con un fork, después de clonarlo y modificarlo en local, ¿qué haces para subir tus cambios a tu copia en GitHub?", "opts": ["`git pull`", "`git push`", "`git fetch`", "`git remote remove`"], "correct": 1},
+{"n": 23, "q": "Después de hacer `push` a tu fork, ¿cómo propones tus cambios al repositorio original?", "opts": ["Haciendo otro fork", "Abriendo un Pull Request desde tu fork hacia el repositorio original", "Borrando tu fork", "Enviando un email al autor"], "correct": 1},
+{"n": 24, "q": "¿Quién revisa y decide si se fusionan los cambios propuestos en un Pull Request hecho desde un fork?", "opts": ["Se fusionan automáticamente sin revisión", "Los mantenedores del repositorio original", "GitHub lo decide con inteligencia artificial", "Nadie, los PR no se pueden fusionar desde un fork"], "correct": 1},
+{"n": 25, "q": "Cuando clonas tu propio fork, ¿a qué apunta el remoto `origin`?", "opts": ["Al repositorio original del otro autor", "A tu fork", "A ningún sitio, hay que configurarlo a mano", "A `main` directamente"], "correct": 1},
+{"n": 26, "q": "Si el repositorio original sigue avanzando después de que hiciste tu fork, ¿tu fork se actualiza solo?", "opts": ["Sí, automáticamente", "No, hace falta traer esos cambios manualmente (por ejemplo, con un remoto `upstream`)", "Solo si haces `git clone` de nuevo cada día", "Solo si el propietario original te lo permite explícitamente cada vez"], "correct": 1},
+{"n": 27, "q": "¿Qué comando añade el repositorio original como un segundo remoto en tu fork clonado?", "opts": ["`git remote add upstream <url>`", "`git clone upstream <url>`", "`git branch upstream`", "`git push upstream`"], "correct": 0},
+{"n": 28, "q": "Después de `git fetch upstream`, ¿qué comando usarías para traer esos cambios a tu rama `main`?", "opts": ["`git remote remove upstream`", "`git merge upstream/main`", "`git push upstream main`", "`git clone upstream/main`"], "correct": 1},
+{"n": 29, "q": "¿Qué diferencia hay entre un fork y simplemente copiar un repositorio (borrando la carpeta `.git` y subiéndolo a un repo propio)?", "opts": ["Ninguna, son exactamente lo mismo", "El fork mantiene una relación con el repositorio original que permite contribuir; una copia sin `.git` no tiene ninguna relación", "La copia sin `.git` es más rápida de fusionar", "El fork no se puede clonar"], "correct": 1},
+{"n": 30, "q": "¿Para qué sirve el comando `git remote`?", "opts": ["Para gestionar las conexiones a repositorios remotos", "Para hacer commits", "Para crear ramas locales", "Para ver el historial de commits"], "correct": 0},
+{"n": 31, "q": "¿Qué comando lista los repositorios remotos configurados, junto con sus URLs?", "opts": ["`git remote list`", "`git remote -v`", "`git branch -r`", "`git log --remote`"], "correct": 1},
+{"n": 32, "q": "¿Qué comando añade un nuevo repositorio remoto?", "opts": ["`git remote add <nombre-remoto> <url>`", "`git remote new <url>`", "`git clone add <url>`", "`git push add <url>`"], "correct": 0},
+{"n": 33, "q": "¿Qué nombre recibe, por convención, el repositorio remoto principal cuando solo tienes uno?", "opts": ["`main`", "`master`", "`origin`", "`remote`"], "correct": 2},
+{"n": 34, "q": "¿Qué comando elimina la referencia a un repositorio remoto?", "opts": ["`git remote remove <nombre-remoto>`", "`git remote delete-all`", "`git branch -D <nombre-remoto>`", "`git push --remove <nombre-remoto>`"], "correct": 0},
+{"n": 35, "q": "Si ejecutas `git remote -v` y no aparece nada, ¿qué significa?", "opts": ["Que el repositorio está roto", "Que no hay ningún repositorio remoto configurado", "Que no tienes conexión a internet", "Que no has hecho ningún commit todavía"], "correct": 1},
+{"n": 36, "q": "¿Qué hace `git fetch`?", "opts": ["Descarga los últimos cambios del remoto, pero no los fusiona en tu rama local", "Descarga y fusiona automáticamente los cambios del remoto", "Sube tus cambios al remoto", "Borra los cambios locales"], "correct": 0},
+{"n": 37, "q": "¿Qué hace `git pull`?", "opts": ["Solo descarga los cambios, sin tocar tu rama local", "Descarga los cambios del remoto y los fusiona automáticamente con tu rama local", "Sube tus commits al remoto", "Elimina una rama remota"], "correct": 1},
+{"n": 38, "q": "¿Qué dos operaciones combina `git pull`?", "opts": ["`git add` y `git commit`", "`git fetch` y `git merge`", "`git clone` y `git push`", "`git branch` y `git checkout`"], "correct": 1},
+{"n": 39, "q": "¿Cuándo es más útil usar `git fetch` en vez de `git pull` directamente?", "opts": ["Nunca, `fetch` no sirve para nada", "Cuando quieres revisar los cambios del remoto antes de aplicarlos a tu rama local", "Cuando quieres borrar el historial remoto", "Solo la primera vez que clonas un repositorio"], "correct": 1},
+{"n": 40, "q": "Después de un `git fetch`, ¿tus ficheros en el working directory han cambiado ya?", "opts": ["Sí, siempre", "No, `fetch` no toca tu working directory, solo actualiza la información sobre el remoto", "Solo si usas `--force`", "Solo los ficheros ignorados"], "correct": 1},
+{"n": 41, "q": "¿Qué comando usarías para traer los cambios del remoto `origin`, rama `main`, y fusionarlos directamente con tu rama actual?", "opts": ["`git fetch origin main`", "`git pull origin main`", "`git push origin main`", "`git remote origin main`"], "correct": 1},
+{"n": 42, "q": "¿Qué hace `git push`?", "opts": ["Descarga cambios del remoto", "Envía los commits de tu repositorio local hacia el repositorio remoto", "Crea un repositorio nuevo en GitHub", "Elimina commits del historial"], "correct": 1},
+{"n": 43, "q": "¿Qué opción se usa la primera vez que subes una rama, para establecer la conexión de seguimiento con el remoto?", "opts": ["`-u`", "`-f`", "`-d`", "`-m`"], "correct": 0},
+{"n": 44, "q": "Después de hacer `git push -u origin main` una vez, ¿qué puedes hacer en los siguientes push a esa misma rama?", "opts": ["Nada distinto, siempre hay que repetir `-u origin main`", "Simplemente `git push`, sin especificar remoto ni rama", "Ya no puedes volver a hacer push a esa rama", "Tienes que hacer `git clone` de nuevo"], "correct": 1},
+{"n": 45, "q": "Si alguien ha subido cambios al remoto después de tu último `pull`, y tú intentas hacer `git push`, ¿qué es lo más probable que ocurra?", "opts": ["Se sube sin problema y sobrescribe lo del remoto", "Git rechaza el push y te pide que actualices tu repositorio local primero", "Se crea automáticamente una rama nueva", "Git borra tus commits locales"], "correct": 1},
+{"n": 46, "q": "¿Cuál de estos mensajes indica que un `git push` ha sido rechazado?", "opts": ["\"Fast-forward\"", "\"nothing to commit, working tree clean\"", "\"! [rejected] ... failed to push some refs\"", "\"Initialized empty Git repository\""], "correct": 2},
+{"n": 47, "q": "Ante un push rechazado por cambios remotos que no tienes en local, ¿cuál es la solución correcta?", "opts": ["Usar `git push --force` inmediatamente", "Hacer `git pull` primero y luego volver a intentar `git push`", "Borrar el repositorio remoto y crear uno nuevo", "Ignorarlo, no tiene solución"], "correct": 1},
+{"n": 48, "q": "¿Por qué se desaconseja usar `git push --force` como primera solución ante un push rechazado?", "opts": ["Porque no existe ese comando", "Porque puede sobrescribir y perder los commits que otros ya han subido al remoto", "Porque solo funciona en repositorios privados", "Porque tarda demasiado"], "correct": 1},
+{"n": 49, "q": "¿Qué son las ramas remotas en Git?", "opts": ["Ramas que solo existen en tu ordenador", "Copias de las ramas locales que existen en un repositorio remoto como GitHub", "Un tipo de commit especial", "Ficheros de configuración"], "correct": 1},
+{"n": 50, "q": "¿Qué nomenclatura suelen seguir las ramas remotas?", "opts": ["`<nombre-rama>-<nombre-remoto>`", "`<nombre-remoto>/<nombre-rama>`", "`remote:<nombre-rama>`", "`<nombre-rama>@<nombre-remoto>`"], "correct": 1},
+{"n": 51, "q": "¿Qué representa `origin/main`?", "opts": ["Una rama local llamada `origin`", "La rama `main` en el remoto `origin`", "Un commit concreto", "Un fichero de configuración"], "correct": 1},
+{"n": 52, "q": "¿Qué comando lista las ramas remotas conocidas por tu repositorio local?", "opts": ["`git branch -r`", "`git remote branches`", "`git log --remote`", "`git checkout -r`"], "correct": 0},
+{"n": 53, "q": "Después de crear una rama local y hacer `git push -u origin feature-branch`, ¿qué aparece al ejecutar `git branch -r`?", "opts": ["Nada, las ramas remotas no se pueden listar", "`origin/feature-branch`", "Solo `origin/main`", "`feature-branch` sin prefijo"], "correct": 1},
+{"n": 54, "q": "¿Cómo traes a tu repositorio local los cambios que otro colaborador ha subido a `origin/feature-branch`?", "opts": ["`git branch -d origin/feature-branch`", "`git pull`", "`git remote remove origin`", "`git init`"], "correct": 1},
+{"n": 55, "q": "¿Qué es un Pull Request (PR)?", "opts": ["Un comando de git para descargar cambios", "Una función de plataformas como GitHub para proponer cambios que luego son revisados antes de fusionarse", "Un tipo de rama remota", "Un fichero de configuración de GitHub"], "correct": 1},
+{"n": 56, "q": "¿Qué principio establece que todos los miembros de un equipo son responsables de la calidad del trabajo colaborativo, según lo visto en clase?", "opts": ["El principio de la rama única", "El principio de la responsabilidad compartida", "El principio del fast-forward", "El principio del fork obligatorio"], "correct": 1},
+{"n": 57, "q": "Al crear un Pull Request en GitHub, ¿qué se recomienda incluir además del título?", "opts": ["Nada más, con el título basta", "Una descripción clara de qué cambios se han hecho y por qué", "La contraseña de tu cuenta", "El historial completo de `git log`"], "correct": 1},
+{"n": 58, "q": "¿Para qué sirve asignar revisores a un Pull Request?", "opts": ["Para que revisen los cambios antes de que se fusionen", "Para que borren la rama automáticamente", "Para que el PR se cierre automáticamente", "No tiene ninguna función real"], "correct": 0},
+{"n": 59, "q": "Un Pull Request, ¿se puede abrir tanto entre dos ramas del mismo repositorio como desde un fork hacia el repositorio original?", "opts": ["No, solo entre ramas del mismo repositorio", "Sí, ambas situaciones son posibles", "No, solo desde un fork", "Solo si el repositorio es privado"], "correct": 1},
+{"n": 60, "q": "Después de fusionar un Pull Request desde la interfaz web de GitHub, ¿qué comando necesitas ejecutar en tu terminal para tener ese cambio en tu `main` local?", "opts": ["`git push`", "`git pull`", "`git remote add`", "`git clone`"], "correct": 1},
+{"n": 61, "q": "¿Qué son los \"modelos de ramas\"?", "opts": ["Comandos de git para crear ramas", "Enfoques estructurados para gestionar el flujo de trabajo de ramas en un proyecto", "Un tipo de conflicto de merge", "Extensiones de GitHub"], "correct": 1},
+{"n": 62, "q": "Según lo visto en clase, ¿hay un modelo de ramas mejor que los demás en todos los casos?", "opts": ["Sí, GitFlow es siempre el mejor", "No, depende del proyecto y de la fase en la que esté", "Sí, Trunk-Based Development es obligatorio en toda empresa", "No existen modelos de ramas, es un mito"], "correct": 1},
+{"n": 63, "q": "En GitFlow, ¿qué dos ramas son las principales y permanentes?", "opts": ["`feature` y `hotfix`", "`main` (o master) y `develop`", "`origin` y `upstream`", "`release` y `trunk`"], "correct": 1},
+{"n": 64, "q": "En GitFlow, ¿a partir de qué rama se crean las feature branches?", "opts": ["`main`", "`develop`", "`release`", "`origin`"], "correct": 1},
+{"n": 65, "q": "En GitFlow, ¿para qué sirven las hotfix branches?", "opts": ["Para preparar una nueva versión de `develop`", "Para arreglar errores urgentes directamente sobre `main`", "Para documentar el proyecto", "Para borrar ramas antiguas"], "correct": 1},
+{"n": 66, "q": "¿Para qué tipo de proyectos está especialmente pensado GitFlow?", "opts": ["Proyectos con despliegue continuo varias veces al día", "Desarrollos a largo plazo con versiones de software bien definidas", "Proyectos de una sola persona sin ramas", "Proyectos que nunca lanzan versiones"], "correct": 1},
+{"n": 67, "q": "¿En qué está especialmente orientado GitLab Flow?", "opts": ["En mantener ramas de release abiertas durante años", "En el CI/CD, con una rama por cada entorno de desarrollo/producción", "En prohibir el uso de ramas", "En sustituir a GitHub por completo"], "correct": 1},
+{"n": 68, "q": "En GitLab Flow, ¿qué ocurre con cada commit en una rama de entorno?", "opts": ["Nada, no tiene ningún efecto", "Se genera un deploy en ese entorno", "Se borra automáticamente el commit anterior", "Se crea un fork automáticamente"], "correct": 1},
+{"n": 69, "q": "¿Qué caracteriza al Trunk-Based Development?", "opts": ["Cada desarrollador tiene su propia rama permanente de meses de duración", "Los desarrolladores colaboran en una única rama principal (\"trunk\", normalmente `main`)", "Prohíbe totalmente hacer commits en `main`", "Requiere obligatoriamente GitFlow como base"], "correct": 1},
+{"n": 70, "q": "En Trunk-Based Development, si una funcionalidad no está lista para verse en producción, ¿qué se hace en vez de dejarla en una rama aparte durante mucho tiempo?", "opts": ["Se elimina el código hasta que esté lista", "Se integra en el \"trunk\" oculta detrás de un feature flag", "Se sube directamente sin ningún control", "Se guarda solo en el ordenador del desarrollador, sin subirla nunca"], "correct": 1},
+{"n": 71, "q": "¿Para qué tipo de proyectos es ideal el Trunk-Based Development, según lo visto en clase?", "opts": ["Proyectos sin integración continua", "Proyectos que usan integración continua y despliegue continuo (CI/CD)", "Proyectos que solo lanzan una versión al año", "Proyectos sin ningún colaborador"], "correct": 1},
+{"n": 72, "q": "¿Cuál de estos NO es un ejemplo mencionado en clase de proyecto que usa Trunk-Based Development?", "opts": ["Kernel de Linux", "Chrome", "Facebook", "IntelliJ"], "correct": 3},
+{"n": 73, "q": "Quieres empezar a trabajar sobre un proyecto que ya existe en GitHub. ¿Qué comando usas para tener una copia completa en tu máquina, con `origin` ya configurado?", "opts": ["`git init`", "`git clone <url>`", "`git remote add`", "`git branch -r`"], "correct": 1},
+{"n": 74, "q": "Intentas hacer `git push` y GitHub te pide usuario y contraseña; introduces tu contraseña habitual y falla. ¿Cuál es la causa más probable?", "opts": ["Has escrito mal tu nombre de usuario", "GitHub ya no acepta contraseña por HTTPS; necesitas un token o SSH", "Tu repositorio está corrupto", "No tienes conexión a internet"], "correct": 1},
+{"n": 75, "q": "Quieres contribuir a un proyecto de código abierto que no es tuyo y en el que no tienes permisos de escritura. ¿Qué es lo primero que harías?", "opts": ["Pedir la contraseña del propietario", "Hacer un fork del repositorio", "Borrar el repositorio y crear uno nuevo", "Hacer `git push --force` directamente"], "correct": 1},
+{"n": 76, "q": "Llevas dos semanas trabajando en tu fork y el repositorio original ha recibido muchos commits nuevos que tú no tienes. ¿Qué necesitas para traerlos?", "opts": ["Un remoto `upstream` configurado, y hacer `fetch`/`merge` desde él", "Nada, se actualiza solo", "Borrar tu fork y volver a hacerlo", "Cambiar el nombre de tu rama a `main`"], "correct": 0},
+{"n": 77, "q": "Haces `git push` y recibes un mensaje `[rejected] ... failed to push some refs`. ¿Qué NO deberías hacer como primera reacción?", "opts": ["`git pull` para traer los cambios que faltan", "`git push --force` para forzarlo", "Revisar qué cambios hay en el remoto que no tienes en local", "Resolver el posible conflicto tras el `pull`"], "correct": 1},
+{"n": 78, "q": "Un compañero te dice que ha creado una rama, ha subido cambios y ha abierto un Pull Request hacia `main`. ¿Dónde se revisa y se fusiona ese Pull Request?", "opts": ["Únicamente por terminal, con `git merge`", "Desde la interfaz web de GitHub (o la plataforma equivalente)", "No se puede fusionar, solo sirve para comentar", "Automáticamente, sin que nadie lo revise"], "correct": 1},
+{"n": 79, "q": "Tu equipo despliega a producción varias veces al día directamente desde `main`, usando feature flags para ocultar funcionalidades a medio terminar. ¿Qué modelo de ramas están siguiendo?", "opts": ["GitFlow", "Trunk-Based Development", "SVN Flow", "Ninguno, eso no es un modelo de ramas"], "correct": 1},
+{"n": 80, "q": "Un proyecto necesita mantener varias versiones de software en paralelo (v1, v2, v3) con ramas de release y hotfix bien diferenciadas de develop. ¿Qué modelo encaja mejor?", "opts": ["Trunk-Based Development", "GitFlow", "No hace falta ningún modelo", "GitLab Flow exclusivamente"], "correct": 1},
+{"n": 81, "q": "Ejecutas `git remote -v` en un repositorio que acabas de clonar y ves solo `origin`. Quieres además poder traer cambios del repositorio del que hiciste fork. ¿Qué harías?", "opts": ["`git remote add upstream <url_del_original>`", "`git branch -r upstream`", "`git clone upstream`", "`git push upstream`"], "correct": 0}
+];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
