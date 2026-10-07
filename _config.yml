@@ -15,22 +15,20 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - "**/README.md"
-  - "**/pdf"
+  # pptx nunca se publica.
   - "**/pptx"
+  # de pdf/ solo se excluyen explícitamente los que NO son la teoría
+  # (nunca se excluye *_teoria.pdf, así no dependemos de que "include"
+  # tenga prioridad sobre "exclude" — eso varía entre versiones de Jekyll
+  # y es justo lo que falló en la build real de GitHub Pages).
+  - "**/*_practicas.pdf"
+  - "**/*_test.pdf"
   - "**/*_examen.md"
   - "**/*_examen_sol.md"
+  - "**/*_examen.pdf"
+  - "**/*_examen_sol.pdf"
   - vendor
   - .bundle
-
-# Excepción explícita: el PDF de teoría de cada parte/semana sí se publica,
-# aunque "**/pdf" esté excluido arriba (include tiene prioridad sobre exclude).
-include:
-  - "UD1/1.1 Git/1.1.1 Git parte 1/pdf/git_1_teoria.pdf"
-  - "UD1/1.1 Git/1.1.2 Git parte 2/pdf/git_2_teoria.pdf"
-  - "UD1/1.1 Git/1.1.3 Git parte 3/pdf/git_3_teoria.pdf"
-  - "UD1/1.2 Docker/1.2.1 Docker parte 1/pdf/docker_1_teoria.pdf"
-  - "UD1/1.2 Docker/1.2.2 Docker parte 2/pdf/docker_2_teoria.pdf"
-  - "UD1/1.2 Docker/1.2.3 Docker parte 3/pdf/docker_3_teoria.pdf"
 
 # Navegación lateral. Añadir una nueva unidad/parte es solo añadir un bloque
 # aquí - el layout (_layouts/default.html) la pinta sola.
