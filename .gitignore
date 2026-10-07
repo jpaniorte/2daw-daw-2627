@@ -18,6 +18,11 @@
 !**/pdf/*_teoria.pdf
 **/pptx/
 
+# Excepción: en proyectos/ sí se suben el PDF y el PPTX generados (son
+# entregables/documentos de proyecto, no material de clase con examen).
+!proyectos/pdf/*
+!proyectos/pptx/
+
 # Build local de Jekyll (verificación de la web antes de hacer push).
 _site/
 .jekyll-cache/
