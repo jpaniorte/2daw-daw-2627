@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — docker parte 3: Docker Compose</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Start screen */
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Quiz screen */
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Results screen */
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — docker parte 3: Docker Compose</h1>
+    <p>20 preguntas al azar del banco de 100 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 100 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "Trabajas en 3 proyectos que necesitan `mariadb`, `redis`, `mongo`, `nginx` y `php-fpm`, cada uno con una imagen para desarrollo y otra para producción. ¿Por qué este escenario (unas 30 imágenes con parámetros de arranque distintos) ilustra bien la necesidad de Compose?", "opts": ["Porque Docker no permite tener más de 10 imágenes descargadas a la vez", "Porque arrancar cada contenedor a mano con `docker run`, recordando todos sus parámetros, se vuelve inviable de gestionar según crece el número de servicios", "Porque Compose reduce automáticamente el número de imágenes necesarias a una sola", "Porque sin Compose no se podría tener dev y prod en el mismo equipo"], "correct": 1}, {"n": 2, "q": "Quieres levantar un WordPress con Compose sin escribir el `docker-compose.yml` completamente desde cero. ¿Qué es razonable hacer primero?", "opts": ["Escribirlo a ciegas y depurar los errores uno a uno sin consultar nada", "Partir de un ejemplo oficial mantenido, como el de WordPress en el repositorio `docker/awesome-compose` de GitHub, y adaptarlo", "Pedir la contraseña de root de WordPress a Docker Hub", "Usar `docker compose init --wordpress`, que genera el fichero automáticamente"], "correct": 1}, {"n": 3, "q": "Necesitas consultar la lista completa y oficial de todas las claves que admite un fichero Compose (incluidas las menos usadas, como `profiles` o `deploy`). ¿Dónde la consultarías?", "opts": ["En la wiki interna de Docker Hub, apartado 'Compose avanzado'", "En la referencia oficial del fichero Compose en docs.docker.com (reference/compose-file)", "Solo en el código fuente de Docker Compose, no hay documentación pública", "En el `man docker-compose` del sistema, que siempre está actualizado"], "correct": 1}, {"n": 4, "q": "¿Qué problema resuelve principalmente Docker Compose?", "opts": ["Sustituir completamente a Docker como motor de contenedores", "Definir y levantar, con un solo comando, una aplicación formada por varios contenedores que trabajan juntos", "Sustituir a git como sistema de control de versiones", "Comprimir el tamaño de las imágenes Docker ya construidas"], "correct": 1}, {"n": 5, "q": "Sin Docker Compose, si una aplicación necesita una app web y una base de datos en contenedores separados que se comuniquen entre sí, ¿qué habría que hacer?", "opts": ["Nada especial: Docker los conecta automáticamente aunque se usen `docker run` sueltos", "Ejecutar varios `docker run` por separado, creando a mano la red y coordinando el orden de arranque", "Sería imposible tener dos contenedores funcionando a la vez en la misma máquina", "Escribir un único Dockerfile que construya ambos contenedores en una sola imagen"], "correct": 1}, {"n": 6, "q": "¿Qué ventaja aporta versionar en git un `docker-compose.yml` junto con el código de un proyecto?", "opts": ["Ninguna relevante: el entorno se puede reconstruir igual sin documentarlo", "Cualquier miembro del equipo puede levantar exactamente el mismo entorno completo con un solo comando, de forma reproducible", "Hace innecesario seguir usando Dockerfiles en el proyecto", "Evita tener que instalar Docker en las máquinas del equipo"], "correct": 1}, {"n": 7, "q": "¿Es correcto decir que Docker Compose sustituye por completo al Dockerfile?", "opts": ["Sí, a partir de Compose ya no hace falta ningún Dockerfile en el proyecto", "No: el Dockerfile sigue definiendo cómo se construye una imagen; Compose define cómo se levantan y relacionan varios servicios, que pueden usar esas imágenes", "Sí, Compose genera automáticamente las imágenes sin necesidad de instrucciones", "No existe relación alguna entre ambos conceptos"], "correct": 1}, {"n": 8, "q": "¿Puede Docker Compose usarse de forma razonable para levantar una aplicación con un único servicio?", "opts": ["No, Compose exige un mínimo de dos servicios para funcionar", "Sí, aunque su mayor utilidad se nota cuando hay varios servicios relacionados entre sí", "No, Compose solo admite servicios de base de datos", "Solo si ese servicio no usa ninguna imagen de Docker Hub"], "correct": 1}, {"n": 9, "q": "En versiones recientes de Docker, ¿cuál es la forma recomendada de invocar Compose, frente al antiguo binario independiente `docker-compose`?", "opts": ["`docker compose`, como subcomando integrado del propio CLI de Docker", "`docker-run-compose`, el binario que sustituyó a `docker-compose`", "`dockercompose`, sin espacio ni guion", "`compose docker`, invirtiendo el orden de las palabras"], "correct": 0}, {"n": 10, "q": "¿Cuál es la clave de primer nivel donde normalmente se define cada contenedor de la aplicación en un `docker-compose.yml`?", "opts": ["`containers:`", "`services:`", "`apps:`", "`dockers:`"], "correct": 1}, {"n": 11, "q": "En YAML, ¿qué determina principalmente la jerarquía (qué pertenece a qué)?", "opts": ["El uso de llaves `{}` como en JSON", "La indentación con espacios (nunca tabuladores)", "El uso de paréntesis", "Que cada clave vaya entre comillas dobles"], "correct": 1}, {"n": 12, "q": "Un alumno indenta su `docker-compose.yml` mezclando tabuladores y espacios. ¿Qué es lo más probable que ocurra al ejecutar `docker compose up`?", "opts": ["Funciona igual, YAML normaliza tabuladores y espacios automáticamente", "Compose devuelve un error de parseo del YAML y no levanta ningún servicio", "Solo se ignoran las líneas con tabuladores, el resto funciona", "Docker convierte el fichero a JSON automáticamente para evitar el problema"], "correct": 1}, {"n": 13, "q": "Dado este fragmento: ```yaml services:   web:     image: nginx   db:     image: postgres ``` ¿Cuántos servicios define?", "opts": ["1", "2", "3", "0, falta la clave `containers:`"], "correct": 1}, {"n": 14, "q": "¿Qué otras claves de primer nivel, además de `services:`, son habituales en un `docker-compose.yml`?", "opts": ["`volumes:` y `networks:`, para declarar volúmenes y redes compartidos entre servicios", "`dockerfile:` y `build.py:`", "`teoria:` y `practicas:`", "Ninguna más: `services:` es la única clave que admite el formato"], "correct": 0}, {"n": 15, "q": "Tienes `ports:   - \"8080:80\"` en un servicio. ¿Por qué suele escribirse entre comillas el valor `8080:80`?", "opts": ["Porque YAML lo exige siempre para cualquier texto, sin excepción", "Para evitar que el `:` se interprete como separador de clave-valor de YAML en vez de como parte del valor", "Porque sin comillas Docker no reconoce los puertos", "Las comillas no tienen ningún efecto, es solo una convención estética"], "correct": 1}, {"n": 16, "q": "Si en `environment:` usas `${DB_PASSWORD}` pero esa variable no está definida ni en `.env` ni en el entorno, ¿qué es lo más probable que ocurra?", "opts": ["Docker Compose aborta con un error fatal sí o sí", "Compose sustituye la variable por una cadena vacía (o avisa), en vez de bloquear el arranque del servicio", "Se usa automáticamente la contraseña por defecto de la imagen", "El fichero deja de ser YAML válido"], "correct": 1}, {"n": 17, "q": "¿Qué comando de Compose permite validar y ver cómo queda interpretado un `docker-compose.yml` (con variables ya sustituidas) sin llegar a arrancar nada?", "opts": ["`docker compose config`", "`docker compose validate-only`", "`docker compose dry-run`", "`docker compose lint`"], "correct": 0}, {"n": 18, "q": "¿Puede un `docker-compose.yml` referenciar un `Dockerfile` propio en vez de usar siempre una imagen ya publicada?", "opts": ["No, Compose solo admite imágenes descargadas de Docker Hub", "Sí, mediante la clave `build:` apuntando a la carpeta donde está el Dockerfile", "No, Compose nunca construye imágenes, solo las ejecuta", "Solo si el Dockerfile se llama exactamente `compose.Dockerfile`"], "correct": 1}, {"n": 19, "q": "Dentro de un servicio, ¿qué indica la clave `image:`?", "opts": ["El nombre que tendrá el contenedor en ejecución", "Qué imagen Docker (ya existente, p. ej. en Docker Hub) usar para ese servicio", "La carpeta del proyecto donde vive el código", "El puerto que se va a publicar"], "correct": 1}, {"n": 20, "q": "¿Se pueden combinar `build:` e `image:` en el mismo servicio?", "opts": ["No, son mutuamente excluyentes en cualquier caso", "Sí: Compose construye la imagen con `build:` y la etiqueta con el nombre indicado en `image:`", "`image:` siempre tiene prioridad e ignora por completo `build:`", "Solo si el servicio no pertenece a ningún `services:`"], "correct": 1}, {"n": 21, "q": "Dado: ```yaml services:   app:     build: ./app ``` ¿Qué se espera encontrar dentro de la carpeta `./app` para que el build funcione?", "opts": ["Un `Dockerfile` (y el código fuente necesario) para construir la imagen de ese servicio", "Una imagen ya construida en formato `.tar`", "Un `docker-compose.yml` adicional obligatorio", "Nada: la carpeta solo se usa como nombre, no como contenido"], "correct": 0}, {"n": 22, "q": "¿Qué ventaja aporta usar `image: postgres:16` en vez de construirte tu propia imagen de base de datos con `build:`?", "opts": ["Ninguna: siempre es preferible construir tu propia imagen de base de datos", "Aprovechas una imagen oficial ya probada y mantenida, sin tener que escribir ni mantener tú mismo un Dockerfile para ello", "`image:` no es compatible con bases de datos", "`build:` es obligatorio para cualquier servicio con estado"], "correct": 1}, {"n": 23, "q": "¿Qué clave permite asignar un nombre de contenedor fijo a un servicio, en vez del generado automáticamente por Compose?", "opts": ["`container_name:`", "`service_name:`", "`name:`", "`hostname_container:`"], "correct": 0}, {"n": 24, "q": "¿Qué ocurre si un servicio de un `docker-compose.yml` no define ni `image:` ni `build:`?", "opts": ["Compose asigna automáticamente la imagen `ubuntu` por defecto", "Compose da un error de configuración, porque no sabe qué imagen usar para levantar ese servicio", "El servicio se ejecuta en un modo simulado sin crear ningún contenedor real", "Usa la imagen más reciente que haya en el sistema, sea cual sea"], "correct": 1}, {"n": 25, "q": "Un alumno escribe `build: ./app` pero el Dockerfile de esa carpeta se llama `Dockerfile.dev` (no `Dockerfile` a secas). Al ejecutar `docker compose up --build`, ¿qué es lo más probable que pase?", "opts": ["Compose detecta automáticamente cualquier nombre de Dockerfile sin configuración extra", "Falla al no encontrar un fichero llamado `Dockerfile`, salvo que se indique explícitamente con `dockerfile:` dentro de `build:`", "Construye la imagen usando el último Dockerfile usado en cualquier proyecto", "Ignora el build y usa `image: app:latest` por defecto"], "correct": 1}, {"n": 26, "q": "¿Para qué sirve la clave `command:` dentro de un servicio?", "opts": ["Para documentar en qué red está el servicio", "Para sobrescribir el comando por defecto (`CMD`) que traía la imagen", "Para declarar variables de entorno", "Para fijar el puerto publicado"], "correct": 1}, {"n": 27, "q": "Dos servicios distintos necesitan construirse desde el mismo Dockerfile pero con distinta configuración en tiempo de ejecución. ¿Qué clave usarías para diferenciarlos sin duplicar el Dockerfile?", "opts": ["`environment:`, pasando variables distintas a cada servicio", "`networks:` distintas obligatoriamente", "`ports:` distintos únicamente", "No es posible sin duplicar el Dockerfile"], "correct": 0}, {"n": 28, "q": "¿Qué clave de un servicio equivale, en Compose, a la opción `-p` de `docker run`?", "opts": ["`ports:`", "`expose:`", "`network:`", "`volumes:`"], "correct": 0}, {"n": 29, "q": "Dado: ```yaml services:   web:     image: nginx     ports:       - \"8080:80\" ``` ¿Qué puerto usarías desde tu navegador en el host para acceder a la app?", "opts": ["80", "8080", "Cualquiera de los dos, da igual", "Ninguno, faltaría `expose:`"], "correct": 1}, {"n": 30, "q": "Tu aplicación, dentro del contenedor, escucha en el puerto 3000, pero en el `docker-compose.yml` has puesto `ports: [\"8080:5000\"]`. ¿Qué es lo más probable que pase al intentar acceder a `localhost:8080`?", "opts": ["Funciona perfectamente, Compose ajusta el puerto interno automáticamente", "No responde correctamente, porque el puerto del contenedor indicado (5000) no coincide con el puerto real donde escucha la app (3000)", "Compose avisa y corrige el error antes de arrancar", "Se publica automáticamente también el puerto 3000"], "correct": 1}, {"n": 31, "q": "¿Cuál de estas dos formas de declarar `environment:` es válida en Compose?", "opts": ["Solo como lista (`- VAR=valor`)", "Tanto como lista (`- VAR=valor`) como como diccionario (`VAR: valor`)", "Solo como diccionario", "Ninguna: siempre hay que usar un fichero `.env`"], "correct": 1}, {"n": 32, "q": "¿Para qué sirve un fichero `.env` situado junto al `docker-compose.yml`?", "opts": ["Para nada: Compose lo ignora por completo", "Para definir variables que Compose sustituye automáticamente dentro del propio YAML (p. ej. `${DB_PASSWORD}`)", "Es obligatorio y sustituye siempre a `environment:`", "Solo tiene efecto en producción, nunca en desarrollo"], "correct": 1}, {"n": 33, "q": "Dos servicios del mismo `docker-compose.yml` publican `ports: [\"8080:80\"]` cada uno. ¿Qué ocurre al intentar levantar ambos a la vez?", "opts": ["Compose reparte automáticamente otro puerto libre al segundo", "Se produce un conflicto porque el puerto 8080 del host ya estaría en uso", "No pasa nada, ambos funcionan igual de forma simultánea", "Solo se publica el segundo servicio, el primero se ignora en silencio"], "correct": 1}, {"n": 34, "q": "¿Es obligatorio declarar `ports:` para que dos servicios de la misma Compose se comuniquen entre sí?", "opts": ["Sí, siempre", "No: los servicios de un mismo proyecto Compose pueden comunicarse internamente por su nombre, sin publicar puertos al host", "Solo si están en ficheros Compose distintos", "No es posible que se comuniquen sin publicar puertos"], "correct": 1}, {"n": 35, "q": "Quieres que una base de datos solo sea accesible desde otros servicios de la misma Compose, nunca desde el navegador/host. ¿Qué harías?", "opts": ["No declarar `ports:` para ese servicio, dejando que se use solo por la red interna", "Publicar igualmente el puerto, no hay otra forma de limitarlo", "Sustituir `ports:` por `environment:`", "Eliminar el servicio de base de datos por completo"], "correct": 0}, {"n": 36, "q": "Un equipo sube por error su `.env` de producción (con contraseñas reales) a un repositorio público que usa Compose. ¿Qué riesgo concreto implica esto?", "opts": ["Ninguno: `.env` nunca llega a subirse de verdad", "Cualquiera con acceso al repositorio podría leer y usar esas credenciales", "Docker cifra automáticamente el contenido de `.env`", "Compose elimina las contraseñas del `.env` al hacer `up`"], "correct": 1}, {"n": 37, "q": "¿Para qué se usa principalmente la clave `volumes:` dentro de un servicio?", "opts": ["Para declarar variables de entorno", "Para montar datos persistentes o compartir ficheros entre el host (o un volumen gestionado) y el contenedor", "Para publicar puertos del servicio", "Para fijar el nombre del contenedor"], "correct": 1}, {"n": 38, "q": "Dado: ```yaml services:   db:     image: postgres     volumes:       - db_data:/var/lib/postgresql/data volumes:   db_data: ``` ¿Qué es `db_data`?", "opts": ["Una carpeta del host con exactamente esa ruta", "Un volumen con nombre, gestionado por Docker, declarado en la sección `volumes:` de nivel superior", "Una variable de entorno del servicio `db`", "El nombre de la imagen usada"], "correct": 1}, {"n": 39, "q": "¿Por qué es importante usar un volumen para los datos de un servicio de base de datos en Compose?", "opts": ["Para que la base de datos ocupe menos espacio en disco", "Para que los datos sobrevivan aunque se elimine y se vuelva a crear el contenedor (p. ej. con `docker compose down`)", "No es importante: los datos de un contenedor nunca se pierden", "Solo mejora el rendimiento de red, no afecta a la persistencia"], "correct": 1}, {"n": 40, "q": "¿Qué diferencia hay entre un bind mount (`./datos:/var/lib/data`) y un volumen con nombre (`db_data:/var/lib/data`)?", "opts": ["Ninguna: ambos son exactamente equivalentes", "El bind mount usa una ruta concreta del proyecto en el host; el volumen con nombre lo crea y administra Docker internamente", "El volumen con nombre no puede usarse con bases de datos", "El bind mount no permite nunca escritura desde el contenedor"], "correct": 1}, {"n": 41, "q": "Si ejecutas `docker compose down` sin ninguna opción adicional, ¿qué ocurre con los volúmenes con nombre del proyecto?", "opts": ["Se eliminan siempre, junto con los contenedores", "Por defecto se conservan: hace falta indicarlo explícitamente (p. ej. con `-v`) para eliminarlos", "Se convierten automáticamente en imágenes", "Se mueven a Docker Hub"], "correct": 1}, {"n": 42, "q": "¿Qué opción de `docker compose down` elimina también los volúmenes con nombre asociados al proyecto?", "opts": ["`--volumes` o `-v`", "`--force`", "`--hard`", "`--clean`"], "correct": 0}, {"n": 43, "q": "¿Puede un mismo volumen con nombre compartirse entre varios servicios de un mismo `docker-compose.yml`?", "opts": ["No, cada volumen solo lo puede montar un único servicio", "Sí, varios servicios pueden montar el mismo volumen para compartir datos entre ellos", "Solo si ambos servicios usan la misma imagen", "Solo si están en redes distintas"], "correct": 1}, {"n": 44, "q": "En desarrollo, es habitual montar el código fuente como bind mount dentro del contenedor (p. ej. `.:/app`) en vez de solo copiarlo con `COPY` en el Dockerfile. ¿Qué ventaja práctica aporta esto durante el desarrollo?", "opts": ["Ninguna: siempre es mejor reconstruir la imagen tras cada cambio", "Los cambios hechos en el código del host se reflejan al instante dentro del contenedor, sin tener que reconstruir la imagen", "Hace que el contenedor sea automáticamente más seguro", "Es un requisito obligatorio para que Compose funcione"], "correct": 1}, {"n": 45, "q": "¿Qué comando lista los volúmenes existentes en Docker, incluidos los creados por Compose?", "opts": ["`docker volume ls`", "`docker compose volumes`", "`docker ps --volumes`", "`docker images --volumes`"], "correct": 0}, {"n": 46, "q": "Por defecto, al ejecutar `docker compose up`, ¿qué hace Compose respecto a las redes?", "opts": ["No crea ninguna red: todos los servicios usan la red del host directamente", "Crea automáticamente una red propia para ese proyecto y conecta a ella todos sus servicios", "Exige que el usuario cree la red a mano antes de arrancar", "Usa siempre la red `host` del sistema"], "correct": 1}, {"n": 47, "q": "`web` y `db` están definidos en el mismo `docker-compose.yml`, usando la red por defecto del proyecto. ¿Cómo puede `web` conectarse a `db`?", "opts": ["A través de la IP pública de internet de `db`", "Usando el nombre del servicio `db` como si fuera un hostname, en la cadena de conexión", "No es posible que se comuniquen sin publicar antes el puerto de `db`", "Solo mediante `localhost`, igual que si estuvieran en la misma máquina física"], "correct": 1}, {"n": 48, "q": "¿Es correcto usar `localhost` dentro del código de un servicio para referirse a otro servicio de la misma Compose?", "opts": ["Sí, siempre funciona igual que el nombre del servicio", "No: `localhost` dentro de un contenedor se refiere a sí mismo, no a otros servicios; hay que usar el nombre del servicio", "Solo en sistemas Windows", "Solo si no se ha declarado ninguna red personalizada"], "correct": 1}, {"n": 49, "q": "¿Para qué se usaría la clave `networks:` de nivel superior (fuera de cualquier servicio) en un `docker-compose.yml`?", "opts": ["Para declarar redes personalizadas adicionales a la red por defecto del proyecto", "Para definir variables de entorno compartidas", "Para construir las imágenes de los servicios", "Esa clave no existe en Compose"], "correct": 0}, {"n": 50, "q": "¿Qué ventaja aporta separar los servicios de una Compose en varias redes (p. ej. una \"frontend\" y otra \"backend\")?", "opts": ["Ninguna: siempre es mejor usar una única red para todo", "Permite aislar qué servicios pueden comunicarse entre sí, por ejemplo que la base de datos solo sea visible desde la red \"backend\"", "Hace que la aplicación consuma menos CPU", "Es obligatorio declarar varias redes en cualquier Compose"], "correct": 1}, {"n": 51, "q": "Si un servicio no se declara explícitamente en ninguna red personalizada dentro de una Compose que sí las define, ¿a qué red pertenece por defecto?", "opts": ["A ninguna: queda completamente aislado", "A la red por defecto del proyecto, si no se le indica otra cosa", "Da un error de configuración obligatoriamente", "Se conecta directamente a internet sin pasar por el motor de Docker"], "correct": 1}, {"n": 52, "q": "¿Qué comando permite ver las redes existentes en Docker, incluidas las creadas por Compose?", "opts": ["`docker network ls`", "`docker compose network`", "`docker ps --networks`", "`docker inspect --net`"], "correct": 0}, {"n": 53, "q": "Dos proyectos Compose distintos, en carpetas distintas, usan ambos un servicio llamado `db`. ¿Entran en conflicto entre sí?", "opts": ["Sí, siempre, porque los nombres de servicio son globales en todo el sistema", "No: Compose aísla cada proyecto en su propia red, así que los nombres no colisionan entre proyectos distintos", "Se fusionan automáticamente en un único proyecto compartido", "Docker lo prohíbe directamente al detectar el nombre repetido"], "correct": 1}, {"n": 54, "q": "En un entorno de producción, ¿por qué puede ser buena práctica limitar a qué redes pertenece cada servicio, en vez de ponerlos todos en la misma?", "opts": ["No aporta ninguna ventaja real en la práctica", "Por seguridad: reduce la superficie de ataque si un servicio expuesto al exterior llega a verse comprometido", "Hace que Compose arranque más lento a propósito", "Compose no permite más de una red por proyecto, así que no hay elección"], "correct": 1}, {"n": 55, "q": "¿Para qué sirve la clave `depends_on:` en un servicio de Compose?", "opts": ["Para indicar que ese servicio debe arrancarse después de otro(s) servicio(s) indicado(s)", "Para definir el puerto público de un servicio", "Para construir la imagen de otro servicio distinto", "Para eliminar automáticamente un servicio al terminar"], "correct": 0}, {"n": 56, "q": "Si `web` tiene `depends_on: [db]`, ¿garantiza eso que la base de datos esté completamente lista para aceptar conexiones antes de que arranque `web`?", "opts": ["Sí, lo garantiza siempre por completo", "No necesariamente: por defecto solo garantiza el orden de arranque del contenedor, no que el servicio interno ya esté operativo", "`depends_on` no existe realmente en Compose", "Solo lo garantiza si el servicio usa `build:`"], "correct": 1}, {"n": 57, "q": "¿Qué estrategia se usa habitualmente en aplicaciones reales para que un servicio espere de verdad a que otro esté realmente disponible, más allá de `depends_on` básico?", "opts": ["Ninguna: basta con confiar siempre en `depends_on`", "Añadir lógica de reintento/espera en la propia aplicación, o usar un `healthcheck` combinado con `depends_on`", "Arrancar todos los servicios a la vez, sin ningún orden definido", "Eliminar siempre `depends_on` del fichero"], "correct": 1}, {"n": 58, "q": "Dado: ```yaml services:   app:     depends_on:       - db   db:     image: postgres ``` ¿En qué orden intentará Compose arrancar los contenedores?", "opts": ["`app` y `db` exactamente al mismo tiempo", "Primero `db`, después `app`", "Primero `app`, después `db`", "El orden es aleatorio en cada ejecución"], "correct": 1}, {"n": 59, "q": "¿Puede un servicio depender de varios servicios a la vez mediante `depends_on`?", "opts": ["No, solo puede depender de uno", "Sí, se puede indicar una lista con varios nombres de servicio", "Solo de servicios que usen `build:`", "Solo si todos están en la misma red personalizada"], "correct": 1}, {"n": 60, "q": "Si el servicio indicado en `depends_on` no existe en el mismo `docker-compose.yml`, ¿qué ocurre?", "opts": ["Se ignora silenciosamente y arranca igual", "Compose devuelve un error de configuración al intentar levantar los servicios", "Se crea automáticamente un servicio vacío con ese nombre", "No tiene ningún efecto sobre el arranque"], "correct": 1}, {"n": 61, "q": "¿Para qué sirve una clave `healthcheck:` en un servicio?", "opts": ["Para definir el puerto público del servicio", "Para indicar cómo comprobar si el servicio está realmente \"sano\"/operativo, más allá de si el proceso ha arrancado", "Para construir la imagen a partir de un Dockerfile", "Para declarar variables de entorno adicionales"], "correct": 1}, {"n": 62, "q": "¿Es `depends_on` imprescindible para que dos servicios de la misma Compose puedan comunicarse por red?", "opts": ["Sí, sin `depends_on` no pueden verse por la red interna", "No: `depends_on` solo afecta al orden de arranque; la comunicación por red funciona igual estén o no declaradas dependencias", "Solo es necesario si ambos usan volúmenes", "Solo es necesario en entornos de producción"], "correct": 1}, {"n": 63, "q": "Si eliminas `depends_on` de un `docker-compose.yml` con `app` y `db`, ¿qué riesgo concreto asumes?", "opts": ["Ninguno: Compose siempre detecta y respeta el orden correcto igualmente", "Que `app` intente arrancar y conectar antes de que `db` esté lista, fallando la primera vez", "Que `db` deje de funcionar por completo", "Que `app` y `db` ya no puedan comunicarse nunca más"], "correct": 1}, {"n": 64, "q": "¿Qué hace `docker compose up`?", "opts": ["Solo construye las imágenes, sin arrancar ningún contenedor", "Crea (si hace falta) y arranca todos los servicios definidos en el `docker-compose.yml`", "Elimina todos los contenedores del proyecto", "Sube las imágenes del proyecto a Docker Hub"], "correct": 1}, {"n": 65, "q": "¿Qué diferencia hay entre `docker compose up` y `docker compose up -d`?", "opts": ["Ninguna diferencia relevante", "Sin `-d` se queda mostrando los logs en primer plano; con `-d` arranca en segundo plano y devuelve el control a la terminal", "`-d` elimina los contenedores nada más arrancar", "`-d` solo sirve para construir imágenes, no para arrancar"], "correct": 1}, {"n": 66, "q": "¿Qué hace `docker compose down`?", "opts": ["Solo pausa los contenedores del proyecto", "Para y elimina los contenedores y la red creados por ese proyecto Compose (y los volúmenes, solo si se indica explícitamente)", "Elimina todas las imágenes del sistema", "Reinicia por completo el servicio Docker del sistema"], "correct": 1}, {"n": 67, "q": "¿Qué opción de `docker compose up` fuerza a reconstruir las imágenes de los servicios que usan `build:` antes de arrancar?", "opts": ["`--build`", "`--force-build`", "`--rebuild`", "`-r`"], "correct": 0}, {"n": 68, "q": "Añades un nuevo servicio al `docker-compose.yml` y ejecutas `docker compose up -d` de nuevo. ¿Qué ocurre con los servicios que no han cambiado?", "opts": ["Se reinician todos sin excepción", "Compose normalmente los deja tal cual y solo crea/arranca lo que es nuevo o ha cambiado", "Se eliminan y se recrean desde cero obligatoriamente", "Da un error y hay que parar todo el stack a mano primero"], "correct": 1}, {"n": 69, "q": "¿Qué comando pararía los contenedores de un proyecto Compose sin eliminarlos?", "opts": ["`docker compose stop`", "`docker compose pause-all`", "`docker compose halt`", "`docker compose kill-only`"], "correct": 0}, {"n": 70, "q": "¿Qué comando vuelve a arrancar servicios de un proyecto Compose que estaban parados con `stop`, sin recrearlos desde cero?", "opts": ["`docker compose start`", "`docker compose up --new`", "`docker compose restart-all`", "`docker compose build`"], "correct": 0}, {"n": 71, "q": "Ejecutas `docker compose up -d` en una carpeta donde no hay ningún `docker-compose.yml` ni `compose.yaml`. ¿Qué ocurre?", "opts": ["Se crea uno vacío automáticamente y arranca sin servicios", "Devuelve un error indicando que no encuentra el fichero de configuración", "Usa el último proyecto Compose ejecutado en el sistema, sea cual sea", "Levanta todos los contenedores descargados en el sistema"], "correct": 1}, {"n": 72, "q": "Si solo ejecutas `docker compose stop` (sin `down`), ¿qué pasa con la red y los volúmenes con nombre del proyecto?", "opts": ["Se eliminan igualmente", "Se mantienen: solo se detienen los contenedores; es `down` quien elimina la red, y los volúmenes solo si se indica explícitamente", "Se convierten automáticamente en imágenes", "Dejan de existir de forma inmediata"], "correct": 1}, {"n": 73, "q": "¿Qué muestra `docker compose ps`?", "opts": ["Solo las imágenes descargadas en el sistema", "El estado de los contenedores de ese proyecto Compose (similar a `docker ps`, pero filtrado al proyecto)", "Los logs combinados de todos los servicios", "El contenido de los volúmenes del proyecto"], "correct": 1}, {"n": 74, "q": "¿Qué hace `docker compose logs` (sin argumentos)?", "opts": ["Muestra los logs combinados de todos los servicios del proyecto", "Elimina los logs antiguos acumulados", "Reconstruye las imágenes de los servicios", "Lista los volúmenes existentes"], "correct": 0}, {"n": 75, "q": "¿Cómo verías únicamente los logs de un servicio concreto, por ejemplo `db`, dentro de un proyecto Compose?", "opts": ["`docker compose logs db`", "`docker logs --compose db`", "`docker compose ps db`", "No es posible filtrar los logs por servicio"], "correct": 0}, {"n": 76, "q": "¿Qué hace la opción `-f` en `docker compose logs -f`?", "opts": ["Fuerza a borrar todos los logs acumulados", "Sigue mostrando los logs en tiempo real, igual que `tail -f`", "Filtra para mostrar solo mensajes de error", "Formatea la salida como JSON"], "correct": 1}, {"n": 77, "q": "¿Cómo abrirías una sesión interactiva de terminal dentro de un servicio llamado `app` que ya está en marcha, gestionado por Compose?", "opts": ["`docker compose exec app bash` (o `sh` si la imagen no tiene bash)", "`docker compose run app`", "`docker compose enter app`", "`docker exec app --compose`"], "correct": 0}, {"n": 78, "q": "¿Qué diferencia hay entre `docker compose exec` y `docker compose run` para un mismo servicio?", "opts": ["Son exactamente equivalentes en todos los casos", "`exec` ejecuta un comando en un contenedor de ese servicio que YA está en marcha; `run` crea un contenedor nuevo para ejecutar algo puntual", "`run` solo puede usarse con servicios de base de datos", "`exec` siempre crea un contenedor completamente nuevo"], "correct": 1}, {"n": 79, "q": "Si un servicio `web` no arranca correctamente en Compose, ¿cuál sería un primer paso razonable para investigar por qué?", "opts": ["Ejecutar `docker compose down` directamente sin mirar nada más", "Revisar sus logs con `docker compose logs web`", "Ejecutar `docker compose build --no-cache` sin comprobar antes qué falla", "Borrar todo el proyecto y empezar de nuevo desde cero"], "correct": 1}, {"n": 80, "q": "¿Qué comando mostraría en tiempo real los logs combinados de TODOS los servicios de un proyecto Compose?", "opts": ["`docker compose logs -f`", "`docker compose ps -f`", "`docker compose build -f`", "`docker compose down -f`"], "correct": 0}, {"n": 81, "q": "El equipo necesita lanzar un comando puntual de migración de base de datos usando la misma imagen que el servicio `app`, sin tocar el contenedor que ya está en marcha en producción. ¿Qué comando de Compose encaja mejor?", "opts": ["`docker compose exec app ...`, reutilizando siempre el contenedor ya activo", "`docker compose run app ...`, que crea un contenedor nuevo y aislado de ese servicio para la tarea puntual", "`docker compose down` seguido de `up` de nuevo", "No es posible lanzar tareas puntuales con Compose"], "correct": 1}, {"n": 82, "q": "¿Por qué conviene usar un volumen con nombre para los datos de la base de datos en un stack típico \"app + base de datos\"?", "opts": ["Para que la base de datos ocupe menos espacio en disco", "Para que los datos sobrevivan a `docker compose down` y a la recreación de los contenedores", "No es necesario: Compose guarda siempre los datos dentro de la propia imagen", "Para acelerar la velocidad de la red interna"], "correct": 1}, {"n": 83, "q": "¿Por qué no es buena idea escribir contraseñas reales directamente en un `docker-compose.yml` que se sube a un repositorio público?", "opts": ["No hay ningún problema: Compose las oculta automáticamente al mostrarlo", "Porque cualquiera con acceso al repositorio podría verlas; es preferible usar variables de entorno o un `.env` no versionado", "Docker Compose no permite usar contraseñas en ningún caso", "Las contraseñas en texto plano no afectan a la seguridad real del sistema"], "correct": 1}, {"n": 84, "q": "¿Qué ventaja tiene mantener un `docker-compose.yml` frente a documentar una lista de comandos `docker run` sueltos en el README?", "opts": ["Ninguna relevante, da exactamente igual", "El fichero es directamente ejecutable (`docker compose up`) y actúa como documentación viva, siempre sincronizada con lo que realmente se ejecuta", "`docker run` siempre arranca más rápido que Compose", "Compose no permite reproducir exactamente el mismo entorno entre máquinas"], "correct": 1}, {"n": 85, "q": "En un stack \"app + base de datos\", ¿cuál es la forma de comunicación recomendada entre ambos servicios?", "opts": ["La app accede a la base de datos por su IP pública de internet", "La app se conecta a la base de datos usando el nombre del servicio como host, dentro de la red interna creada por Compose", "No deberían poder comunicarse nunca entre sí", "Solo mediante ficheros compartidos, nunca por red"], "correct": 1}, {"n": 86, "q": "Se actualiza la imagen base de un servicio de base de datos y se reconstruye el stack, sin haber hecho copia de seguridad del volumen de datos antes. ¿Qué riesgo se asume?", "opts": ["Ninguno: es siempre completamente seguro", "Riesgo de incompatibilidad entre versiones de datos; conviene revisar la documentación de la imagen y hacer copia de seguridad antes de actualizar", "El volumen se actualiza solo, sin ningún riesgo real", "Los datos desaparecen siempre de forma automática al cambiar de versión"], "correct": 1}, {"n": 87, "q": "¿Por qué es buena práctica fijar versiones concretas (p. ej. `postgres:16`) también en los servicios de un `docker-compose.yml`, en vez de usar `latest`?", "opts": ["Para evitar cambios de versión inesperados al reconstruir el stack en el futuro", "Porque `latest` directamente no funciona dentro de Compose", "Porque Compose lo exige de forma obligatoria", "No hay ninguna razón práctica real para hacerlo"], "correct": 0}, {"n": 88, "q": "¿Qué relación tiene todo lo visto sobre Compose con el \"despliegue de aplicaciones web\" del módulo?", "opts": ["Ninguna, es un tema completamente aislado del resto del módulo", "Compose (y Docker en general) son herramientas reales para empaquetar y desplegar de forma reproducible una aplicación web junto con sus dependencias", "Solo sirve para el entorno de desarrollo local, nunca para producción", "Sustituye por completo la necesidad de tener un servidor"], "correct": 1}, {"n": 89, "q": "¿Qué papel juega un `.dockerignore` bien configurado en un proyecto Compose que usa `build:`?", "opts": ["Ninguno: Compose no usa contexto de build en ningún caso", "Evita incluir ficheros innecesarios o sensibles (como un `.env` con credenciales) dentro de la imagen construida", "Hace que los contenedores ya creados arranquen más rápido", "Es obligatorio para que `depends_on` funcione correctamente"], "correct": 1}, {"n": 90, "q": "¿Qué suele documentarse primero en el README de un proyecto que usa Docker Compose, para que cualquiera pueda levantarlo?", "opts": ["El código fuente completo de la aplicación", "El comando `docker compose up` y los requisitos previos (como variables de entorno necesarias)", "La contraseña real usada en producción", "El historial completo de commits del repositorio"], "correct": 1}, {"n": 91, "q": "Un stack con `app` y `db` falla al arrancar: `app` da un error de conexión a la base de datos justo al inicio, aunque tiene `depends_on: [db]`. ¿Cuál es la explicación más probable?", "opts": ["`depends_on` está mal escrito en el YAML", "El contenedor de `db` ya había arrancado, pero el motor de base de datos dentro de él todavía no estaba listo para aceptar conexiones cuando `app` lo intentó", "Docker Compose no soporta bases de datos en absoluto", "Es imposible que esto llegue a ocurrir con Compose"], "correct": 1}, {"n": 92, "q": "Tras `docker compose down` (sin `-v`) y volver a hacer `docker compose up`, los datos de la base de datos siguen intactos. ¿Por qué?", "opts": ["Es pura casualidad", "Porque los datos estaban en un volumen con nombre, que `down` no elimina por defecto", "Porque `down` nunca borra absolutamente nada", "Porque la base de datos los reenvía automáticamente a Docker Hub"], "correct": 1}, {"n": 93, "q": "Dos desarrolladores levantan el mismo proyecto Compose en fechas distintas y dicen \"en mi máquina se comporta distinto\"; uno usaba `postgres:latest` y descargó una versión más reciente que el otro. ¿Qué cambio evitaría este problema?", "opts": ["Ninguno: es imposible de evitar con Docker", "Fijar una versión concreta, por ejemplo `postgres:16`, en vez de `latest`", "Eliminar directamente el servicio de base de datos", "Sustituir `image:` por `build:` sin más"], "correct": 1}, {"n": 94, "q": "Un servicio `web` necesita esperar a que `api` esté realmente disponible (no solo arrancado) antes de empezar a servir peticiones. ¿Qué mecanismo de Compose encaja mejor con esta necesidad?", "opts": ["`ports:`", "Un `healthcheck:` en `api` combinado con una condición en `depends_on` de `web`", "`volumes:`", "`networks:` personalizadas, sin nada más"], "correct": 1}, {"n": 95, "q": "Un equipo quiere que la base de datos de su stack NO sea accesible desde fuera de la máquina en producción, pero sí poder conectarse puntualmente desde su portátil para depurar un problema concreto. ¿Qué estrategia encaja mejor?", "opts": ["No declarar `ports:` en la configuración de producción, pero sí publicarlo temporalmente solo cuando haga falta depurar (p. ej. en una configuración de desarrollo aparte)", "Publicar siempre el puerto de la base de datos en todos los entornos por comodidad", "Es imposible depurar sin publicar el puerto de forma permanente", "Cambiar el nombre del servicio soluciona el problema de acceso"], "correct": 0}, {"n": 96, "q": "Tras añadir un tercer servicio (`cache`) al `docker-compose.yml` y ejecutar `docker compose up -d`, `web` y `db` no se reinician. ¿Es esto un problema?", "opts": ["Sí, siempre hay que reiniciar todos los servicios al añadir uno nuevo", "No necesariamente: Compose solo crea/arranca lo necesario, dejando en marcha los servicios que no han cambiado", "Indica que Compose está roto y hay que reinstalarlo", "Significa que `cache` en realidad no se ha llegado a crear"], "correct": 1}, {"n": 97, "q": "Un `docker-compose.yml` de producción publica con `ports:` tanto la app web como la base de datos directamente hacia internet. ¿Qué recomendación de seguridad aplicarías?", "opts": ["No publicar la base de datos hacia internet; exponer solo lo estrictamente necesario y dejar que el resto se comunique por la red interna de Compose", "Está todo correcto: cuantos más puertos abiertos, mejor", "Eliminar `depends_on` para mejorar la seguridad", "Usar `latest` en todas las imágenes para estar siempre actualizado"], "correct": 0}, {"n": 98, "q": "Un alumno sube accidentalmente un `.env` con contraseñas reales de producción a un repositorio público que usa Compose. Además, ese `.env` ya llevaba varios commits confirmado en el historial. ¿Basta con borrarlo ahora y añadirlo a `.gitignore`?", "opts": ["Sí, desaparece automáticamente del historial de git al borrarlo", "No del todo: aunque se borre y se ignore a partir de ahora, las versiones anteriores del fichero siguen en el historial de git, visibles para quien lo clone", "Sí, porque `.gitignore` limpia también los commits anteriores", "No tiene ninguna importancia real una vez pasado el susto"], "correct": 1}, {"n": 99, "q": "El equipo decide documentar en el `docker-compose.yml` de desarrollo un bind mount del código fuente (`.:/app`) para el servicio `app`, pero en producción prefieren copiar el código con `COPY` dentro de la imagen. ¿Por qué tiene sentido esta diferencia entre entornos?", "opts": ["No tiene ningún sentido, deberían configurarse siempre igual", "En desarrollo interesa ver los cambios de código al instante sin reconstruir; en producción interesa una imagen inmutable y autocontenida, sin depender de ficheros externos del host", "Un bind mount nunca funciona en Linux, solo en desarrollo con Windows", "`COPY` y bind mount hacen exactamente lo mismo en cualquier entorno"], "correct": 1}, {"n": 100, "q": "Resume el flujo típico para levantar un stack app + base de datos con Compose, comprobar que funciona y pararlo dejando los datos a salvo:", "opts": ["`docker build` → `docker run` → `docker rmi`", "`docker compose up -d` → `docker compose logs` / `docker compose ps` → `docker compose down` (sin `-v`, para conservar los volúmenes)", "`docker pull` → `docker push` → `docker login`", "`docker compose down -v` → `docker compose up` → `docker compose build`"], "correct": 1}]; hace falta `git commit` para guardarlos en el historial", "Sí, es equivalente a un commit", "Sí, pero solo si se usa `-m`", "No, `git add` no hace nada"], "correct": 0}, {"n": 46, "q": "¿Se puede usar `git add` tanto para ficheros nuevos como para ficheros ya rastreados con cambios?", "opts": ["No, solo para ficheros nuevos", "Sí, sirve para ambos casos", "No, solo para ficheros ya rastreados", "Solo si el fichero está en `.gitignore`"], "correct": 1}, {"n": 47, "q": "¿Qué riesgo tiene usar `git add .` sin un `.gitignore` configurado?", "opts": ["Ninguno, es totalmente seguro siempre", "Borra los ficheros ignorados", "Puede añadir ficheros que no querías versionar (logs, credenciales, dependencias...)", "Elimina la carpeta `.git`"], "correct": 2}, {"n": 48, "q": "Después de `git add archivo.txt`, ¿en qué área se encuentra el fichero?", "opts": ["Working directory", "Repository", "Untracked", "Staging area"], "correct": 3}, {"n": 49, "q": "Si modificas `archivo.txt` después de haberlo añadido con `git add` pero antes de hacer `git commit`, ¿qué ocurre?", "opts": ["La nueva modificación aparece como \"no preparada\", habría que volver a hacer `git add`", "El commit incluirá automáticamente los nuevos cambios", "Da un error y no deja continuar", "Se deshace el `git add` anterior"], "correct": 0}, {"n": 50, "q": "¿Cuál de estos comandos prepara únicamente el fichero `index.html`?", "opts": ["`git add .`", "`git add index.html`", "`git commit index.html`", "`git status index.html`"], "correct": 1}, {"n": 51, "q": "Un alumno ejecuta `git add` sin ningún argumento. ¿Qué ocurre?", "opts": ["Añade todos los ficheros automáticamente, igual que `git add .`", "Se confirma un commit vacío", "Git muestra un error/aviso pidiendo especificar qué añadir (no añade nada por sí solo)", "Se borra el repositorio"], "correct": 2}, {"n": 52, "q": "¿Qué comando comprobarías justo después de `git add` para verificar que el fichero ha pasado correctamente a la staging area?", "opts": ["`git log`", "`git init`", "`git config --list`", "`git status`"], "correct": 3}, {"n": 53, "q": "¿Qué hace `git commit -m \"mensaje\"`?", "opts": ["Guarda de forma permanente en el historial los cambios que estaban en la staging area", "Prepara los cambios en la staging area", "Borra el historial anterior", "Sube los cambios a un servidor remoto"], "correct": 0}, {"n": 54, "q": "¿Qué ocurre si ejecutas `git commit` sin la opción `-m`?", "opts": ["Da un error inmediato y no continúa", "Se abre un editor de texto (normalmente Vim) para escribir el mensaje", "Se usa automáticamente el mensaje del commit anterior", "El commit se hace sin mensaje"], "correct": 1}, {"n": 55, "q": "Si te quedas \"atrapado\" en Vim tras un `git commit` sin `-m`, ¿cómo sales guardando el mensaje?", "opts": ["Cerrando la terminal", "`Ctrl+C`", "`Esc` y luego `:wq` + `Enter`", "`Alt+F4`"], "correct": 2}, {"n": 56, "q": "¿Qué ficheros incluye un `git commit`?", "opts": ["Todos los ficheros del proyecto, estén o no en staging", "Únicamente los ficheros untracked", "Ninguno, hasta que no se haga `git push`", "Únicamente los ficheros que están en la staging area"], "correct": 3}, {"n": 57, "q": "¿Por qué se dice que un commit crea un \"snapshot\" del proyecto?", "opts": ["Porque guarda una instantánea del estado de los ficheros preparados en ese momento", "Porque hace una foto literal de la pantalla", "Porque comprime el proyecto en un zip", "Porque genera un vídeo del proceso"], "correct": 0}, {"n": 58, "q": "Según las buenas prácticas vistas en clase, ¿cómo debería redactarse un mensaje de commit?", "opts": ["En pasado y muy largo, contando toda la sesión de trabajo", "En imperativo y describiendo el cambio de forma concisa", "Solo con el nombre del autor", "Vacío, para que sea más rápido"], "correct": 1}, {"n": 59, "q": "¿Qué recomienda la buena práctica de \"commits atómicos\"?", "opts": ["Hacer un único commit gigante al final del proyecto", "Hacer un commit por cada línea de código", "Que cada commit represente un único cambio lógico", "No usar mensajes de commit"], "correct": 2}, {"n": 60, "q": "¿Debería incluirse una contraseña o clave API en un commit?", "opts": ["Sí, así queda documentado", "Solo si el repositorio es local", "Solo en el primer commit", "No, nunca; para evitarlo conviene usar `.gitignore`"], "correct": 3}, {"n": 61, "q": "Tras hacer `git commit -m \"Primer commit\"`, ¿puede ejecutarse otro `git commit` inmediatamente sin haber tocado nada?", "opts": ["No tiene sentido: no hay nada en la staging area, así que no habría cambios que confirmar", "Sí, y crea un commit idéntico", "Sí, obligatoriamente cada 5 minutos", "No, git lo bloquea permanentemente"], "correct": 0}, {"n": 62, "q": "¿Qué comando usarías para comprobar que un commit se ha registrado correctamente?", "opts": ["`git config`", "`git log`", "`git init`", "`git add`"], "correct": 1}, {"n": 63, "q": "¿Qué muestra `git log`?", "opts": ["La configuración de git", "Solo los ficheros untracked", "El historial de commits del repositorio", "El contenido de `.gitignore`"], "correct": 2}, {"n": 64, "q": "¿Cuál de estos datos NO aparece en la salida estándar de `git log`?", "opts": ["El hash del commit", "El autor", "La fecha", "La contraseña del autor"], "correct": 3}, {"n": 65, "q": "¿Qué es el hash de un commit (SHA-1)?", "opts": ["Un identificador único del commit", "El nombre del autor", "La fecha de creación en otro formato", "El número de ficheros modificados"], "correct": 0}, {"n": 66, "q": "¿Qué ventaja tiene `git log --oneline` frente a `git log`?", "opts": ["Muestra más información", "Muestra un historial más compacto, una línea por commit", "Solo muestra el último commit", "Ordena los commits alfabéticamente"], "correct": 1}, {"n": 67, "q": "En `git log --oneline`, ¿qué se muestra de cada commit?", "opts": ["Solo la fecha", "Solo el autor", "Hash corto y mensaje del commit", "El contenido completo del diff"], "correct": 2}, {"n": 68, "q": "Si un repositorio no tiene ningún commit todavía, ¿qué ocurre al ejecutar `git log`?", "opts": ["Da un error fatal e irrecuperable", "Crea un commit automáticamente", "Muestra el `git status`", "Muestra un historial vacío o un mensaje indicando que no hay commits"], "correct": 3}, {"n": 69, "q": "¿En qué orden muestra `git log` los commits por defecto?", "opts": ["Del más reciente al más antiguo", "Alfabético por mensaje", "Del más antiguo al más reciente", "Aleatorio"], "correct": 0}, {"n": 70, "q": "¿`git log` modifica el historial del repositorio?", "opts": ["Sí, reordena los commits", "No, solo lo consulta", "Sí, borra los commits más antiguos", "Solo si se usa `--oneline`"], "correct": 1}, {"n": 71, "q": "Un compañero te pasa el hash corto `124c35f` de un commit visto con `git log --oneline`. ¿De qué commit completo es un fragmento?", "opts": ["Del mensaje del commit", "Del nombre del autor codificado", "Del SHA-1 completo de ese commit", "De la fecha en hexadecimal"], "correct": 2}, {"n": 72, "q": "¿Qué comando ejecutarías para revisar rápidamente cuántos commits llevas y con qué mensajes, sin entrar en detalle de fechas y autores?", "opts": ["`git status`", "`git config --list`", "`git add .`", "`git log --oneline`"], "correct": 3}, {"n": 73, "q": "¿Para qué sirve el fichero `.gitignore`?", "opts": ["Para indicar a git qué ficheros o carpetas debe ignorar", "Para configurar el nombre de usuario", "Para guardar el historial de commits", "Para crear un nuevo repositorio"], "correct": 0}, {"n": 74, "q": "Un fichero listado en `.gitignore`, ¿aparece en `git status` como untracked?", "opts": ["Sí, siempre", "No, git lo ignora y no lo muestra", "Solo si se usa `git add .`", "Solo la primera vez"], "correct": 1}, {"n": 75, "q": "¿Qué tipo de ficheros es buena práctica incluir en `.gitignore`?", "opts": ["El código fuente principal del proyecto", "El propio `README.md`", "Ficheros de log, dependencias y credenciales", "Los mensajes de commit"], "correct": 2}, {"n": 76, "q": "¿Cómo se ignorarían todos los ficheros con extensión `.log` en `.gitignore`?", "opts": ["`log.*`", "`ignore(.log)`", "`-.log`", "`*.log`"], "correct": 3}, {"n": 77, "q": "¿Qué diferencia hay entre escribir `node_modules` y `node_modules/` en un `.gitignore`?", "opts": ["Ninguna diferencia práctica relevante para este caso: ambas ignoran esa carpeta", "La primera ignora un fichero llamado exactamente `node_modules`, nunca una carpeta", "La segunda solo funciona en Windows", "La primera solo funciona dentro de subcarpetas"], "correct": 0}, {"n": 78, "q": "Un fichero ya estaba confirmado en un commit ANTES de añadirlo a `.gitignore`. ¿Qué ocurre?", "opts": ["Desaparece automáticamente del historial", "Sigue estando rastreado; `.gitignore` no afecta a lo que ya estaba en el repositorio", "Se borra del disco", "Git lo elimina del último commit automáticamente"], "correct": 1}, {"n": 79, "q": "¿Cuándo es mejor crear el `.gitignore` de un proyecto?", "opts": ["Al final, justo antes de terminar el proyecto", "Nunca hace falta si trabajas solo en local", "Al principio, antes del primer `git add .`", "Solo si vas a subir el proyecto a GitHub"], "correct": 2}, {"n": 80, "q": "¿Qué comando usarías para comprobar que un fichero incluido en `.gitignore` ya no aparece como pendiente?", "opts": ["`git config --list`", "`git log`", "`git init`", "`git status`"], "correct": 3}, {"n": 81, "q": "¿Qué muestra `git diff` (sin argumentos)?", "opts": ["Los cambios línea a línea respecto a la última versión confirmada, sin incluir lo ya preparado", "El historial completo de commits", "La configuración de git", "La lista de ficheros ignorados"], "correct": 0}, {"n": 82, "q": "En la salida de `git diff`, ¿qué indica una línea que empieza por `+`?", "opts": ["Una línea eliminada", "Una línea añadida", "Un comentario", "Un error"], "correct": 1}, {"n": 83, "q": "En la salida de `git diff`, ¿qué indica una línea que empieza por `-`?", "opts": ["Una línea añadida", "Una línea sin cambios", "Una línea eliminada respecto a la versión anterior", "El nombre del autor"], "correct": 2}, {"n": 84, "q": "¿En qué momento del flujo de trabajo tiene más sentido usar `git diff`, antes de confirmar un cambio?", "opts": ["Después de `git commit`", "Antes de `git init`", "Después de borrar el repositorio", "Antes de `git add`, para revisar qué se va a preparar"], "correct": 3}, {"n": 85, "q": "¿`git diff` modifica los ficheros del proyecto?", "opts": ["No, solo los muestra, es un comando de solo lectura", "Sí, aplica los cambios mostrados", "Sí, pero solo los ficheros staged", "Sí, borra las líneas eliminadas"], "correct": 0}, {"n": 86, "q": "Si no hay ningún cambio sin preparar en el proyecto, ¿qué muestra `git diff`?", "opts": ["Un error", "Nada (no hay diferencias que mostrar)", "Todo el contenido de los ficheros", "El historial de commits"], "correct": 1}, {"n": 87, "q": "Acabas de instalar git por primera vez y ejecutas `git commit -m \"primer cambio\"` sin haber configurado nada más. ¿Qué es lo más probable que ocurra?", "opts": ["Funciona perfectamente sin problema", "Se crea el repositorio automáticamente", "Git puede fallar o avisar porque no tiene tu nombre/email configurados", "Se sube el proyecto a GitHub"], "correct": 2}, {"n": 88, "q": "Ejecutas `git status` y ves un fichero en \"Untracked files\". ¿Qué comando necesitas para que en el próximo `git status` aparezca en \"Changes to be committed\"?", "opts": ["`git commit -m \"mensaje\"`", "`git log`", "`git init`", "`git add <fichero>`"], "correct": 3}, {"n": 89, "q": "Tienes 3 ficheros modificados: `a.txt`, `b.txt` y `c.txt`. Solo quieres confirmar los cambios de `a.txt` y `b.txt` en este commit. ¿Qué harías?", "opts": ["`git add a.txt b.txt` y luego `git commit -m \"...\"`", "`git add .` y luego `git commit -m \"...\"`", "`git commit -m \"...\" a.txt b.txt` sin usar `git add`", "`git init a.txt b.txt`"], "correct": 0}, {"n": 90, "q": "Después del escenario anterior (Pregunta 89), ¿qué mostrará `git status` respecto a `c.txt`?", "opts": ["Que ya está confirmado", "Que sigue con cambios sin preparar (modified)", "Que ha desaparecido del proyecto", "Que está en `.gitignore`"], "correct": 1}, {"n": 91, "q": "Quieres evitar que un fichero `secrets.env` con contraseñas se suba nunca al historial. Aún no lo has añadido nunca con `git add`. ¿Qué es suficiente?", "opts": ["Borrarlo después de cada commit", "Renombrarlo cada vez", "Añadirlo a `.gitignore` antes de hacer `git add .`", "No hace falta hacer nada especial"], "correct": 2}, {"n": 92, "q": "Mismo caso que la pregunta anterior, pero `secrets.env` ya fue confirmado en un commit anterior por error. ¿Basta con añadirlo ahora a `.gitignore`?", "opts": ["Sí, desaparece automáticamente del historial", "Sí, pero solo si se hace `git commit` otra vez", "No, hay que borrar la carpeta `.git` entera", "No, `.gitignore` no afecta a ficheros que ya estaban rastreados/confirmados"], "correct": 3}, {"n": 93, "q": "Ejecutas `git log --oneline` y ves 3 líneas. ¿Cuántos commits hay en el historial?", "opts": ["3", "1", "0", "Depende de cuántos ficheros haya"], "correct": 0}, {"n": 94, "q": "Quieres saber si tienes bien configurado el email antes de empezar a hacer commits en un proyecto nuevo. ¿Qué comando usarías?", "opts": ["`git log`", "`git config --global --list` (o `git config user.email`)", "`git status`", "`git diff`"], "correct": 1}, {"n": 95, "q": "Has creado una carpeta de proyecto, has añadido ficheros, pero `git status` te dice \"not a git repository\". ¿Qué te falta?", "opts": ["Configurar el email", "Hacer un commit", "Ejecutar `git init` en esa carpeta", "Instalar Git LFS"], "correct": 2}, {"n": 96, "q": "Modificas un fichero ya confirmado y ejecutas `git add` + `git commit` de nuevo. ¿Se sobrescribe el commit anterior o se crea uno nuevo?", "opts": ["Se sobrescribe el anterior, solo queda 1 commit", "Da un error porque el fichero ya estaba confirmado", "Git lo ignora porque ya existía", "Se crea un nuevo commit, y el historial guarda ambos como snapshots distintos"], "correct": 3}, {"n": 97, "q": "Antes de hacer `git add`, quieres revisar exactamente qué línea has cambiado en `app.py` respecto al último commit. ¿Qué comando usas?", "opts": ["`git diff`", "`git log`", "`git status`", "`git config`"], "correct": 0}, {"n": 98, "q": "Ejecutas por error `git init` dentro de una carpeta que ya era un repositorio git (ya tenía `.git`). ¿Qué es lo más habitual que ocurra?", "opts": ["Se borra todo el historial anterior", "Git reinicializa el repositorio existente sin borrar el historial (avisa de que ya existía)", "Da un error fatal y detiene el sistema", "Se crea un repositorio duplicado dentro de otro automáticamente"], "correct": 1}, {"n": 99, "q": "Tienes un `.gitignore` con `*.log`, pero al ejecutar `git status` sigue apareciendo `errores.log` como untracked. ¿Cuál es la causa más probable?", "opts": ["`.gitignore` nunca funciona con extensiones", "`git status` no lee el `.gitignore`", "`errores.log` ya estaba siendo rastreado/confirmado antes de añadir la regla al `.gitignore`", "Hace falta reiniciar el ordenador"], "correct": 2}, {"n": 100, "q": "Resume el orden correcto del ciclo básico de trabajo en local visto en esta sesión:", "opts": ["`git commit` → `git add` → editar → `git status`", "`git init` → `git commit` → `git add` → editar", "`git log` → `git init` → `git add`", "Editar → `git add` → `git commit` (y vuelta a editar)"], "correct": 3}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>

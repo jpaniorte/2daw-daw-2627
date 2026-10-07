@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — docker parte 2: imágenes y Dockerfile</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Start screen */
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  /* Quiz screen */
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* Results screen */
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — docker parte 2: imágenes y Dockerfile</h1>
+    <p>20 preguntas al azar del banco de 100 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 100 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "¿Cuál es la función principal de un Dockerfile?", "opts": ["Describir, en pasos, cómo construir una imagen Docker", "Definir redes virtuales entre contenedores", "Configurar el firewall del host", "Orquestar varios contenedores a la vez"], "correct": 0}, {"n": 2, "q": "Un Dockerfile empieza directamente con `WORKDIR /app` sin ninguna instrucción `FROM` antes. ¿Qué ocurre al intentar construir la imagen?", "opts": ["Se construye igual, usando `ubuntu:latest` como base por defecto", "Docker da un error: toda imagen (salvo `scratch`) necesita una instrucción `FROM` antes de otras instrucciones", "Funciona pero el contenedor no tiene sistema de ficheros", "Docker pregunta interactivamente qué imagen base usar"], "correct": 1}, {"n": 3, "q": "¿Qué significa `FROM scratch` en un Dockerfile?", "opts": ["Que se usa una variante ligera de Ubuntu", "Que se descarta el contenido anterior del Dockerfile", "Que se parte de una imagen base completamente vacía, sin sistema operativo alguno", "Que la imagen se construye sin conexión a internet"], "correct": 2}, {"n": 4, "q": "Si un Dockerfile usa `FROM node:20-alpine`, pero más adelante necesitas herramientas de compilación que no vienen en Alpine, ¿cuál es el problema más probable?", "opts": ["Ninguno, Alpine incluye todas las herramientas de cualquier distribución", "Las imágenes Alpine no permiten instalar paquetes nunca", "Alpine solo funciona con lenguajes interpretados, nunca compilados", "Alpine usa `musl` y un conjunto de paquetes mínimo; puede faltar alguna herramienta que sí viene en imágenes basadas en Debian/Ubuntu"], "correct": 3}, {"n": 5, "q": "¿Qué ventaja tiene usar una imagen base oficial de un lenguaje (p. ej. `python:3.12-slim`) en vez de partir de `ubuntu` e instalar el lenguaje a mano?", "opts": ["La imagen oficial ya trae el runtime instalado y configurado, mantenido por la comunidad/el proyecto, ahorrando pasos y errores", "Ninguna, da exactamente igual", "Las imágenes de `ubuntu` no pueden ejecutar Python", "Las imágenes oficiales de lenguaje no se pueden usar en producción"], "correct": 0}, {"n": 6, "q": "Dos compañeros construyen la misma imagen semanas distintas a partir de `FROM python:3`. Uno obtiene Python 3.11 y el otro Python 3.12. ¿Por qué?", "opts": ["Es un fallo de Docker", "`python:3` es un tag poco específico que puede apuntar a una versión menor distinta con el tiempo; conviene fijar más (p. ej. `python:3.11-slim`)", "Depende del sistema operativo del host, no del tag", "No es posible, siempre da la misma versión"], "correct": 1}, {"n": 7, "q": "¿Qué parte de `FROM node:20-alpine AS builder` identifica el tag?", "opts": ["`node`", "`builder`", "`20-alpine`", "`AS`"], "correct": 2}, {"n": 8, "q": "Un Dockerfile tiene `FROM ubuntu` (sin tag). ¿Qué versión de Ubuntu se usará?", "opts": ["La LTS más reciente siempre, fijada por Docker", "Ubuntu 18.04 siempre, por compatibilidad", "Da error porque Ubuntu exige tag obligatorio", "La que la imagen `ubuntu` tenga marcada como `latest` en ese momento en Docker Hub, que puede cambiar"], "correct": 3}, {"n": 9, "q": "¿Qué diferencia clave hay entre `COPY` y `ADD` que justifica preferir `COPY` por defecto?", "opts": ["`ADD` tiene comportamientos \"mágicos\" adicionales (extraer tar, descargar URLs) que pueden sorprender si no se esperan", "`COPY` es más lenta", "`ADD` no puede copiar carpetas", "`COPY` no existe en versiones recientes de Docker"], "correct": 0}, {"n": 10, "q": "Tienes `COPY *.json ./` en un Dockerfile. Si el contexto de build no contiene ningún fichero `.json`, ¿qué ocurre?", "opts": ["Se copia un fichero vacío llamado `*.json`", "Docker da un error porque el patrón no encuentra coincidencias", "Se omite silenciosamente y el build continúa sin copiar nada", "Docker lo sustituye automáticamente por `package.json`"], "correct": 1}, {"n": 11, "q": "¿Por qué conviene tener un `.dockerignore` incluso si ya existe un `.gitignore` con contenido parecido?", "opts": ["Porque Docker lee automáticamente el `.gitignore`, así que es redundante", "Porque `.dockerignore` sustituye a `.gitignore`", "Porque son ficheros independientes: `.gitignore` afecta a git, `.dockerignore` afecta al contexto de build; conviene mantener ambos", "No conviene, son incompatibles entre sí"], "correct": 2}, {"n": 12, "q": "Un `.dockerignore` contiene la línea `*.log`. Si copias con `COPY . .` una carpeta y en una capa anterior de la imagen ya existía `app.log` (de un build previo), ¿qué sucede en el nuevo build?", "opts": ["`.dockerignore` elimina `app.log` de la imagen aunque ya estuviera en una capa anterior", "El build falla", "Se ignora `.dockerignore` si ya existe una capa previa", "`.dockerignore` solo afecta a qué se envía como contexto de build en ese `COPY`; no puede borrar lo que ya quedó en capas anteriores de la imagen"], "correct": 3}, {"n": 13, "q": "¿Qué pasa si pones `COPY . .` como la primera instrucción después de `WORKDIR`, antes de `RUN npm install`?", "opts": ["Cualquier cambio en el código (aunque no cambien las dependencias) invalida la caché de esa capa y obliga a reinstalar dependencias en cada build", "Nada relevante, da igual el orden", "`npm install` se ejecuta automáticamente antes de `COPY`", "El build es más rápido así"], "correct": 0}, {"n": 14, "q": "¿`ADD` puede usarse para descomprimir automáticamente un fichero `.tar.gz` local en el destino de la imagen?", "opts": ["No, nunca", "Sí, es una de las funciones adicionales de `ADD` frente a `COPY`", "Solo con `COPY`, nunca con `ADD`", "Solo si el fichero está en una URL remota"], "correct": 1}, {"n": 15, "q": "Un alumno escribe `COPY https://miweb.com/fichero.txt /app/` pensando que descargará el fichero. ¿Qué es correcto?", "opts": ["`COPY` funciona igual que `ADD` con URLs", "Docker lo descarga pero lo guarda con otro nombre", "`COPY` no admite URLs como origen; para eso haría falta `ADD` o un `RUN curl`/`wget`", "Esa sintaxis no es válida en ningún caso, ni con `ADD`"], "correct": 2}, {"n": 16, "q": "¿Cuál es el riesgo principal de hacer `COPY . .` en el contexto raíz de un proyecto sin `.dockerignore`, si ahí también viven las carpetas `.git` y `node_modules`?", "opts": ["Ninguno, Docker los excluye siempre automáticamente", "El build fallaría directamente", "`node_modules` nunca puede copiarse con `COPY`", "Se copiarían a la imagen carpetas pesadas e innecesarias, aumentando tiempo de build y tamaño final"], "correct": 3}, {"n": 17, "q": "¿En qué momento se ejecuta una instrucción `RUN`?", "opts": ["Una vez, durante la construcción (`docker build`) de la imagen", "Al arrancar cada contenedor creado desde la imagen", "Solo cuando se hace `docker exec`", "Nunca, es solo documentación"], "correct": 0}, {"n": 18, "q": "Un Dockerfile define `ENTRYPOINT [\"python3\", \"app.py\"]` y `CMD [\"--debug\"]`. Al ejecutar `docker run mi-imagen`, ¿qué comando se ejecuta realmente?", "opts": ["`python3 app.py`", "`python3 app.py --debug`", "Solo `--debug`", "Da error porque no se pueden combinar"], "correct": 1}, {"n": 19, "q": "Con el Dockerfile anterior (`ENTRYPOINT [\"python3\",\"app.py\"]`, `CMD [\"--debug\"]`), si ejecutas `docker run mi-imagen --verbose`, ¿qué ocurre?", "opts": ["Se ejecuta `python3 app.py --debug --verbose`", "Se ignora el argumento `--verbose`", "Se ejecuta `python3 app.py --verbose` (el argumento de `docker run` sustituye al `CMD`, pero no al `ENTRYPOINT`)", "Se sustituye el `ENTRYPOINT` por `--verbose`"], "correct": 2}, {"n": 20, "q": "Si un Dockerfile solo tiene `CMD [\"python3\", \"app.py\"]` (sin `ENTRYPOINT`), y ejecutas `docker run mi-imagen bash`, ¿qué pasa?", "opts": ["Se ejecutan ambos comandos, `python3 app.py` y luego `bash`", "Da error, no se puede sobrescribir un `CMD`", "`bash` se añade como argumento a `python3 app.py`", "El comando pasado en `docker run` (`bash`) sustituye completamente al `CMD` de la imagen"], "correct": 3}, {"n": 21, "q": "¿Por qué se recomienda la \"forma exec\" (`CMD [\"nginx\", \"-g\", \"daemon off;\"]`) frente a la \"forma shell\" (`CMD nginx -g \"daemon off;\"`)?", "opts": ["La forma exec no pasa por una shell intermedia, por lo que las señales (como `SIGTERM` al parar el contenedor) llegan directamente al proceso principal", "Son exactamente equivalentes en todos los casos, da igual cuál usar", "La forma shell es más rápida de escribir siempre", "La forma exec no admite argumentos"], "correct": 0}, {"n": 22, "q": "Si un Dockerfile tiene dos instrucciones `CMD` distintas, una tras otra, ¿qué ocurre al arrancar el contenedor?", "opts": ["Se ejecutan ambas, la primera y luego la segunda", "Solo tiene efecto la última `CMD`; las anteriores quedan completamente ignoradas", "Da un error de sintaxis al hacer `docker build`", "Se ejecuta la primera y la segunda se usa como argumentos de la primera"], "correct": 1}, {"n": 23, "q": "¿Qué usarías en el Dockerfile si quieres que el contenedor siempre ejecute un script fijo de arranque, sin que un usuario pueda sustituirlo fácilmente con `docker run imagen otro-comando`?", "opts": ["`CMD` en forma shell", "`RUN`", "`ENTRYPOINT`", "`WORKDIR`"], "correct": 2}, {"n": 24, "q": "Un script de arranque necesita hacer tareas antes de lanzar el proceso principal (p. ej. esperar a una base de datos) y luego ejecutar lo que el usuario pase en `docker run`. ¿Qué patrón encaja mejor?", "opts": ["Usar `RUN` para esas tareas de espera", "No es posible hacer eso en Docker", "Poner todo en `WORKDIR`", "Usar un script como `ENTRYPOINT` que haga esas tareas y al final ejecute `exec \"$@\"` con los argumentos recibidos"], "correct": 3}, {"n": 25, "q": "Si ejecutas `docker run mi-imagen echo \"hola\"` y la imagen tiene `ENTRYPOINT [\"python3\", \"app.py\"]` (sin `CMD`), ¿qué sucede?", "opts": ["Se ejecuta `python3 app.py echo hola`, pasando `echo` y `hola` como argumentos a `app.py`", "Se ejecuta `python3 app.py` y se ignoran `echo \"hola\"`", "Se ejecuta solo `echo \"hola\"`", "Da error porque no se puede combinar ENTRYPOINT con argumentos extra"], "correct": 0}, {"n": 26, "q": "¿Qué diferencia hay entre `RUN` y `CMD`/`ENTRYPOINT` en cuanto a cuándo tienen efecto?", "opts": ["`RUN` dura para siempre ejecutándose en segundo plano", "`RUN` deja su efecto grabado en una capa de la imagen durante el build y no se repite al arrancar contenedores; `CMD`/`ENTRYPOINT` se ejecutan cada vez que arranca un contenedor", "Son exactamente lo mismo, solo cambia el nombre", "`CMD` solo se ejecuta la primera vez que se arranca el contenedor"], "correct": 1}, {"n": 27, "q": "Si un Dockerfile tiene `WORKDIR /app` y luego `WORKDIR config`, ¿cuál es el directorio de trabajo final?", "opts": ["`/config`", "Solo `config`, sin relación con `/app`", "`/app/config`", "Da error, no se puede usar `WORKDIR` dos veces"], "correct": 2}, {"n": 28, "q": "¿Por qué `WORKDIR /app` es preferible a `RUN mkdir /app && RUN cd /app` para las instrucciones siguientes?", "opts": ["Son equivalentes exactamente", "`RUN cd` no está permitido en Docker", "`WORKDIR` es más lento", "`cd` dentro de un `RUN` solo afecta a esa instrucción concreta; `WORKDIR` persiste el directorio para todas las instrucciones posteriores (incluido `CMD`)"], "correct": 3}, {"n": 29, "q": "Un Dockerfile define `ENV NODE_ENV=production`. Al ejecutar `docker run -e NODE_ENV=development mi-imagen`, ¿qué valor tendrá la variable dentro del contenedor?", "opts": ["`development`, porque `-e` en `docker run` sobrescribe el valor definido con `ENV` en la imagen", "`production`, porque `ENV` del Dockerfile tiene prioridad siempre", "Ambos valores a la vez, concatenados", "Ninguno, hay un conflicto y la variable queda vacía"], "correct": 0}, {"n": 30, "q": "¿Qué diferencia hay entre declarar una variable con `ENV` en el Dockerfile y usar un argumento `ARG`?", "opts": ["Son exactamente lo mismo", "`ENV` persiste en la imagen final y está disponible en los contenedores en ejecución; `ARG` solo existe durante el build y no queda en la imagen final por defecto", "`ARG` siempre tiene prioridad sobre `ENV`", "`ENV` solo puede usarse dentro de `RUN`"], "correct": 1}, {"n": 31, "q": "¿Qué hace exactamente `EXPOSE 443` en un Dockerfile?", "opts": ["Publica automáticamente el puerto 443 del contenedor hacia el host, como si fuera `-p`", "Configura un certificado HTTPS automáticamente", "Documenta, a nivel de imagen, que el contenedor escucha en el puerto 443; no publica nada por sí sola", "Abre el puerto 443 en el firewall del host"], "correct": 2}, {"n": 32, "q": "Una imagen declara `EXPOSE 8080` pero al ejecutar `docker run mi-imagen` (sin `-p`), el navegador no puede acceder a `localhost:8080`. ¿Por qué?", "opts": ["`EXPOSE` nunca funciona en ningún caso", "`EXPOSE` solo funciona con Nginx", "Hay que reiniciar Docker tras cada `EXPOSE`", "Falta mapear el puerto hacia el host con `-p 8080:8080` (o similar); `EXPOSE` por sí sola no publica nada"], "correct": 3}, {"n": 33, "q": "¿Para qué sirve la instrucción `USER` en un Dockerfile?", "opts": ["Para indicar con qué usuario (distinto de `root`) se ejecutan las instrucciones siguientes y/o el contenedor en marcha", "Para definir el nombre de usuario de Docker Hub", "Para crear un usuario en el sistema operativo host", "Para definir el autor de la imagen en los metadatos"], "correct": 0}, {"n": 34, "q": "¿Por qué es recomendable usar `USER` para evitar ejecutar el proceso principal del contenedor como `root`, cuando no es estrictamente necesario?", "opts": ["Porque `root` no existe dentro de los contenedores", "Por seguridad: limita el daño que podría hacer un proceso comprometido dentro del contenedor", "Porque `root` hace que el contenedor consuma más RAM", "No aporta ninguna ventaja real, es solo una moda"], "correct": 1}, {"n": 35, "q": "¿Qué papel juega el `.` al final de `docker build -t mi-app:1.0 .`?", "opts": ["Indica la versión de Docker a usar", "Es el nombre del Dockerfile", "Indica el contexto de build: la carpeta (y su contenido) que se envía al daemon de Docker", "Indica que se debe ignorar la caché"], "correct": 2}, {"n": 36, "q": "¿Qué opción de `docker build` usarías si tu Dockerfile se llama `Dockerfile.prod` en vez de `Dockerfile`?", "opts": ["`-t Dockerfile.prod`", "`--name Dockerfile.prod`", "No es posible usar otro nombre", "`-f Dockerfile.prod`"], "correct": 3}, {"n": 37, "q": "El contexto de build de un proyecto incluye, por error, una carpeta de vídeos de varios GB no listada en `.dockerignore`. ¿Qué consecuencia directa tiene esto, aunque ningún `COPY` la referencie?", "opts": ["Docker envía igualmente toda la carpeta al daemon como parte del contexto, haciendo el build innecesariamente lento", "Ninguna, solo se envía lo que se referencia en `COPY`", "El build falla inmediatamente", "Los vídeos se comprimen automáticamente"], "correct": 0}, {"n": 38, "q": "Durante un `docker build`, aparece el mensaje \"Using cache\" junto a la instrucción `RUN npm install`. ¿Qué implica?", "opts": ["Que ha habido un error silencioso", "Que Docker ha reutilizado el resultado de un build anterior para esa capa, porque ni la instrucción ni las capas previas han cambiado", "Que se está descargando `npm install` de internet otra vez", "Que la imagen se va a reconstruir desde cero igualmente"], "correct": 1}, {"n": 39, "q": "¿Qué logra la opción `docker build --no-cache`?", "opts": ["Hacer el build más rápido reutilizando más capas", "Evitar que la imagen resultante se guarde en disco", "Forzar que todas las capas se reconstruyan desde cero, ignorando cualquier caché previa", "Construir la imagen sin necesidad de un Dockerfile"], "correct": 2}, {"n": 40, "q": "Ejecutas `docker build .` sin `-t`. ¿Puedes seguir usando la imagen resultante?", "opts": ["No, sin `-t` no se genera ninguna imagen", "Se etiqueta automáticamente como `latest`", "Se borra automáticamente al terminar el build", "Sí, la imagen se crea igualmente pero solo queda identificada por su ID; convendría etiquetarla luego con `docker tag`"], "correct": 3}, {"n": 41, "q": "¿Qué comando usarías para ver, capa por capa, cuánto espacio aporta cada instrucción de un Dockerfile ya construido?", "opts": ["`docker history`", "`docker images`", "`docker inspect --layers`", "`docker build --verbose`"], "correct": 0}, {"n": 42, "q": "Tras un `docker build -t app:1.0 .` que termina sin errores, ¿qué comando confirmaría que la imagen ya existe localmente con ese nombre y tag?", "opts": ["`docker ps`", "`docker images`", "`docker network ls`", "`docker volume ls`"], "correct": 1}, {"n": 43, "q": "¿Por qué el orden de las instrucciones en un Dockerfile afecta directamente al tiempo de build en reconstrucciones sucesivas?", "opts": ["No afecta, Docker siempre reconstruye igual", "Solo afecta a la velocidad de descarga de la imagen base", "Si una capa cambia, se invalida esa capa y todas las siguientes, obligando a rehacerlas aunque no hayan cambiado", "El orden solo importa en imágenes Alpine"], "correct": 2}, {"n": 44, "q": "¿Por qué es buena práctica copiar primero `package.json` e instalar dependencias, y copiar el resto del código después?", "opts": ["Porque Docker lo exige obligatoriamente en ese orden", "Porque reduce el número de líneas del Dockerfile", "No aporta ninguna ventaja real, es solo estilo", "Porque así, si solo cambia el código (no las dependencias), la capa de `npm install` sigue en caché y no hace falta reinstalar nada"], "correct": 3}, {"n": 45, "q": "Tienes 6 instrucciones `RUN apt-get install paquete-X` seguidas, una por paquete. ¿Qué inconveniente tiene frente a agruparlas en una sola instrucción?", "opts": ["Genera más capas de las necesarias y dificulta limpiar la caché de `apt` en el mismo paso, aumentando el tamaño final", "Ninguno, es exactamente igual de eficiente", "Hace que el build sea inseguro", "Impide usar `.dockerignore`"], "correct": 0}, {"n": 46, "q": "¿Qué técnica reduce el tamaño final de una imagen cuando se instalan herramientas de compilación que solo hacen falta durante el build, no en producción?", "opts": ["Borrar manualmente ficheros dentro de un contenedor ya en ejecución", "Un build multi-stage: compilar en una etapa con esas herramientas y copiar solo el resultado final a la imagen de producción", "Usar siempre `FROM ubuntu:latest`", "No hay ninguna forma de reducirlo"], "correct": 1}, {"n": 47, "q": "¿Qué indica el principio de minimizar el número de capas en un Dockerfile (agrupando instrucciones relacionadas)?", "opts": ["Que Docker limita a 10 capas como máximo", "Que el contenedor en ejecución consumirá menos RAM", "Que menos capas suelen traducirse en imágenes algo más pequeñas y builds más simples de razonar", "Que es obligatorio por las políticas de Docker Hub"], "correct": 2}, {"n": 48, "q": "¿Qué ventaja aporta fijar siempre una versión concreta en `FROM` (p. ej. `node:20.11-alpine`) en vez de `latest` o un tag muy genérico (`node:20`)?", "opts": ["Ninguna diferencia práctica", "Las imágenes con versión concreta siempre pesan menos", "Es un requisito técnico obligatorio de Docker", "Builds reproducibles: la imagen resultante es la misma hoy y dentro de seis meses, evitando sorpresas por actualizaciones de la base"], "correct": 3}, {"n": 49, "q": "Un Dockerfile limpia la caché de `apt` (`rm -rf /var/lib/apt/lists/*`) en una instrucción `RUN` distinta de la que instala los paquetes. ¿Por qué esto no reduce el tamaño de la imagen como se esperaba?", "opts": ["Cada `RUN` genera su propia capa; los ficheros ya quedaron escritos en la capa de instalación y borrarlos en una capa posterior no libera ese espacio en la imagen final", "Porque `rm` no funciona dentro de contenedores", "Porque `apt` no genera caché nunca", "Porque hace falta usar `ADD` en vez de `RUN`"], "correct": 0}, {"n": 50, "q": "Un equipo decide usar siempre imágenes base `-slim` o `-alpine` cuando es posible. ¿Qué contrapartida hay que tener en cuenta?", "opts": ["Ninguna, son estrictamente mejores en todos los casos", "Pueden faltar herramientas/librerías del sistema que sí trae la imagen \"completa\", obligando a instalarlas aparte si se necesitan", "No se pueden usar en producción", "No permiten instalar paquetes con gestores de dependencias"], "correct": 1}, {"n": 51, "q": "¿Por qué se recomienda no dejar nunca una contraseña real \"temporalmente\" en una instrucción `RUN` o `ENV`, aunque luego se borre en una instrucción posterior?", "opts": ["Porque `RUN` y `ENV` no admiten texto con símbolos", "Porque ralentiza el contenedor en ejecución", "Porque queda grabada en la capa correspondiente de la imagen y cualquiera que tenga la imagen puede inspeccionar su historial (p. ej. con `docker history`) y recuperarla", "Porque Docker la cifra automáticamente de todas formas, así que no hay riesgo real"], "correct": 2}, {"n": 52, "q": "¿Cuál es el objetivo principal de un build multi-stage?", "opts": ["Construir varias imágenes totalmente independientes en paralelo", "Ejecutar varios contenedores a la vez desde un mismo Dockerfile", "Evitar tener que usar `docker build`", "Usar una etapa \"pesada\" para compilar/preparar, y copiar solo lo necesario a una etapa final más ligera"], "correct": 3}, {"n": 53, "q": "En `COPY --from=build /app/dist /usr/share/nginx/html`, ¿qué indica `--from=build`?", "opts": ["Que se copia desde la etapa anterior del Dockerfile nombrada `build` (con `FROM ... AS build`)", "Que se copia desde el host, no desde otra imagen", "Que se copia desde Docker Hub, del repositorio `build`", "Que se renombra el fichero a `build`"], "correct": 0}, {"n": 54, "q": "Un Dockerfile multi-stage tiene una etapa `AS build` con herramientas de compilación de 800 MB, y una etapa final `FROM nginx:alpine` que solo copia los ficheros compilados. ¿Qué tamaño tendrá la imagen final publicada?", "opts": ["800 MB, porque incluye todo lo usado en el proceso", "El tamaño de la imagen final solo incluye lo que tiene esa última etapa (`nginx:alpine` + los ficheros copiados), no las herramientas de la etapa `build`", "La suma de ambas etapas", "Depende de cuántos `RUN` tenga la etapa `build`"], "correct": 1}, {"n": 55, "q": "¿Puede un Dockerfile multi-stage tener más de dos etapas (`FROM ... AS algo`)?", "opts": ["No, el máximo son dos etapas", "Solo si todas usan la misma imagen base", "Sí, se pueden encadenar tantas etapas como haga falta, y cada una puede copiar de las anteriores", "No, Docker no soporta esa sintaxis"], "correct": 2}, {"n": 56, "q": "Si en un Dockerfile multi-stage olvidas poner `AS build` en la primera etapa, ¿puedes seguir referenciándola en `COPY --from=...`?", "opts": ["No, sin nombre no se puede referenciar nada de esa etapa", "Se usa automáticamente el nombre `default`", "Docker la ignora completamente si no tiene nombre", "Sí, se puede referenciar por su índice numérico (`--from=0` para la primera etapa, `--from=1` para la segunda...)"], "correct": 3}, {"n": 57, "q": "¿Qué ventaja tiene un build multi-stage frente a simplemente desinstalar las herramientas de compilación con `RUN` al final del mismo Dockerfile (de una sola etapa)?", "opts": ["En una sola etapa, lo instalado y luego desinstalado sigue ocupando espacio en las capas intermedias; en multi-stage, esas capas ni siquiera forman parte de la imagen final", "Ninguna, el resultado final pesa exactamente igual en ambos casos", "El multi-stage es solo una cuestión de organización, no afecta al tamaño", "El multi-stage es más lento siempre"], "correct": 0}, {"n": 58, "q": "¿Qué es, técnicamente, el tag `latest` de una imagen en un registry como Docker Hub?", "opts": ["Un indicador especial reservado por Docker que siempre apunta a la build más reciente y estable", "Un tag como cualquier otro, que por convención suele usarse para \"la versión por defecto\", pero que el autor de la imagen asigna manualmente igual que cualquier otro tag", "Una copia de seguridad automática de la imagen", "Un alias que apunta siempre a la primera versión publicada"], "correct": 1}, {"n": 59, "q": "Dos despliegues en distintos servidores hacen `docker pull mi-app:latest` en días distintos y obtienen comportamientos diferentes de la aplicación. ¿Cuál es la explicación más probable?", "opts": ["Docker Hub está caído", "Es imposible, `latest` nunca cambia", "`latest` se volvió a publicar entre medias apuntando a una versión distinta de la imagen", "Los servidores tienen una versión de Docker distinta"], "correct": 2}, {"n": 60, "q": "¿Por qué en entornos de producción se prefiere desplegar con un tag de versión concreto (p. ej. `mi-app:2.3.1`) en vez de `mi-app:latest`?", "opts": ["Porque `latest` no se puede descargar en producción", "Porque las imágenes con `latest` ocupan más espacio en disco", "No hay ninguna diferencia real, es solo preferencia estética", "Porque con una versión fija sabes exactamente qué código está corriendo y evitas cambios inesperados al volver a desplegar"], "correct": 3}, {"n": 61, "q": "¿Qué formato de versionado es habitual en tags como `app:2.3.1`?", "opts": ["semver: mayor.menor.parche", "día.mes.año", "nombre.usuario.build", "No sigue ningún patrón estandarizado nunca"], "correct": 0}, {"n": 62, "q": "`docker tag mi-app:1.0 jose/mi-app:1.0` ¿crea una copia física nueva de la imagen en disco?", "opts": ["Sí, duplica todos los datos de la imagen", "No, crea una nueva referencia (tag) que apunta al mismo ID de imagen ya existente; no se duplican datos", "Sí, pero solo la mitad de las capas", "Depende del tamaño de la imagen"], "correct": 1}, {"n": 63, "q": "Una imagen tiene dos tags, `mi-app:1.0` y `mi-app:stable`, apuntando ambos al mismo ID de imagen. Si haces `docker rmi mi-app:1.0`, ¿qué ocurre con `mi-app:stable`?", "opts": ["También se elimina, porque comparten imagen", "Se renombra automáticamente a `1.0`", "Sigue existiendo: solo se elimina el tag `1.0`; la imagen en sí permanece mientras tenga al menos un tag o nombre que la referencie", "Da error porque no se puede borrar un tag compartido"], "correct": 2}, {"n": 64, "q": "¿Qué formato de nombre necesita una imagen para poder subirse a tu cuenta de Docker Hub con `docker push`?", "opts": ["Cualquier nombre, sin restricciones", "Debe llamarse obligatoriamente `latest`", "Debe tener extensión `.docker`", "Debe incluir el usuario o la organización de destino, como `tuusuario/nombre-imagen:tag`"], "correct": 3}, {"n": 65, "q": "Un alumno construye la imagen como `mi-app:1.0` pero quiere subirla como `jose/mi-app:1.0`. ¿Qué comando necesita ejecutar antes de `docker push jose/mi-app:1.0`?", "opts": ["`docker tag mi-app:1.0 jose/mi-app:1.0`", "`docker build jose/mi-app:1.0`", "`docker rename mi-app:1.0 jose/mi-app:1.0`", "No hace falta nada más, `docker push mi-app:1.0` ya sirve"], "correct": 0}, {"n": 66, "q": "Si repites `docker build -t mi-app:1.0 .` tras cambiar el código, sin cambiar el tag `1.0`, ¿qué ocurre con el tag anterior?", "opts": ["Se crean dos imágenes distintas con el mismo tag conviviendo", "El tag `1.0` pasa a apuntar a la imagen nueva; la anterior queda sin ese tag (puede quedar como \"dangling\" si no tenía otro tag)", "Docker lo rechaza, no se puede reutilizar un tag", "Se incrementa automáticamente a `1.1`"], "correct": 1}, {"n": 67, "q": "¿Qué problema resuelve un volumen Docker?", "opts": ["Acelerar la red del contenedor", "Reducir el consumo de CPU", "Persistir datos más allá del ciclo de vida de un contenedor concreto, y/o compartir datos entre host y contenedor", "Definir variables de entorno"], "correct": 2}, {"n": 68, "q": "Un contenedor de base de datos escribe sus ficheros en `/var/lib/mysql` sin ningún volumen asociado. Al hacer `docker rm` de ese contenedor, ¿qué pasa con esos datos?", "opts": ["Se guardan automáticamente en la imagen original", "Se mueven al host automáticamente", "Se suben a Docker Hub", "Se pierden, porque desaparecen junto con el sistema de ficheros del contenedor"], "correct": 3}, {"n": 69, "q": "¿Qué diferencia principal hay entre un bind mount (`-v /ruta/host:/ruta/contenedor`) y un volumen gestionado (`docker volume create` + `-v nombre:/ruta`)?", "opts": ["En el bind mount, tú eliges la ruta exacta del host; en el volumen gestionado, Docker administra internamente dónde se guardan los datos", "Son exactamente lo mismo con distinta sintaxis", "El bind mount no permite escritura desde el contenedor", "Los volúmenes gestionados no sirven para bases de datos"], "correct": 0}, {"n": 70, "q": "En el flujo de desarrollo con bind mount (`docker run -it -v $(pwd):/app -w /app mi-app bash`), si modificas un fichero de código en tu editor (fuera del contenedor), ¿necesitas reconstruir la imagen para ver el cambio dentro del contenedor?", "opts": ["Sí, siempre hay que hacer `docker build` de nuevo", "No: el bind mount comparte la misma carpeta en ambas direcciones, así que el cambio se ve al instante dentro del contenedor", "Solo si cambias el `Dockerfile`", "Solo los viernes, cuando se reinicia la caché"], "correct": 1}, {"n": 71, "q": "¿Por qué, en el flujo con bind mount, la imagen \"workspace\" normalmente solo necesita reconstruirse cuando cambia el entorno (una dependencia del sistema, la versión del lenguaje...) y no cuando cambia el código de la aplicación?", "opts": ["Porque Docker detecta automáticamente qué cambió y decide si reconstruir", "Porque el código nunca cambia en desarrollo", "Porque el código vive fuera de la imagen, montado por bind mount; cambiar el entorno sí exige reconstruir, pero el código no", "Porque las imágenes no pueden contener código nunca"], "correct": 2}, {"n": 72, "q": "Un equipo usa `docker volume create db_data` y monta ese volumen en el contenedor de su base de datos. Si eliminan el contenedor (sin `-v` en `docker rm`) y crean uno nuevo montando el mismo volumen, ¿qué pasa con los datos?", "opts": ["Se pierden, porque el volumen estaba asociado solo al contenedor anterior", "Se duplican", "Hace falta restaurarlos manualmente desde una copia", "Siguen disponibles: el volumen gestionado existe independientemente del contenedor que lo monte"], "correct": 3}, {"n": 73, "q": "¿Qué comando lista los volúmenes Docker existentes en el sistema?", "opts": ["`docker volume ls`", "`docker ps -v`", "`docker images --volumes`", "`docker inspect --volumes`"], "correct": 0}, {"n": 74, "q": "Si dos contenedores distintos montan el mismo volumen gestionado al mismo tiempo, ¿qué es cierto?", "opts": ["No es posible, un volumen solo puede montarlo un contenedor", "Ambos pueden leer y escribir sobre los mismos datos compartidos por ese volumen", "Cada uno obtiene una copia independiente", "Solo el primero puede escribir, el segundo solo puede leer"], "correct": 1}, {"n": 75, "q": "¿Por qué normalmente no se usa un bind mount para los datos de una base de datos en producción, prefiriendo un volumen gestionado?", "opts": ["Porque los bind mounts no permiten que una base de datos escriba", "Porque los bind mounts solo funcionan en Windows", "Porque el volumen gestionado lo administra Docker de forma más consistente entre entornos, sin depender de que exista una ruta concreta en cada host", "No hay ninguna razón real, es indistinto"], "correct": 2}, {"n": 76, "q": "Un alumno monta `-v $(pwd):/app`, pero su Dockerfile también hace `COPY . /app` y `WORKDIR /app`. Al arrancar el contenedor con ese bind mount, ¿qué prevalece dentro de `/app`?", "opts": ["Lo que copió `COPY` durante el build, el bind mount no tiene efecto", "Se fusionan ambos contenidos automáticamente", "Docker da un error por conflicto", "El contenido del bind mount (la carpeta del host) sustituye/oculta lo que había en `/app` dentro de la imagen mientras el contenedor esté en marcha"], "correct": 3}, {"n": 77, "q": "¿Qué significa, en este bloque, que \"la imagen contiene el entorno y el bind mount aporta el código\"?", "opts": ["Que el Dockerfile se centra en instalar lenguaje/dependencias del sistema, y el código real del proyecto se monta en tiempo de ejecución, sin necesitar estar dentro de la imagen", "Que el código también debe copiarse con `COPY` en el Dockerfile para que funcione", "Que no hace falta ningún Dockerfile si usas bind mount", "Que el bind mount sustituye por completo al concepto de imagen"], "correct": 0}, {"n": 78, "q": "¿Qué pasaría si, en vez de usar bind mount, copiaras el código con `COPY` dentro de la imagen y reconstruyeras la imagen cada vez que cambias una línea durante el desarrollo?", "opts": ["Sería exactamente igual de rápido que con bind mount", "El ciclo de desarrollo sería mucho más lento, porque cada cambio pequeño obligaría a repetir `docker build`", "No sería posible hacerlo nunca", "El código no se vería reflejado nunca en el contenedor"], "correct": 1}, {"n": 79, "q": "¿Qué hace `-p 8080:80` en `docker run`?", "opts": ["Limita el contenedor a 8080 MB de RAM", "Cambia el puerto interno del contenedor a 8080", "Publica el puerto 80 del contenedor en el puerto 8080 del host", "Bloquea el acceso a internet del contenedor"], "correct": 2}, {"n": 80, "q": "En `-p 8080:80`, ¿qué lado del mapeo corresponde al host?", "opts": ["`80`, el segundo número", "Ambos corresponden al host", "Ninguno, ambos son del contenedor", "`8080`, el primer número"], "correct": 3}, {"n": 81, "q": "Por defecto, cuando se crea un contenedor sin indicar ninguna red concreta, ¿a qué red se conecta?", "opts": ["A la red \"bridge\" por defecto que crea Docker", "A la red del host directamente (`--network host`)", "A ninguna, queda totalmente aislado de la red", "A la red de la nube del proveedor"], "correct": 0}, {"n": 82, "q": "Dos contenedores están conectados a una misma red Docker personalizada (`docker network create mired`). Uno se llama `db`. ¿Cómo puede el otro contenedor conectarse a él sin usar IPs fijas?", "opts": ["Usando `localhost`", "Usando el nombre del contenedor (`db`) como si fuera un hostname; Docker lo resuelve internamente en esa red", "No es posible sin publicar puertos al host", "Solo con la IP pública de internet"], "correct": 1}, {"n": 83, "q": "Si dos contenedores están en redes Docker distintas (sin ninguna en común), ¿pueden resolverse por nombre entre sí?", "opts": ["Sí, siempre, Docker las conecta automáticamente", "Solo si ambos publican puertos al host", "No, para que se resuelvan por nombre necesitan compartir al menos una red", "Solo si tienen el mismo nombre de imagen"], "correct": 2}, {"n": 84, "q": "Intentas publicar dos contenedores distintos con `-p 3000:3000` cada uno, a la vez. ¿Qué ocurre con el segundo `docker run`?", "opts": ["Ambos arrancan sin problema, compartiendo el puerto", "El segundo contenedor cambia su puerto automáticamente al 3001", "El primer contenedor se detiene automáticamente para dejar paso al segundo", "Falla con un error de \"puerto ya en uso\" en el host"], "correct": 3}, {"n": 85, "q": "¿Qué opción publicaría automáticamente, con puertos aleatorios del host, todos los puertos que la imagen declaró con `EXPOSE`?", "opts": ["`-P` (mayúscula)", "`-p` sin argumentos", "`--publish-all=false`", "`--expose`"], "correct": 0}, {"n": 86, "q": "Un contenedor necesita comunicarse con otro que está en una red Docker distinta, y no se puede (ni se quiere) publicar puertos al host. ¿Cuál es la solución más directa?", "opts": ["Reinstalar Docker", "Conectar ambos contenedores a una misma red Docker (p. ej. con `docker network connect`)", "Cambiar el Dockerfile del segundo contenedor", "Usar `docker build` de nuevo"], "correct": 1}, {"n": 87, "q": "¿Qué es Docker Hub?", "opts": ["Un comando para crear contenedores", "Un tipo de volumen compartido entre contenedores", "Un registro (público, con opción privada de pago) donde se almacenan y distribuyen imágenes Docker", "El proceso daemon de Docker"], "correct": 2}, {"n": 88, "q": "¿Hace falta estar autenticado (`docker login`) para descargar una imagen pública de Docker Hub con `docker pull`?", "opts": ["Sí, siempre es obligatorio", "Solo los fines de semana", "Solo si la imagen pesa más de 1 GB", "No, las imágenes públicas pueden descargarse sin autenticarse"], "correct": 3}, {"n": 89, "q": "¿Qué son las \"imágenes oficiales\" de Docker Hub (como `nginx`, `python`, `node`)?", "opts": ["Imágenes mantenidas/revisadas por Docker o por el propio proyecto, consideradas de mayor confianza", "Imágenes creadas automáticamente por cualquier usuario sin revisión", "Imágenes que ya no reciben actualizaciones nunca", "Imágenes exclusivas para cuentas de pago"], "correct": 0}, {"n": 90, "q": "¿Qué comando necesitas ejecutar antes de poder hacer `docker push` de una imagen por primera vez en una sesión?", "opts": ["`docker build --push`", "`docker login`", "`docker pull --auth`", "No hace falta nada especial"], "correct": 1}, {"n": 91, "q": "Un desarrollador quiere mantener imágenes de su empresa fuera del acceso público, pero seguir usando Docker. ¿Qué opción tiene?", "opts": ["No es posible, Docker Hub es siempre público", "Cifrar manualmente cada capa de la imagen", "Usar un repositorio privado (en Docker Hub de pago o un registry privado propio)", "Renombrar la imagen para que nadie la encuentre"], "correct": 2}, {"n": 92, "q": "Si haces `docker pull jose/mi-app` sin especificar tag, ¿qué versión descargas?", "opts": ["Siempre falla sin tag explícito", "La primera versión publicada históricamente", "Todas las versiones a la vez", "La marcada como `latest` en ese repositorio de Docker Hub"], "correct": 3}, {"n": 93, "q": "Un compañero sube por error una imagen con una contraseña real incrustada en una variable `ENV`, a un repositorio público de Docker Hub. ¿Qué riesgo implica?", "opts": ["Cualquiera que descargue la imagen puede inspeccionar su historial (p. ej. `docker history`) y ver esa información", "Ninguno, las variables `ENV` no son visibles desde fuera de un contenedor en marcha", "Docker Hub la oculta automáticamente al detectar texto sensible", "Solo es un problema si alguien ejecuta esa imagen"], "correct": 0}, {"n": 94, "q": "¿Qué pasos, en orden, describen correctamente publicar una imagen propia en Docker Hub (partiendo de una imagen ya construida localmente como `mi-app:1.0`)?", "opts": ["`docker push mi-app:1.0` → `docker login` → `docker tag`", "`docker login` → `docker tag mi-app:1.0 usuario/mi-app:1.0` → `docker push usuario/mi-app:1.0`", "`docker pull` → `docker build` → `docker rm`", "`docker run` → `docker commit` → `docker stop`"], "correct": 1}, {"n": 95, "q": "En un flujo de trabajo con un \"workspace\" Docker reutilizable (p. ej. `laravel-workspace`) y un proyecto real montado dentro por bind mount, ¿cuántos repositorios git distintos suele haber, como mínimo?", "opts": ["Ninguno, basta con un `.gitignore`", "Siempre uno solo, compartido", "Normalmente dos: uno para el workspace (entorno/Dockerfile) y otro para el proyecto real", "Tres obligatoriamente: workspace, proyecto y Docker Hub"], "correct": 2}, {"n": 96, "q": "¿Por qué el repositorio del \"workspace\" (con el `Dockerfile` del entorno) a menudo no necesita subirse a ningún sitio especial para compartirlo con otros?", "opts": ["Porque Docker lo sube automáticamente a Docker Hub", "Porque no se puede subir un repositorio con un Dockerfile dentro", "Porque el workspace no puede tener historial de commits", "Porque muchas veces es solo una herramienta local de trabajo del desarrollador, mientras que lo que de verdad importa compartir es el código del proyecto"], "correct": 3}, {"n": 97, "q": "Si el proyecto real vive en `laravel-workspace/mi-proyecto`, y ambas carpetas tienen su propio `.git`, ¿el git de `laravel-workspace` llega a versionar los ficheros de `mi-proyecto`?", "opts": ["No: cada repositorio git gestiona su propia carpeta; para que `laravel-workspace` no intente versionar `mi-proyecto`, conviene excluirla (p. ej. en su `.gitignore`) o tratarla como un repositorio aparte", "Sí, automáticamente, porque está dentro", "Sí, pero solo si se hace `git add` explícitamente desde fuera", "Es imposible tener dos repositorios `.git` anidados"], "correct": 0}, {"n": 98, "q": "¿Qué ventaja principal ofrece mantener un único workspace reutilizable para varios proyectos del mismo framework, frente a un repositorio con Dockerfile propio por cada proyecto?", "opts": ["Ninguna, siempre es peor", "Evita repetir la configuración del entorno (Dockerfile, dependencias del sistema) en cada proyecto nuevo del mismo stack", "Hace que cada proyecto pese menos en Docker Hub", "Es obligatorio por las buenas prácticas de Docker"], "correct": 1}, {"n": 99, "q": "¿En qué situación tiene más sentido que cada proyecto tenga su propio `Dockerfile` dentro de su propio repositorio, en vez de depender de un workspace externo?", "opts": ["Nunca, siempre es mejor un workspace único", "Solo si el proyecto no usa Docker", "Cuando distintos proyectos necesitan entornos claramente distintos, o cuando se quiere que cualquiera pueda clonar el proyecto y tener el entorno listo sin pasos adicionales", "Solo cuando el proyecto no tiene base de datos"], "correct": 2}, {"n": 100, "q": "Resume el flujo típico de esta semana para desarrollar una aplicación propia en Docker, combinando Dockerfile y bind mount:", "opts": ["`docker pull` → `docker rm` → `docker build`", "`docker run` → `docker commit` → `docker stop`", "`docker images` → `docker network create` → `docker volume create`", "Escribir el `Dockerfile` del entorno → `docker build -t workspace:1.0 .` → `docker run -it -v <proyecto>:/app workspace:1.0 bash` → desarrollar montando el código"], "correct": 3}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
