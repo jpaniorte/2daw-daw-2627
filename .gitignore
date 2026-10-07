@@ -9,3 +9,17 @@
 *_examen_sol.pdf
 *_examen.pptx
 *_examen_sol.pptx
+
+# PDF/PPTX generados por build.py (Marp): se quedan en local, no en el repo.
+# La web (GitHub Pages/Jekyll) se sirve directamente desde el Markdown.
+# Única excepción: el PDF de la teoría de cada semana, que sí se sube para
+# poder descargarlo/proyectarlo directamente.
+**/pdf/*
+!**/pdf/*_teoria.pdf
+**/pptx/
+
+# Build local de Jekyll (verificación de la web antes de hacer push).
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.dev-services/

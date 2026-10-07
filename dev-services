@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+# Gestiona los servicios de desarrollo local del curso (de momento, la web
+# Jekyll para previsualizar lo que se publicará en GitHub Pages).
+#
+# Uso:
+#   ./dev-services start      Arranca jekyll serve en segundo plano (con auto-regeneración)
+#   ./dev-services stop       Lo para
+#   ./dev-services restart    Para y vuelve a arrancar
+#   ./dev-services status     Indica si está arrancado
+#   ./dev-services logs       Sigue el log en vivo (Ctrl+C para salir)
+#
+# Variable de entorno opcional: PORT (por defecto 4000).
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STATE_DIR="$ROOT_DIR/.dev-services"
+PID_FILE="$STATE_DIR/jekyll.pid"
+LOG_FILE="$STATE_DIR/jekyll.log"
+PORT="${PORT:-4000}"
+
+setup_ruby_path() {
+  if command -v brew >/dev/null 2>&1; then
+    local ruby_prefix
+    ruby_prefix="$(brew --prefix ruby 2>/dev/null || true)"
+    if [ -n "$ruby_prefix" ] && [ -d "$ruby_prefix/bin" ]; then
+      export PATH="$ruby_prefix/bin:$PATH"
+    fi
+  fi
+  local gem_bin
+  gem_bin="$(ruby -e 'puts Gem.bindir' 2>/dev/null || true)"
+  if [ -n "$gem_bin" ] && [ -d "$gem_bin" ]; then
+    export PATH="$gem_bin:$PATH"
+  fi
+}
+
+is_running() {
+  [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null
+}
+
+cmd_start() {
+  mkdir -p "$STATE_DIR"
+  if is_running; then
+    echo "jekyll ya está arrancado (PID $(cat "$PID_FILE")) → http://localhost:${PORT}/"
+    return 0
+  fi
+
+  setup_ruby_path
+  if ! command -v bundle >/dev/null 2>&1; then
+    echo "No encuentro 'bundle' en el PATH. ¿Está instalado Ruby/Jekyll (ver README/plan)?" >&2
+    exit 1
+  fi
+
+  echo "Arrancando jekyll serve (con auto-regeneración) en http://localhost:${PORT}/ ..."
+  # OJO: no usamos "jekyll serve --detach" porque Jekyll desactiva la
+  # auto-regeneración en ese modo. En su lugar lo backgroundeamos nosotros
+  # con nohup, así los cambios en los .md se reflejan solos al refrescar.
+  cd "$ROOT_DIR"
+  nohup bundle exec jekyll serve --port "$PORT" --watch >"$LOG_FILE" 2>&1 &
+  local pid=$!
+  disown "$pid" 2>/dev/null || disown 2>/dev/null || true
+  echo "$pid" > "$PID_FILE"
+
+  local tries=0
+  while [ $tries -lt 20 ]; do
+    grep -q "Server address" "$LOG_FILE" 2>/dev/null && break
+    kill -0 "$pid" 2>/dev/null || break
+    sleep 0.5
+    tries=$((tries + 1))
+  done
+
+  if ! is_running; then
+    echo "No se pudo arrancar. Log:" >&2
+    cat "$LOG_FILE" >&2
+    rm -f "$PID_FILE"
+    exit 1
+  fi
+
+  echo "Jekyll arrancado (PID $pid), con auto-regeneración al guardar cambios."
+  echo "Web:  http://localhost:${PORT}/"
+  echo "Logs: $LOG_FILE  (o ./dev-services logs)"
+}
+
+cmd_stop() {
+  if ! is_running; then
+    echo "jekyll no está arrancado."
+    rm -f "$PID_FILE"
+    return 0
+  fi
+  local pid
+  pid="$(cat "$PID_FILE")"
+  kill "$pid" 2>/dev/null || true
+  rm -f "$PID_FILE"
+  echo "Jekyll parado (PID $pid)."
+}
+
+cmd_restart() {
+  cmd_stop
+  cmd_start
+}
+
+cmd_status() {
+  if is_running; then
+    echo "jekyll: en marcha (PID $(cat "$PID_FILE")) → http://localhost:${PORT}/"
+  else
+    echo "jekyll: parado"
+  fi
+}
+
+cmd_logs() {
+  if [ -f "$LOG_FILE" ]; then
+    tail -f "$LOG_FILE"
+  else
+    echo "Todavía no hay logs (arráncalo primero con './dev-services start')."
+  fi
+}
+
+case "${1:-}" in
+  start)   cmd_start ;;
+  stop)    cmd_stop ;;
+  restart) cmd_restart ;;
+  status)  cmd_status ;;
+  logs)    cmd_logs ;;
+  *)
+    echo "Uso: $0 {start|stop|restart|status|logs}" >&2
+    exit 1
+    ;;
+esac

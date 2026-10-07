@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Docker — Semana 1: Fundamentos (Prácticas)"
+permalink: /docker/semana-1/practicas/
 ---
 
 <!-- _class: lead -->
@@ -17,6 +20,15 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 - Puedes usar el entorno en la nube propuesto (tipo [Play with Docker](https://labs.play-with-docker.com/)) o tu propio Docker Desktop/VM Linux/WSL2.
 - No hace falta cuenta de Docker Hub para nada de lo que haremos hoy.
 - Hoy hacemos los **Ejercicios 1 a 4** (miércoles) y seguimos con el resto el **viernes**, antes del cuestionario.
+
+---
+
+## Si usas Play with Docker: cómo ver un puerto publicado
+
+- En Play with Docker **no existe `localhost`**: el contenedor corre en una VM remota, no en tu navegador.
+- Al publicar un puerto con `-p` (p. ej. `-p 8080:80`), en la parte superior de la pantalla aparece un **número de puerto clicable** (o puedes añadirlo a mano con el botón **"OPEN PORT"**).
+- Al pulsarlo se abre una pestaña nueva con una URL tipo `https://ip172-18-0-X-XXXXXXXX.direct.labs.play-with-docker.com` — **esa** es la URL que tienes que usar, no `http://localhost:8080`.
+- Si en cambio usas Docker Desktop/WSL2 en tu propio equipo, `http://localhost:8080` sí funciona tal cual.
 
 ---
 
@@ -116,9 +128,14 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 
 ## Reto 4 — Diagnóstico a ciegas
 
-Un compañero te deja un contenedor en ejecución con un nombre que no conoces y no te dice nada más.
+*Por qué este reto*: en un trabajo real te vas a encontrar contenedores ya corriendo que no documentó nadie, y vas a tener que averiguar qué son investigando tú, sin preguntar. Esto simula justo eso.
 
-**Objetivo**: averigua qué imagen usa, qué puertos tiene publicados y qué está escribiendo en sus logs, sin que nadie te diga el nombre del contenedor (localízalo tú con `docker ps`).
+Trabajáis en parejas, cada uno en su propio ordenador.
+
+1. Por tu cuenta, sin que tu compañero lo vea, lanza en segundo plano un contenedor a tu elección (decides tú la imagen, el nombre y si publicas algún puerto).
+2. Intercambiad de sitio: siéntate delante del ordenador de tu compañero.
+
+**Objetivo**: sin que tu compañero te diga nada sobre su contenedor (el nombre ya lo verás tú solo con `docker ps`, eso no cuenta como pista), usa los comandos que necesites (`docker ps`, `docker inspect`, `docker port`, `docker logs`...) para averiguar qué imagen usa, qué puertos tiene publicados y qué está escribiendo en sus logs.
 
 ---
 
@@ -136,3 +153,4 @@ Un compañero te deja un contenedor en ejecución con un nombre que no conoces y
 - [ ] Revisar los logs de un contenedor para diagnosticar un problema.
 - [ ] Entrar con una sesión interactiva a un contenedor ya en ejecución.
 - [ ] Diferenciar `docker stop`/`start`/`rm` y `docker pull`/`rmi`.
+

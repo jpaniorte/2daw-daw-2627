@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Docker — Semana 2: Imágenes y Dockerfile (Prácticas)"
+permalink: /docker/semana-2/practicas/
 ---
 
 <!-- _class: lead -->
@@ -16,6 +19,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 
 - Puedes usar el entorno en la nube propuesto (tipo Play with Docker) o tu propio Docker Desktop/VM/WSL2.
 - Necesitarás una cuenta gratuita en [Docker Hub](https://hub.docker.com/) para el último ejercicio.
+- Recuerda (semana 1): en Play with Docker no hay `localhost` — para ver un puerto publicado usa el número de puerto clicable o el botón **"OPEN PORT"** de la parte superior de la pantalla, no `http://localhost:8080`.
 - Ve resolviendo los ejercicios en orden, cada uno se apoya en el anterior.
 - Los **retos** (al final) no traen los pasos, solo el objetivo: decides tú los comandos.
 

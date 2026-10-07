@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Docker — Semana 2: Imágenes y Dockerfile (Banco de test)"
+permalink: /docker/semana-2/test/
 ---
 
 <!-- _class: lead -->

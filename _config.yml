@@ -1,0 +1,32 @@
+title: Despliegue de Aplicaciones Web (0614)
+description: Material del módulo — UD1
+lang: es
+theme: jekyll-theme-cayman
+
+markdown: kramdown
+kramdown:
+  input: GFM
+
+exclude:
+  - UD0
+  - "UD1/1.1 Git"
+  - proyectos
+  - themes
+  - build.py
+  - ra.pdf
+  - Gemfile
+  - Gemfile.lock
+  - "**/README.md"
+  - "**/pdf"
+  - "**/pptx"
+  - "**/*_examen.md"
+  - "**/*_examen_sol.md"
+  - vendor
+  - .bundle
+
+# Excepción explícita: el PDF de teoría de cada semana sí se publica,
+# aunque "**/pdf" esté excluido arriba (include tiene prioridad sobre exclude).
+include:
+  - "UD1/1.2 Docker/1.2.1 Docker parte 1/pdf/docker_1_teoria.pdf"
+  - "UD1/1.2 Docker/1.2.2 Docker parte 2/pdf/docker_2_teoria.pdf"
+  - "UD1/1.2 Docker/1.2.3 Docker parte 3/pdf/docker_3_teoria.pdf"

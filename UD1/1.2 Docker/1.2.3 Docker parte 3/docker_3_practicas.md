@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Docker — Semana 3: Docker Compose (Prácticas)"
+permalink: /docker/semana-3/practicas/
 ---
 
 <!-- _class: lead -->
@@ -16,6 +19,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 
 - Puedes usar el entorno en la nube propuesto o tu propio Docker Desktop/VM/WSL2.
 - Necesitarás la aplicación que creaste en la Semana 2 (o una nueva, sencilla) para combinarla con una base de datos.
+- Recuerda (semana 1): en Play with Docker no hay `localhost` — para ver un puerto publicado usa el número de puerto clicable o el botón **"OPEN PORT"** de la parte superior de la pantalla, no `http://localhost:8080`.
 - Hoy hacemos los **Ejercicios 1 a 4** (miércoles) y seguimos con el resto el **viernes**, antes del cuestionario final del bloque.
 
 ---

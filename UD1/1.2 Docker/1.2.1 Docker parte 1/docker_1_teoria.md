@@ -4,11 +4,19 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Docker — Semana 1: Fundamentos (Teoría)"
+permalink: /docker/semana-1/teoria/
 ---
 
 <!-- _class: lead -->
 # docker
 ## parte 1: fundamentos de Docker
+
+---
+
+<!-- _class: lead -->
+# 1. Por qué hace falta Docker
 
 ---
 
@@ -28,25 +36,9 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 
 ---
 
-## ¿Qué es Docker?
+## Otra cara del mismo problema: estructura de equipos
 
-**Docker** es una plataforma que permite empaquetar una aplicación junto con todo lo que necesita para funcionar (código, dependencias, configuración) en una unidad llamada **contenedor**.
-
-- Proyecto de código abierto, nacido en 2013.
-- Hoy en día, el estándar de facto para contenerizar aplicaciones.
-
----
-
-## ¿Qué aporta Docker?
-
-- El mismo entorno en desarrollo, pruebas y producción.
-- Portabilidad: funciona igual en cualquier máquina con Docker instalado.
-- Despliegues más rápidos y reproducibles.
-- Aislamiento entre aplicaciones que corren en la misma máquina.
-
----
-
-## El problema real: estructura de equipos
+No es solo un problema técnico: también es organizativo.
 
 - Equipo de **desarrollo**: escribir código, entregar funcionalidades rápido.
 - Equipo de **operaciones**: desplegar y mantener los sistemas estables.
@@ -66,6 +58,82 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 ## Lectura recomendada
 
 > *Accelerate. La ciencia del desarrollo Lean y DevOps* — Dra. Nicole Forsgren.
+
+La cultura DevOps nos dice el **qué** (romper barreras, entregar con confianza). A partir de aquí nos centramos en una de las herramientas que lo hacen posible: **Docker**.
+
+---
+
+## Repaso — Sección 1, Pregunta 1
+
+¿Cuál es la causa más habitual de que "en mi máquina funcione" pero falle en el servidor?
+
+A) El servidor tiene menos RAM que tu portátil
+B) Diferencias de entorno: versiones de lenguaje, librerías o configuración distintas
+C) El código se corrompe al subirlo a GitHub
+D) El servidor no tiene conexión a internet
+
+---
+
+## Repaso — Sección 1, Pregunta 1 (solución)
+
+✅ **B)** Diferencias de entorno: versiones de lenguaje, librerías o configuración distintas
+
+---
+
+## Repaso — Sección 1, Pregunta 2
+
+Según la cultura DevOps, ¿cuál de estas afirmaciones es correcta?
+
+A) Docker es lo mismo que DevOps
+B) DevOps es una herramienta que se instala junto con Docker
+C) Docker ayuda a lograr una cultura DevOps, pero no es DevOps en sí misma
+D) DevOps sustituye por completo al equipo de operaciones
+
+---
+
+## Repaso — Sección 1, Pregunta 2 (solución)
+
+✅ **C)** Docker ayuda a lograr una cultura DevOps, pero no es DevOps en sí misma
+
+---
+
+## Repaso — Sección 1, Pregunta 3
+
+¿Cuál es la tensión típica entre el equipo de desarrollo y el de operaciones?
+
+A) Desarrollo quiere entregar rápido, operaciones quiere estabilidad
+B) Ambos equipos persiguen exactamente el mismo objetivo
+C) Operaciones escribe el código y desarrollo lo despliega
+D) No existe ninguna tensión, es un problema inventado
+
+---
+
+## Repaso — Sección 1, Pregunta 3 (solución)
+
+✅ **A)** Desarrollo quiere entregar rápido, operaciones quiere estabilidad
+
+---
+
+<!-- _class: lead -->
+# 2. Docker, comparado con lo que ya conoces
+
+---
+
+## ¿Qué es Docker?
+
+**Docker** es una plataforma que permite empaquetar una aplicación junto con todo lo que necesita para funcionar (código, dependencias, configuración) en una unidad llamada **contenedor**.
+
+- Proyecto de código abierto, nacido en 2013.
+- Hoy en día, el estándar de facto para contenerizar aplicaciones.
+
+---
+
+## ¿Qué aporta Docker?
+
+- El mismo entorno en desarrollo, pruebas y producción.
+- Portabilidad: funciona igual en cualquier máquina con Docker instalado.
+- Despliegues más rápidos y reproducibles.
+- Aislamiento entre aplicaciones que corren en la misma máquina.
 
 ---
 
@@ -106,6 +174,169 @@ Seguro que ya conoces las máquinas virtuales (VirtualBox, VMware...). Docker se
 ## ¿Se pueden combinar?
 
 Sí: es muy habitual tener una **máquina virtual** (en un servidor físico o en la nube) que, dentro, ejecuta **varios contenedores Docker**.
+
+---
+
+## Repaso — Sección 2, Pregunta 1
+
+¿Qué virtualiza una máquina virtual tradicional?
+
+A) Solo el proceso de la aplicación
+B) El hardware completo, mediante un hipervisor
+C) Únicamente la red
+D) Nada, las VMs no virtualizan nada
+
+---
+
+## Repaso — Sección 2, Pregunta 1 (solución)
+
+✅ **B)** El hardware completo, mediante un hipervisor
+
+---
+
+## Repaso — Sección 2, Pregunta 2
+
+¿Por qué un contenedor arranca mucho más rápido que una VM?
+
+A) Porque usa menos CPU que la VM
+B) Porque comparte el kernel del sistema operativo host, no arranca un SO completo
+C) Porque los contenedores no tienen sistema de ficheros
+D) Porque Docker desactiva el hipervisor
+
+---
+
+## Repaso — Sección 2, Pregunta 2 (solución)
+
+✅ **B)** Porque comparte el kernel del sistema operativo host, no arranca un SO completo
+
+---
+
+## Repaso — Sección 2, Pregunta 3
+
+¿Es posible ejecutar contenedores Docker dentro de una máquina virtual?
+
+A) No, son tecnologías incompatibles
+B) Sí, de hecho es una combinación muy habitual
+C) Solo si la VM tiene Windows
+D) Solo en la nube, nunca en local
+
+---
+
+## Repaso — Sección 2, Pregunta 3 (solución)
+
+✅ **B)** Sí, de hecho es una combinación muy habitual
+
+---
+
+<!-- _class: lead -->
+# 3. Los conceptos clave: imagen y contenedor
+
+---
+
+## Imagen vs. contenedor (la diferencia clave)
+
+Ya sabemos que un contenedor es como una VM ligera que comparte el kernel. Pero, ¿de dónde sale exactamente ese contenedor?
+
+- **Imagen**: plantilla de solo lectura (como una "foto" de un sistema con todo instalado).
+- **Contenedor**: una instancia en ejecución (o parada) creada a partir de una imagen.
+
+A partir de **una** imagen se pueden crear **muchos** contenedores distintos.
+
+---
+
+## Analogía
+
+- La **imagen** es como la clase de una aplicación (el molde).
+- El **contenedor** es como un objeto/instancia creado a partir de esa clase.
+- Puedes crear varios contenedores a partir de la misma imagen, cada uno independiente.
+
+---
+
+## ¿Qué mantiene vivo a un contenedor?
+
+- Un contenedor sigue vivo mientras su **proceso principal** (PID1) siga en ejecución.
+- En Linux, el **PID1** es el primer proceso que arranca el sistema (tradicionalmente `init`/`systemd`).
+
+---
+
+## Contenedor = imagen + PID1
+
+- Al hacer `docker run imagen comando`, ese `comando` se convierte en el **PID1** del contenedor.
+- Si el PID1 termina, por el motivo que sea, **el contenedor se detiene automáticamente**.
+
+---
+
+## Ejemplo: PID1 en la práctica
+
+```bash
+docker run -it ubuntu:22.04 bash
+```
+
+- Aquí, `bash` es el PID1 del contenedor.
+- Si escribes `exit`, `bash` termina → el contenedor pasa a "Exited".
+- Si en vez de `bash` lanzas `ubuntu:22.04 echo hola`, el PID1 es `echo`: termina al instante y el contenedor se para casi enseguida.
+
+---
+
+## Repaso — Sección 3, Pregunta 1
+
+¿Cuál es la diferencia principal entre una imagen y un contenedor?
+
+A) Son exactamente lo mismo, solo cambia el nombre
+B) La imagen es una plantilla de solo lectura; el contenedor es una instancia en ejecución creada a partir de ella
+C) El contenedor se descarga de Docker Hub; la imagen no
+D) La imagen solo existe mientras el contenedor está en marcha
+
+---
+
+## Repaso — Sección 3, Pregunta 1 (solución)
+
+✅ **B)** La imagen es una plantilla de solo lectura; el contenedor es una instancia en ejecución creada a partir de ella
+
+---
+
+## Repaso — Sección 3, Pregunta 2
+
+En un contenedor creado con `docker run -it ubuntu:22.04 bash`, ¿qué es el PID1?
+
+A) El proceso `dockerd`
+B) El proceso `bash`
+C) El propio comando `docker run`
+D) No existe el concepto de PID1 en Docker
+
+---
+
+## Repaso — Sección 3, Pregunta 2 (solución)
+
+✅ **B)** El proceso `bash`
+
+---
+
+## Repaso — Sección 3, Pregunta 3
+
+Si el proceso PID1 de un contenedor termina, ¿qué ocurre?
+
+A) No pasa nada, el contenedor sigue corriendo
+B) El contenedor se detiene automáticamente
+C) Docker lo reinicia siempre sin que se pueda evitar
+D) Se convierte automáticamente en una imagen
+
+---
+
+## Repaso — Sección 3, Pregunta 3 (solución)
+
+✅ **B)** El contenedor se detiene automáticamente
+
+---
+
+<!-- _class: lead -->
+# 4. De dónde salen las imágenes
+
+---
+
+## Ya sabemos qué es una imagen. ¿De dónde sale?
+
+Para entender de dónde se consigue una imagen, hace falta ver primero cómo funciona Docker por dentro.
 
 ---
 
@@ -158,6 +389,8 @@ tú → docker run nginx → [Docker client] → API → [Docker daemon]
 
 ## Cuidado con el tag `latest`
 
+Ya sabemos que una imagen es una plantilla, y que de cada una puede haber varias versiones. Esas versiones se identifican con **tags**.
+
 - Si no indicas tag, Docker usa `latest` por defecto.
 - `latest` no significa "la mejor versión": es solo una etiqueta más, que puede apuntar a una versión distinta con el tiempo.
 - **Buena práctica**: fija siempre una versión concreta.
@@ -167,46 +400,65 @@ tú → docker run nginx → [Docker client] → API → [Docker daemon]
 
 ---
 
-## Imagen vs. contenedor (la diferencia clave)
+## Repaso — Sección 4, Pregunta 1
 
-- **Imagen**: plantilla de solo lectura (como una "foto" de un sistema con todo instalado).
-- **Contenedor**: una instancia en ejecución (o parada) creada a partir de una imagen.
+¿Qué es un registry?
 
-A partir de **una** imagen se pueden crear **muchos** contenedores distintos.
-
----
-
-## Analogía
-
-- La **imagen** es como la clase de una aplicación (el molde).
-- El **contenedor** es como un objeto/instancia creado a partir de esa clase.
-- Puedes crear varios contenedores a partir de la misma imagen, cada uno independiente.
+A) Un fichero de configuración de Docker
+B) Un servidor donde se almacenan y distribuyen imágenes
+C) El nombre técnico de un contenedor parado
+D) Un comando para borrar imágenes
 
 ---
 
-## ¿Qué mantiene vivo a un contenedor?
+## Repaso — Sección 4, Pregunta 1 (solución)
 
-- Un contenedor sigue vivo mientras su **proceso principal** (PID1) siga en ejecución.
-- En Linux, el **PID1** es el primer proceso que arranca el sistema (tradicionalmente `init`/`systemd`).
-
----
-
-## Contenedor = imagen + PID1
-
-- Al hacer `docker run imagen comando`, ese `comando` se convierte en el **PID1** del contenedor.
-- Si el PID1 termina, por el motivo que sea, **el contenedor se detiene automáticamente**.
+✅ **B)** Un servidor donde se almacenan y distribuyen imágenes
 
 ---
 
-## Ejemplo: PID1 en la práctica
+## Repaso — Sección 4, Pregunta 2
 
-```bash
-docker run -it ubuntu:22.04 bash
-```
+¿Hace falta tener cuenta en Docker Hub para descargar una imagen pública?
 
-- Aquí, `bash` es el PID1 del contenedor.
-- Si escribes `exit`, `bash` termina → el contenedor pasa a "Exited".
-- Si en vez de `bash` lanzas `ubuntu:22.04 echo hola`, el PID1 es `echo`: termina al instante y el contenedor se para casi enseguida.
+A) Sí, siempre
+B) No, solo hace falta cuenta para subir imágenes propias
+C) Solo los fines de semana
+D) Solo si la imagen es oficial
+
+---
+
+## Repaso — Sección 4, Pregunta 2 (solución)
+
+✅ **B)** No, solo hace falta cuenta para subir imágenes propias
+
+---
+
+## Repaso — Sección 4, Pregunta 3
+
+Si ejecutas `docker run ubuntu` sin especificar tag, ¿qué versión descarga Docker?
+
+A) La versión LTS más reciente siempre
+B) `latest`, que puede apuntar a una versión distinta con el tiempo
+C) Pide que elijas una versión antes de continuar
+D) La versión 1.0 por compatibilidad
+
+---
+
+## Repaso — Sección 4, Pregunta 3 (solución)
+
+✅ **B)** `latest`, que puede apuntar a una versión distinta con el tiempo
+
+---
+
+<!-- _class: lead -->
+# 5. Manos a la obra
+
+---
+
+## Con todo esto claro, a crear contenedores de verdad
+
+Ya sabemos qué es Docker, qué es una imagen y de dónde sale. Toca usar la herramienta.
 
 ---
 
@@ -343,6 +595,57 @@ docker stop / rm         → lo paro y limpio
 - `docker run`, `docker ps`, `docker images`, `docker pull`
 - `docker stop`, `docker start`, `docker restart`, `docker rm`
 - `docker logs`, `docker exec -it`
+
+---
+
+## Repaso — Sección 5, Pregunta 1
+
+¿Qué diferencia hay entre `docker run` y `docker start`?
+
+A) Son exactamente el mismo comando
+B) `docker run` crea un contenedor nuevo; `docker start` arranca uno que ya existe
+C) `docker start` descarga la imagen y `docker run` no
+D) `docker run` solo funciona con `-d`
+
+---
+
+## Repaso — Sección 5, Pregunta 1 (solución)
+
+✅ **B)** `docker run` crea un contenedor nuevo; `docker start` arranca uno que ya existe
+
+---
+
+## Repaso — Sección 5, Pregunta 2
+
+¿Qué hace la opción `--rm` en `docker run`?
+
+A) Elimina la imagen después de usarla
+B) Elimina automáticamente el contenedor en cuanto termina
+C) Borra todos los contenedores parados del sistema
+D) Impide que el contenedor se conecte a internet
+
+---
+
+## Repaso — Sección 5, Pregunta 2 (solución)
+
+✅ **B)** Elimina automáticamente el contenedor en cuanto termina
+
+---
+
+## Repaso — Sección 5, Pregunta 3
+
+¿Cuál es la diferencia entre `docker exec` y `docker run`?
+
+A) `docker exec` entra en un contenedor que ya existe y está en marcha; `docker run` crea uno nuevo
+B) Son sinónimos, hacen lo mismo
+C) `docker exec` solo funciona con la imagen `nginx`
+D) `docker run` no puede usarse con `-it`
+
+---
+
+## Repaso — Sección 5, Pregunta 3 (solución)
+
+✅ **A)** `docker exec` entra en un contenedor que ya existe y está en marcha; `docker run` crea uno nuevo
 
 ---
 
