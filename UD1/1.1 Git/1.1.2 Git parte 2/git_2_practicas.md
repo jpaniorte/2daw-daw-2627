@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Git — Parte 2: gestión de ramas (Prácticas)"
+permalink: /git/parte-2/practicas/
 ---
 
 <!-- _class: lead -->

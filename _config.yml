@@ -1,7 +1,6 @@
 title: Despliegue de Aplicaciones Web (0614)
 description: Material del módulo — UD1
 lang: es
-theme: jekyll-theme-cayman
 
 markdown: kramdown
 kramdown:
@@ -9,7 +8,6 @@ kramdown:
 
 exclude:
   - UD0
-  - "UD1/1.1 Git"
   - proyectos
   - themes
   - build.py
@@ -24,9 +22,50 @@ exclude:
   - vendor
   - .bundle
 
-# Excepción explícita: el PDF de teoría de cada semana sí se publica,
+# Excepción explícita: el PDF de teoría de cada parte/semana sí se publica,
 # aunque "**/pdf" esté excluido arriba (include tiene prioridad sobre exclude).
 include:
+  - "UD1/1.1 Git/1.1.1 Git parte 1/pdf/git_1_teoria.pdf"
+  - "UD1/1.1 Git/1.1.2 Git parte 2/pdf/git_2_teoria.pdf"
+  - "UD1/1.1 Git/1.1.3 Git parte 3/pdf/git_3_teoria.pdf"
   - "UD1/1.2 Docker/1.2.1 Docker parte 1/pdf/docker_1_teoria.pdf"
   - "UD1/1.2 Docker/1.2.2 Docker parte 2/pdf/docker_2_teoria.pdf"
   - "UD1/1.2 Docker/1.2.3 Docker parte 3/pdf/docker_3_teoria.pdf"
+
+# Navegación lateral. Añadir una nueva unidad/parte es solo añadir un bloque
+# aquí - el layout (_layouts/default.html) la pinta sola.
+nav:
+  - title: "1.1 Git"
+    groups:
+      - title: "Parte 1"
+        pages:
+          - { title: "Teoría", url: "/git/parte-1/teoria/" }
+          - { title: "Prácticas", url: "/git/parte-1/practicas/" }
+          - { title: "Test", url: "/git/parte-1/test/" }
+      - title: "Parte 2"
+        pages:
+          - { title: "Teoría", url: "/git/parte-2/teoria/" }
+          - { title: "Prácticas", url: "/git/parte-2/practicas/" }
+          - { title: "Test", url: "/git/parte-2/test/" }
+      - title: "Parte 3"
+        pages:
+          - { title: "Teoría", url: "/git/parte-3/teoria/" }
+          - { title: "Prácticas", url: "/git/parte-3/practicas/" }
+          - { title: "Test", url: "/git/parte-3/test/" }
+  - title: "1.2 Docker"
+    groups:
+      - title: "Semana 1"
+        pages:
+          - { title: "Teoría", url: "/docker/semana-1/teoria/" }
+          - { title: "Prácticas", url: "/docker/semana-1/practicas/" }
+          - { title: "Test", url: "/docker/semana-1/test/" }
+      - title: "Semana 2"
+        pages:
+          - { title: "Teoría", url: "/docker/semana-2/teoria/" }
+          - { title: "Prácticas", url: "/docker/semana-2/practicas/" }
+          - { title: "Test", url: "/docker/semana-2/test/" }
+      - title: "Semana 3"
+        pages:
+          - { title: "Teoría", url: "/docker/semana-3/teoria/" }
+          - { title: "Prácticas", url: "/docker/semana-3/practicas/" }
+          - { title: "Test", url: "/docker/semana-3/test/" }

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'es' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="topbar-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+  </header>
+
+  <div class="layout">
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label">☰ Índice</label>
+
+    <nav class="sidebar">
+      {% for unit in site.nav %}
+        <div class="nav-unit">
+          <div class="nav-unit-title">{{ unit.title }}</div>
+          {% for group in unit.groups %}
+            <div class="nav-group">
+              <div class="nav-group-title">{{ group.title }}</div>
+              <ul class="nav-pages">
+                {% for item in group.pages %}
+                  {% assign item_url = item.url | relative_url %}
+                  <li>
+                    <a href="{{ item_url }}"
+                       class="{% if page.url == item.url %}active{% endif %}">
+                      {{ item.title }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </nav>
+
+    <main class="content">
+      {{ content }}
+    </main>
+  </div>
+</body>
+</html>

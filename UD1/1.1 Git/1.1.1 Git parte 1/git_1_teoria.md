@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Git — Parte 1: trabajando en local (Teoría)"
+permalink: /git/parte-1/teoria/
 ---
 
 <!-- _class: lead -->

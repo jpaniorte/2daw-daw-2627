@@ -4,6 +4,9 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
+layout: default
+title: "Git — Parte 3: repositorios remotos (Prácticas)"
+permalink: /git/parte-3/practicas/
 ---
 
 <!-- _class: lead -->
