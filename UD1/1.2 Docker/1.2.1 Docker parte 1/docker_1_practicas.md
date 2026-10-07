@@ -17,17 +17,18 @@ permalink: /docker/semana-1/practicas/
 
 ## Antes de empezar
 
-- Puedes usar el entorno en la nube propuesto (tipo [Play with Docker](https://labs.play-with-docker.com/)) o tu propio Docker Desktop/VM Linux/WSL2.
+- Puedes usar el entorno en la nube propuesto (tipo [iximiuz Labs](https://labs.iximiuz.com/)) o tu propio Docker Desktop/VM Linux/WSL2.
 - No hace falta cuenta de Docker Hub para nada de lo que haremos hoy.
 - Hoy hacemos los **Ejercicios 1 a 4** (miércoles) y seguimos con el resto el **viernes**, antes del cuestionario.
 
 ---
 
-## Si usas Play with Docker: cómo ver un puerto publicado
+## Si usas iximiuz Labs: cómo ver un puerto publicado
 
-- En Play with Docker **no existe `localhost`**: el contenedor corre en una VM remota, no en tu navegador.
-- Al publicar un puerto con `-p` (p. ej. `-p 8080:80`), en la parte superior de la pantalla aparece un **número de puerto clicable** (o puedes añadirlo a mano con el botón **"OPEN PORT"**).
-- Al pulsarlo se abre una pestaña nueva con una URL tipo `https://ip172-18-0-X-XXXXXXXX.direct.labs.play-with-docker.com` — **esa** es la URL que tienes que usar, no `http://localhost:8080`.
+- En iximiuz Labs **tampoco existe `localhost`**: el contenedor corre en una VM remota, no en tu navegador.
+- Para ver un puerto publicado con `-p` (p. ej. `-p 8080:80`), pulsa el botón **"Expose Port"** (arriba a la derecha de la pantalla).
+- En el diálogo "Expose HTTP(S) Ports" elige la VM y el puerto (`8080`), deja **HTTPS en "No"** (nginx habla HTTP) y confirma.
+- Te da una URL tipo `https://xxxxxxxx.node-eu-dNNN.iximiuz.com` — **esa** es la URL que tienes que usar, no `http://localhost:8080`.
 - Si en cambio usas Docker Desktop/WSL2 en tu propio equipo, `http://localhost:8080` sí funciona tal cual.
 
 ---

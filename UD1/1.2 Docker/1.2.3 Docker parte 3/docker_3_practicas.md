@@ -17,9 +17,9 @@ permalink: /docker/semana-3/practicas/
 
 ## Antes de empezar
 
-- Puedes usar el entorno en la nube propuesto o tu propio Docker Desktop/VM/WSL2.
+- Puedes usar el entorno en la nube propuesto (tipo iximiuz Labs) o tu propio Docker Desktop/VM/WSL2.
 - Necesitarás la aplicación que creaste en la Semana 2 (o una nueva, sencilla) para combinarla con una base de datos.
-- Recuerda (semana 1): en Play with Docker no hay `localhost` — para ver un puerto publicado usa el número de puerto clicable o el botón **"OPEN PORT"** de la parte superior de la pantalla, no `http://localhost:8080`.
+- Recuerda (semana 1): en iximiuz Labs no hay `localhost` — para ver un puerto publicado usa el botón **"Expose Port"** (arriba a la derecha), no `http://localhost:8080`.
 - Hoy hacemos los **Ejercicios 1 a 4** (miércoles) y seguimos con el resto el **viernes**, antes del cuestionario final del bloque.
 
 ---

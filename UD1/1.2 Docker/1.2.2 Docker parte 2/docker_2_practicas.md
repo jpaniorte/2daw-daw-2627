@@ -17,9 +17,9 @@ permalink: /docker/semana-2/practicas/
 
 ## Antes de empezar
 
-- Puedes usar el entorno en la nube propuesto (tipo Play with Docker) o tu propio Docker Desktop/VM/WSL2.
+- Puedes usar el entorno en la nube propuesto (tipo iximiuz Labs) o tu propio Docker Desktop/VM/WSL2.
 - Necesitarás una cuenta gratuita en [Docker Hub](https://hub.docker.com/) para el último ejercicio.
-- Recuerda (semana 1): en Play with Docker no hay `localhost` — para ver un puerto publicado usa el número de puerto clicable o el botón **"OPEN PORT"** de la parte superior de la pantalla, no `http://localhost:8080`.
+- Recuerda (semana 1): en iximiuz Labs no hay `localhost` — para ver un puerto publicado usa el botón **"Expose Port"** (arriba a la derecha), no `http://localhost:8080`.
 - Ve resolviendo los ejercicios en orden, cada uno se apoya en el anterior.
 - Los **retos** (al final) no traen los pasos, solo el objetivo: decides tú los comandos.
 

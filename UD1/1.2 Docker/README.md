@@ -40,7 +40,7 @@ Reparto semanal: **1h de teoría + 2h de práctica** (teoría y arranque de la p
 
 ## Entorno de prácticas
 
-Se propone un entorno en la nube (p. ej. [Play with Docker](https://labs.play-with-docker.com/)) para evitar problemas de instalación, pero cada alumno puede usar el entorno que prefiera: Docker Desktop local, una VM Linux propia, WSL2, etc.
+Se propone un entorno en la nube (p. ej. [iximiuz Labs](https://labs.iximiuz.com/)) para evitar problemas de instalación, pero cada alumno puede usar el entorno que prefiera: Docker Desktop local, una VM Linux propia, WSL2, etc.
 
 ## Evaluación
 
@@ -61,4 +61,4 @@ Cada carpeta `1.2.N Docker parte N` sigue la misma convención que `1.1 Git`:
 
 - [Documentación oficial de Docker](https://docs.docker.com/)
 - [Docker Hub](https://hub.docker.com/)
-- [Play with Docker](https://labs.play-with-docker.com/)
+- [iximiuz Labs](https://labs.iximiuz.com/)
