@@ -23,6 +23,11 @@ body {
 a { color: var(--brand); }
 a:hover { color: var(--brand-dark); }
 
+/* Los .md de Marp meten cada opción (A/B/C/D) en su propia línea dentro del
+   mismo párrafo. En HTML un salto de línea simple se colapsa a un espacio;
+   con pre-line se respeta el salto tal cual está en el Markdown. */
+.content p { white-space: pre-line; }
+
 code {
   background: #eef0f4;
   border-radius: 3px;
