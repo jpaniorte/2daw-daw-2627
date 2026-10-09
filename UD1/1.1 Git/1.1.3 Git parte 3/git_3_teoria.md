@@ -7,6 +7,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 layout: default
 title: "Git — Parte 3: repositorios remotos (Teoría)"
 permalink: /git/parte-3/teoria/
+pdf: "/UD1/1.1%20Git/1.1.3%20Git%20parte%203/pdf/git_3_teoria.pdf"
 ---
 
 <!-- _class: lead -->

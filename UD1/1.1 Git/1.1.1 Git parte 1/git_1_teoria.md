@@ -7,6 +7,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 layout: default
 title: "Git — Parte 1: trabajando en local (Teoría)"
 permalink: /git/parte-1/teoria/
+pdf: "/UD1/1.1%20Git/1.1.1%20Git%20parte%201/pdf/git_1_teoria.pdf"
 ---
 
 <!-- _class: lead -->

@@ -1,13 +1,15 @@
 :root {
   --brand: #157878;
   --brand-dark: #0d5c5c;
+  --topbar-bg: #12302f;
   --text: #1f2430;
   --muted: #6b7280;
   --border: #e2e4e9;
   --bg: #ffffff;
-  --sidebar-bg: #f6f8f9;
-  --sidebar-width: 260px;
-  --topbar-height: 56px;
+  --sidebar-bg: #fafbfc;
+  --sidebar-width: 280px;
+  --sidebar-width-collapsed: 44px;
+  --topbar-height: 48px;
 }
 
 * { box-sizing: border-box; }
@@ -44,9 +46,96 @@ pre {
 }
 pre code { background: none; padding: 0; color: inherit; }
 
+/* Barra de progreso del curso (porcentaje calculado en JS según la fecha). */
+.progress-wrap { margin: 14px 0 24px; }
+.progress-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.progress-bar {
+  width: 100%;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--brand);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 th { background: var(--sidebar-bg); }
+
+/* Columnas: 1 ID, 2 Fecha, 3 Apartado, 4 Título, 5 Entregas, 6 Fecha Control.
+   Todas menos Título se encogen a su contenido más ancho; Título se reparte
+   el espacio sobrante para llegar al 100%. */
+.cal-table td:nth-child(1),
+.cal-table th:nth-child(1),
+.cal-table td:nth-child(2),
+.cal-table th:nth-child(2),
+.cal-table td:nth-child(3),
+.cal-table th:nth-child(3),
+.cal-table td:nth-child(5),
+.cal-table th:nth-child(5),
+.cal-table td:nth-child(6),
+.cal-table th:nth-child(6) {
+  white-space: nowrap;
+  width: 1%;
+}
+
+/* Fila del calendario que corresponde a la fecha de hoy (calculada en JS,
+   con la fecha real del visitante, no la del último build). Solo se resaltan
+   ID, Fecha, Apartado y Título (columnas 1-4); Sesiones, Entregas y Fecha
+   Control quedan fuera. */
+.cal-table tr.cal-today > td:nth-child(-n+4) {
+  background: rgba(21, 120, 120, 0.12);
+  font-weight: 700;
+}
+
+/* Fila-aviso del calendario (una única celda a todo lo ancho, p. ej. cierre
+   de evaluación), en vez de una fila de sesión normal. */
+.cal-table tr.cal-note td:first-child {
+  white-space: normal;
+  width: auto;
+}
+.cal-table tr.cal-note td {
+  text-align: center;
+  font-weight: 800;
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+  padding: 10px 12px;
+  background: #fdf1f0;
+  color: #b5524d;
+  border-color: #f6dad8;
+}
+.cal-table tr.cal-today > td:first-child { border-left: 3px solid var(--brand); }
+
+/* Fecha de control ya pasada (calculado en JS con la fecha real del
+   visitante): se tacha para dejar claro que ese control ya se hizo. */
+.ctrl-date.passed {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+/* Fecha de control próxima (en los próximos 6 días, calculado en JS): se
+   resalta en ámbar para que llame la atención sin ser tan agresivo como
+   las filas-aviso en rojo. */
+.ctrl-date.upcoming {
+  display: inline-block;
+  font-weight: 800;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 5px;
+  padding: 1px 6px;
+}
 
 hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
 
@@ -55,25 +144,49 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
   height: var(--topbar-height);
   display: flex;
   align-items: center;
-  padding: 0 20px;
-  background: var(--brand);
+  gap: 10px;
+  padding: 0 16px;
+  background: var(--topbar-bg);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.topbar-logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
 }
 .topbar-title {
   color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 1.05rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+.topbar-meta {
+  margin-left: auto;
+  color: #b9c9c7;
+  font-size: 0.8rem;
 }
 
 /* Layout general: sidebar + contenido */
 .layout {
   display: flex;
   align-items: flex-start;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: calc(100vh - var(--topbar-height));
 }
 
 .sidebar {
@@ -81,78 +194,184 @@ hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
   flex: 0 0 var(--sidebar-width);
   background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
-  padding: 20px 16px;
   position: sticky;
   top: var(--topbar-height);
   height: calc(100vh - var(--topbar-height));
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.15s ease;
 }
 
-.nav-unit { margin-bottom: 20px; }
-.nav-unit-title {
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 8px;
-  color: var(--text);
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
 }
-.nav-group { margin-bottom: 10px; margin-left: 4px; }
-.nav-group-title {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
-.nav-pages { list-style: none; margin: 0 0 0 8px; padding: 0; }
-.nav-pages li { margin: 2px 0; }
-.nav-pages a {
-  display: block;
-  padding: 3px 8px;
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4b5563;
+  padding: 0;
+}
+.icon-btn:hover { background: #eef0f2; }
+.icon-btn svg { transition: transform 0.15s ease; }
+
+.sidebar-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 6px 24px;
+}
+
+.nav-top { margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.nav-top-link {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
   text-decoration: none;
-  font-size: 0.9rem;
   color: var(--text);
+  padding: 7px 8px;
+  border-radius: 6px;
 }
-.nav-pages a:hover { background: #e9edee; }
-.nav-pages a.active {
-  background: var(--brand);
-  color: #fff;
-  font-weight: 600;
+.nav-top-link:hover { background: #eef0f2; }
+.nav-top-link.active {
+  background: rgba(21, 120, 120, 0.1);
+  color: var(--brand);
 }
+html.nav-collapsed .nav-top { display: none; }
+
+/* Árbol de <details>: sin el triángulo nativo, con nuestro propio chevron */
+.tree details > summary { list-style: none; cursor: pointer; }
+.tree details > summary::-webkit-details-marker { display: none; }
+
+.tree summary,
+.node.sub-disabled {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  border-radius: 6px;
+  padding: 7px 8px;
+}
+.tree summary:hover { background: #eef0f2; }
+
+.chevron { flex: 0 0 auto; display: flex; margin-top: 2px; }
+.chevron svg { transition: transform 0.12s ease; }
+.node details[open] > summary > .chevron svg,
+details[open] > summary .chevron svg { transform: rotate(90deg); }
+
+.node-label { font-size: 13px; line-height: 1.35; }
+.node.unit > summary .node-label { font-weight: 700; color: var(--text); }
+.node.block > summary .node-label { font-weight: 600; font-size: 12.5px; color: #333a45; }
+.node.sub > summary .node-label,
+.node.sub-disabled .node-label { font-size: 12px; color: #4b5563; }
+
+.children { padding-left: 17px; margin-left: 13px; border-left: 1px solid var(--border); }
+.node.unit > .children { padding-left: 17px; margin-left: 13px; }
+.node.block > .children { padding-left: 16px; margin-left: 12px; border-left-color: #edeff1; }
+
+.node.sub-disabled { color: #aab0b9; cursor: default; }
+.node.sub-disabled .node-label { color: #aab0b9; }
+.badge {
+  flex: 0 0 auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #9aa2ad;
+  background: #f1f2f4;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-top: 1px;
+}
+
+.children.pages {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-left: 21px;
+  margin: 2px 0 6px;
+  border-left: none;
+}
+.page-link {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #4b5563;
+  border-left: 2px solid transparent;
+}
+.page-link:hover { background: #eef0f2; }
+.page-link .ext-icon { color: #9aa2ad; font-size: 10px; }
+.page-link.active {
+  background: rgba(21, 120, 120, 0.1);
+  color: var(--brand);
+  font-weight: 700;
+  border-left-color: var(--brand);
+}
+
+/* Sidebar colapsada: tira estrecha, solo el botón */
+html.nav-collapsed .sidebar { width: var(--sidebar-width-collapsed); flex-basis: var(--sidebar-width-collapsed); }
+html.nav-collapsed .sidebar-title,
+html.nav-collapsed .tree { display: none; }
+html.nav-collapsed .icon-btn svg { transform: rotate(180deg); }
 
 .content {
-  flex: 1 1 auto;
+  flex: 1 1 560px;
   min-width: 0;
-  padding: 32px 40px 80px;
+  padding: 28px 40px 80px;
 }
 .content h1:first-child { margin-top: 0; }
 
-/* Toggle del sidebar en móvil */
-.nav-toggle { display: none; }
-.nav-toggle-label {
-  display: none;
-  cursor: pointer;
-  padding: 10px 16px;
-  font-weight: 600;
+.pdf-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
   background: var(--sidebar-bg);
-  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
 }
+.pdf-download:hover { background: #eef0f2; color: var(--text); }
 
 @media (max-width: 860px) {
   .layout { display: block; }
-  .nav-toggle-label { display: block; }
   .sidebar {
     position: static;
     width: auto;
     height: auto;
-    max-height: 0;
-    overflow: hidden;
-    padding: 0 16px;
-    transition: max-height 0.2s ease;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
-  .nav-toggle:checked ~ .sidebar {
-    max-height: 2000px;
-    padding: 16px;
-  }
+  html.nav-collapsed .sidebar { width: auto; }
+  html.nav-collapsed .tree { display: none; }
   .content { padding: 24px 20px 60px; }
 }

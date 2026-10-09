@@ -6,43 +6,133 @@
   <title>{{ page.title | default: site.title }}</title>
   <meta name="description" content="{{ page.description | default: site.description }}">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <script>
+    // Aplicar el estado de colapso guardado ANTES de pintar, para que no
+    // parpadee la sidebar abierta un instante en cada carga de página.
+    try {
+      if (localStorage.getItem('daw-nav-collapsed') === '1') {
+        document.documentElement.classList.add('nav-collapsed');
+      }
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <header class="topbar">
-    <a class="topbar-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <a class="topbar-brand" href="{{ '/' | relative_url }}">
+      <span class="topbar-logo">DW</span>
+      <span class="topbar-title">{{ site.title }}</span>
+    </a>
+    <span class="topbar-meta">2º CFGS DAW</span>
   </header>
 
   <div class="layout">
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
-    <label for="nav-toggle" class="nav-toggle-label">☰ Índice</label>
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <button id="nav-collapse-toggle" class="icon-btn" type="button" aria-label="Colapsar/expandir menú" title="Colapsar/expandir menú">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <span class="sidebar-title">Índice del curso</span>
+      </div>
 
-    <nav class="sidebar">
-      {% for unit in site.nav %}
-        <div class="nav-unit">
-          <div class="nav-unit-title">{{ unit.title }}</div>
-          {% for group in unit.groups %}
-            <div class="nav-group">
-              <div class="nav-group-title">{{ group.title }}</div>
-              <ul class="nav-pages">
-                {% for item in group.pages %}
-                  {% assign item_url = item.url | relative_url %}
-                  <li>
-                    <a href="{{ item_url }}"
-                       class="{% if page.url == item.url %}active{% endif %}">
-                      {{ item.title }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            </div>
+      <nav class="tree">
+        <div class="nav-top">
+          {% for top in site.nav_top %}
+            {% assign top_url = top.url | relative_url %}
+            <a href="{{ top_url }}" class="node-label nav-top-link{% if top_url == page.url %} active{% endif %}">{{ top.title }}</a>
           {% endfor %}
         </div>
-      {% endfor %}
-    </nav>
+
+        {% assign active_sub_id = "" %}
+        {% assign active_block_id = "" %}
+        {% assign active_unit_id = "" %}
+        {% for unit in site.nav %}
+          {% for block in unit.blocks %}
+            {% for sub in block.subs %}
+              {% if sub.pages %}
+                {% for leaf in sub.pages %}
+                  {% assign leaf_url = leaf.url | relative_url %}
+                  {% if leaf_url == page.url %}
+                    {% assign active_sub_id = sub.id %}
+                    {% assign active_block_id = block.id %}
+                    {% assign active_unit_id = unit.id %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        {% endfor %}
+
+        {% for unit in site.nav %}
+          <details class="node unit"{% if unit.id == active_unit_id %} open{% endif %}>
+            <summary>
+              <span class="chevron"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+              <span class="node-label">{{ unit.title }}</span>
+            </summary>
+            <div class="children">
+              {% for block in unit.blocks %}
+                {% if block.subs %}
+                  <details class="node block"{% if block.id == active_block_id %} open{% endif %}>
+                    <summary>
+                      <span class="chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                      <span class="node-label">{{ block.title }}</span>
+                    </summary>
+                    <div class="children">
+                      {% for sub in block.subs %}
+                        {% if sub.pages %}
+                          <details class="node sub"{% if sub.id == active_sub_id %} open{% endif %}>
+                            <summary>
+                              <span class="chevron"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#9aa2ad" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                              <span class="node-label">{{ sub.title }}</span>
+                            </summary>
+                            <div class="children pages">
+                              {% for leaf in sub.pages %}
+                                {% assign leaf_url = leaf.url | relative_url %}
+                                <a href="{{ leaf_url }}" class="page-link{% if leaf_url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
+                              {% endfor %}
+                            </div>
+                          </details>
+                        {% else %}
+                          <div class="node sub sub-disabled">
+                            <span class="node-label">{{ sub.title }}</span>
+                            <span class="badge">PRÓX.</span>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </details>
+                {% else %}
+                  <div class="node block sub-disabled">
+                    <span class="node-label">{{ block.title }}</span>
+                    <span class="badge">PRÓX.</span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </details>
+        {% endfor %}
+      </nav>
+    </aside>
 
     <main class="content">
+      {% if page.pdf %}
+        <a class="pdf-download" href="{{ page.pdf | relative_url }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+          Descargar en PDF
+        </a>
+      {% endif %}
       {{ content }}
     </main>
   </div>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('nav-collapse-toggle');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var collapsed = document.documentElement.classList.toggle('nav-collapsed');
+        try { localStorage.setItem('daw-nav-collapsed', collapsed ? '1' : '0'); } catch (e) {}
+      });
+    })();
+  </script>
 </body>
 </html>

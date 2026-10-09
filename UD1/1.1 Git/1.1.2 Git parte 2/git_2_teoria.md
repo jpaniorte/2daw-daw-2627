@@ -7,6 +7,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 layout: default
 title: "Git — Parte 2: gestión de ramas (Teoría)"
 permalink: /git/parte-2/teoria/
+pdf: "/UD1/1.1%20Git/1.1.2%20Git%20parte%202/pdf/git_2_teoria.pdf"
 ---
 
 <!-- _class: lead -->

@@ -7,6 +7,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 layout: default
 title: "Docker — Semana 2: Imágenes y Dockerfile (Teoría)"
 permalink: /docker/semana-2/teoria/
+pdf: "/UD1/1.2%20Docker/1.2.2%20Docker%20parte%202/pdf/docker_2_teoria.pdf"
 ---
 
 <!-- _class: lead -->

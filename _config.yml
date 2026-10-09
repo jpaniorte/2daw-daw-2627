@@ -30,40 +30,120 @@ exclude:
   - vendor
   - .bundle
 
-# Navegación lateral. Añadir una nueva unidad/parte es solo añadir un bloque
-# aquí - el layout (_layouts/default.html) la pinta sola.
+# Enlaces de nivel superior, por encima de las Unidades Didácticas (hoy solo
+# "Calendario", que además es la portada del site).
+nav_top:
+  - title: "Calendario"
+    url: "/"
+
+# Navegación lateral: árbol de 3 niveles (Unidad -> Bloque -> Sub-bloque),
+# con las páginas (Teoría/Prácticas/Test) como hojas de cada sub-bloque.
+# Un sub-bloque sin "pages" se pinta como "próximamente" (sin contenido aún).
+# Añadir una UD/bloque nueva es solo añadir un bloque aquí - el layout
+# (_layouts/default.html) lo pinta solo.
 nav:
-  - title: "1.1 Git"
-    groups:
-      - title: "Parte 1"
-        pages:
-          - { title: "Teoría", url: "/git/parte-1/teoria/" }
-          - { title: "Prácticas", url: "/git/parte-1/practicas/" }
-          - { title: "Test", url: "/git/parte-1/test/" }
-      - title: "Parte 2"
-        pages:
-          - { title: "Teoría", url: "/git/parte-2/teoria/" }
-          - { title: "Prácticas", url: "/git/parte-2/practicas/" }
-          - { title: "Test", url: "/git/parte-2/test/" }
-      - title: "Parte 3"
-        pages:
-          - { title: "Teoría", url: "/git/parte-3/teoria/" }
-          - { title: "Prácticas", url: "/git/parte-3/practicas/" }
-          - { title: "Test", url: "/git/parte-3/test/" }
-  - title: "1.2 Docker"
-    groups:
-      - title: "Semana 1"
-        pages:
-          - { title: "Teoría", url: "/docker/semana-1/teoria/" }
-          - { title: "Prácticas", url: "/docker/semana-1/practicas/" }
-          - { title: "Test", url: "/docker/semana-1/test/" }
-      - title: "Semana 2"
-        pages:
-          - { title: "Teoría", url: "/docker/semana-2/teoria/" }
-          - { title: "Prácticas", url: "/docker/semana-2/practicas/" }
-          - { title: "Test", url: "/docker/semana-2/test/" }
-      - title: "Semana 3"
-        pages:
-          - { title: "Teoría", url: "/docker/semana-3/teoria/" }
-          - { title: "Prácticas", url: "/docker/semana-3/practicas/" }
-          - { title: "Test", url: "/docker/semana-3/test/" }
+  - id: u1
+    title: "UD1 · Git y Docker"
+    blocks:
+      - id: u1b1
+        title: "1.1 Git"
+        subs:
+          - id: u1b1s1
+            title: "1.1.1 Git en local"
+            pages:
+              - { title: "Teoría", url: "/git/parte-1/teoria/" }
+              - { title: "Prácticas", url: "/git/parte-1/practicas/" }
+              - { title: "Test", url: "/git/parte-1/test/" }
+              - { title: "Simulacro", url: "/UD1/1.1%20Git/1.1.1%20Git%20parte%201/git_1_simulacro.html", external: true }
+          - id: u1b1s2
+            title: "1.1.2 Resolución de conflictos con Git"
+            pages:
+              - { title: "Teoría", url: "/git/parte-2/teoria/" }
+              - { title: "Prácticas", url: "/git/parte-2/practicas/" }
+              - { title: "Test", url: "/git/parte-2/test/" }
+              - { title: "Simulacro", url: "/UD1/1.1%20Git/1.1.2%20Git%20parte%202/git_2_simulacro.html", external: true }
+          - id: u1b1s3
+            title: "1.1.3 Trabajando con repositorios remotos"
+            pages:
+              - { title: "Teoría", url: "/git/parte-3/teoria/" }
+              - { title: "Prácticas", url: "/git/parte-3/practicas/" }
+              - { title: "Test", url: "/git/parte-3/test/" }
+              - { title: "Simulacro", url: "/UD1/1.1%20Git/1.1.3%20Git%20parte%203/git_3_simulacro.html", external: true }
+      - id: u1b2
+        title: "1.2 Docker"
+        subs:
+          - id: u1b2s1
+            title: "1.2.1 Fundamentos de Docker"
+            pages:
+              - { title: "Teoría", url: "/docker/semana-1/teoria/" }
+              - { title: "Prácticas", url: "/docker/semana-1/practicas/" }
+              - { title: "Test", url: "/docker/semana-1/test/" }
+              - { title: "Simulacro", url: "/UD1/1.2%20Docker/1.2.1%20Docker%20parte%201/docker_1_simulacro.html", external: true }
+          - id: u1b2s2
+            title: "1.2.2 Imágenes y Dockerfile"
+            pages:
+              - { title: "Teoría", url: "/docker/semana-2/teoria/" }
+              - { title: "Prácticas", url: "/docker/semana-2/practicas/" }
+              - { title: "Test", url: "/docker/semana-2/test/" }
+              - { title: "Simulacro", url: "/UD1/1.2%20Docker/1.2.2%20Docker%20parte%202/docker_2_simulacro.html", external: true }
+          - id: u1b2s3
+            title: "1.2.3 Docker Compose"
+            pages:
+              - { title: "Teoría", url: "/docker/semana-3/teoria/" }
+              - { title: "Prácticas", url: "/docker/semana-3/practicas/" }
+              - { title: "Test", url: "/docker/semana-3/test/" }
+              - { title: "Simulacro", url: "/UD1/1.2%20Docker/1.2.3%20Docker%20parte%203/docker_3_simulacro.html", external: true }
+  - id: u2
+    title: "UD2 · Arquitecturas Web"
+    blocks:
+      - id: u2b1
+        title: "2.1 Fundamentos web"
+      - id: u2b2
+        title: "2.2 Servidores web y de aplicaciones"
+  - id: u3
+    title: "UD3 · Administración de servidores Web"
+    blocks:
+      - id: u3b1
+        title: "3.1 Configuración de servidores web"
+        subs:
+          - id: u3b1s1
+            title: "3.1.1 Instalación y configuración básica de Apache y Nginx"
+          - id: u3b1s2
+            title: "3.1.2 Hosts virtuales y redirecciones"
+      - id: u3b2
+        title: "3.2 Seguridad y rendimiento"
+        subs:
+          - id: u3b2s1
+            title: "3.2.1 HTTPS y control de acceso"
+          - id: u3b2s2
+            title: "3.2.2 Proxy inverso, monitorización y rendimiento"
+  - id: u4
+    title: "UD4 · Implantación de aplicaciones en servidores Web"
+    blocks:
+      - id: u4b1
+        title: "4.1 Servidor de aplicaciones"
+        subs:
+          - id: u4b1s1
+            title: "4.1.1 Instalación, configuración y despliegue en servidores de aplicaciones"
+          - id: u4b1s2
+            title: "4.1.2 Aplicaciones con base de datos e integración con el proxy"
+      - id: u4b2
+        title: "4.2 Transferencia de archivos y servicios de red"
+        subs:
+          - id: u4b2s1
+            title: "4.2.1 FTP, SFTP, SSH y DNS"
+  - id: u5
+    title: "UD5 · DevOps, CI/CD y GitHub Actions"
+    blocks:
+      - id: u5b1
+        title: "5.1 CI/CD con GitHub Actions"
+        subs:
+          - id: u5b1s1
+            title: "5.1.1 Fundamentos de DevOps y primer workflow"
+          - id: u5b1s2
+            title: "5.1.2 Artefactos, imágenes Docker y tests en el pipeline"
+      - id: u5b2
+        title: "5.2 Despliegue continuo"
+        subs:
+          - id: u5b2s1
+            title: "5.2.1 Despliegue por SSH/SFTP y proyecto integrador"

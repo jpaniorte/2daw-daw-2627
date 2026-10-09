@@ -7,6 +7,7 @@ footer: 'Despliegue de Aplicaciones Web (0614) · UD1: Git & Docker'
 layout: default
 title: "Docker — Semana 3: Docker Compose (Teoría)"
 permalink: /docker/semana-3/teoria/
+pdf: "/UD1/1.2%20Docker/1.2.3%20Docker%20parte%203/pdf/docker_3_teoria.pdf"
 ---
 
 <!-- _class: lead -->
