@@ -59,6 +59,15 @@
                 {% endfor %}
               {% endif %}
             {% endfor %}
+            {% if block.pages %}
+              {% for leaf in block.pages %}
+                {% assign leaf_url = leaf.url | relative_url %}
+                {% if leaf_url == page.url %}
+                  {% assign active_block_id = block.id %}
+                  {% assign active_unit_id = unit.id %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
           {% endfor %}
         {% endfor %}
 
@@ -97,6 +106,19 @@
                             <span class="badge">PRÓX.</span>
                           </div>
                         {% endif %}
+                      {% endfor %}
+                    </div>
+                  </details>
+                {% elsif block.pages %}
+                  <details class="node block"{% if block.id == active_block_id %} open{% endif %}>
+                    <summary>
+                      <span class="chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                      <span class="node-label">{{ block.title }}</span>
+                    </summary>
+                    <div class="children pages">
+                      {% for leaf in block.pages %}
+                        {% assign leaf_url = leaf.url | relative_url %}
+                        <a href="{{ leaf_url }}" class="page-link{% if leaf_url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
                       {% endfor %}
                     </div>
                   </details>

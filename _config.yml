@@ -98,8 +98,18 @@ nav:
     blocks:
       - id: u2b1
         title: "2.1 Fundamentos web"
+        pages:
+          - { title: "Teoría", url: "/web/semana-1/teoria/" }
+          - { title: "Prácticas", url: "/web/semana-1/practicas/" }
+          - { title: "Test", url: "/web/semana-1/test/" }
+          - { title: "Simulacro", url: "/UD2/2.1%20Fundamentos%20web/web_1_simulacro.html", external: true }
       - id: u2b2
         title: "2.2 Servidores web y de aplicaciones"
+        pages:
+          - { title: "Teoría", url: "/web/semana-2/teoria/" }
+          - { title: "Prácticas", url: "/web/semana-2/practicas/" }
+          - { title: "Test", url: "/web/semana-2/test/" }
+          - { title: "Simulacro", url: "/UD2/2.2%20Servidores%20web%20y%20de%20aplicaciones/web_2_simulacro.html", external: true }
   - id: u3
     title: "UD3 · Administración de servidores Web"
     blocks:

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — arquitecturas web, bloque 2.1: fundamentos web</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — arquitecturas web, bloque 2.1: fundamentos web</h1>
+    <p>20 preguntas al azar del banco de 100 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 100 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "En el modelo cliente-servidor de la web, ¿quién inicia típicamente la comunicación?", "opts": ["El servidor, enviando datos sin que nadie los pida", "El cliente, haciendo una petición", "Ambos a la vez, siempre de forma simultánea", "Ninguno: la comunicación la inicia el DNS"], "correct": 1}, {"n": 2, "q": "¿Qué método HTTP se considera el adecuado para pedir un recurso sin modificar nada en el servidor?", "opts": ["POST", "DELETE", "GET", "PUT"], "correct": 2}, {"n": 3, "q": "Un formulario web envía los datos de un usuario nuevo para crear su cuenta. ¿Qué método HTTP es el más apropiado?", "opts": ["GET", "POST", "HEAD", "OPTIONS"], "correct": 1}, {"n": 4, "q": "¿Qué diferencia hay, en esencia, entre `PUT` y `PATCH`?", "opts": ["No hay diferencia, son sinónimos", "`PUT` reemplaza el recurso completo; `PATCH` lo modifica parcialmente", "`PATCH` solo sirve para borrar recursos", "`PUT` nunca lleva cuerpo en la petición"], "correct": 1}, {"n": 5, "q": "¿Qué método HTTP se usa típicamente para eliminar un recurso?", "opts": ["GET", "DELETE", "HEAD", "CONNECT"], "correct": 1}, {"n": 6, "q": "Al enviar un formulario con el método GET, ¿dónde terminan apareciendo los datos introducidos?", "opts": ["En el cuerpo de la petición, ocultos", "En la URL, como parte de la query string", "Nunca llegan al servidor", "En una cabecera llamada `Body`"], "correct": 1}, {"n": 7, "q": "¿Cuál de estas afirmaciones sobre GET y POST es correcta?", "opts": ["GET es más adecuado para enviar contraseñas porque es más rápido", "POST permite enviar más cantidad de datos y no los deja visibles en la URL", "GET y POST son exactamente intercambiables en todos los casos", "POST no puede usarse para enviar ficheros"], "correct": 1}, {"n": 8, "q": "¿Qué método HTTP devuelve solo las cabeceras de la respuesta, sin el cuerpo?", "opts": ["HEAD", "GET", "TRACE", "OPTIONS"], "correct": 0}, {"n": 9, "q": "Una API REST bien diseñada usa `GET /productos/7` para consultar un producto. ¿Qué método usarías para actualizar completamente ese producto?", "opts": ["GET /productos/7", "POST /productos", "PUT /productos/7", "DELETE /productos/7"], "correct": 2}, {"n": 10, "q": "¿Por qué se dice que `GET` debería ser una operación \"segura\" (sin efectos secundarios)?", "opts": ["Porque usa HTTPS obligatoriamente", "Porque, en teoría, repetir la misma petición GET no debería cambiar el estado del servidor", "Porque no puede fallar nunca", "Porque no puede llevar parámetros"], "correct": 1}, {"n": 11, "q": "¿A qué rango de códigos de estado HTTP pertenece un error causado por el propio cliente (p. ej. una URL mal escrita)?", "opts": ["2xx", "3xx", "4xx", "5xx"], "correct": 2}, {"n": 12, "q": "Un servidor sufre una caída interna al procesar una petición válida del cliente. ¿Qué rango de código de estado es esperable?", "opts": ["2xx", "3xx", "4xx", "5xx"], "correct": 3}, {"n": 13, "q": "¿Qué código de estado indica que una petición se completó con éxito y no hay contenido que devolver?", "opts": ["200", "201", "204", "404"], "correct": 2}, {"n": 14, "q": "Tras enviar un formulario que crea un nuevo recurso, ¿qué código de estado sería el más preciso devolver?", "opts": ["200", "201", "204", "400"], "correct": 1}, {"n": 15, "q": "Visitas `http://miempresa.com` y el servidor te lleva automáticamente a `https://miempresa.com`. ¿Qué tipo de código de estado está implicado?", "opts": ["2xx", "3xx", "4xx", "5xx"], "correct": 1}, {"n": 16, "q": "¿Qué código de estado verías si intentas acceder a una sección que exige haber iniciado sesión y no lo has hecho?", "opts": ["200", "401", "403", "500"], "correct": 1}, {"n": 17, "q": "Ya has iniciado sesión, pero intentas entrar al panel de administración sin tener permisos de administrador. ¿Qué código es más apropiado?", "opts": ["401", "403", "404", "503"], "correct": 1}, {"n": 18, "q": "¿Qué código de estado HTTP se asocia habitualmente a \"recurso no encontrado\"?", "opts": ["400", "404", "410", "500"], "correct": 1}, {"n": 19, "q": "Un servidor está temporalmente saturado y no puede atender más peticiones. ¿Qué código de estado encajaría mejor?", "opts": ["404", "409", "503", "301"], "correct": 2}, {"n": 20, "q": "¿Qué significa, en general, un código de estado que empieza por `5`?", "opts": ["Un error cometido por el cliente al construir la petición", "Una redirección", "Un error ocurrido dentro del servidor al procesar una petición válida", "Que la petición fue exitosa"], "correct": 2}, {"n": 21, "q": "¿Qué cabecera HTTP indica al cliente cómo debe interpretar el cuerpo de la respuesta (HTML, JSON, imagen...)?", "opts": ["Content-Type", "Host", "User-Agent", "Accept-Language"], "correct": 0}, {"n": 22, "q": "¿Qué cabecera de petición identifica el dominio al que va dirigida la petición (importante si un servidor aloja varios sitios)?", "opts": ["Host", "Content-Length", "Set-Cookie", "ETag"], "correct": 0}, {"n": 23, "q": "¿Qué cabecera usa el servidor para indicarle al navegador que guarde una cookie?", "opts": ["Cookie", "Set-Cookie", "Authorization", "Accept"], "correct": 1}, {"n": 24, "q": "Un cliente envía `Accept: application/json` en su petición. ¿Qué está indicando?", "opts": ["Que solo acepta recibir la respuesta en formato JSON", "Que está enviando datos en JSON", "Que quiere forzar una redirección", "Que no quiere recibir cookies"], "correct": 0}, {"n": 25, "q": "¿Qué cabecera suele llevar el token de autenticación en muchas APIs modernas?", "opts": ["Authorization", "Host", "Referer", "Content-Length"], "correct": 0}, {"n": 26, "q": "¿Para qué sirve la cabecera `Content-Length` en una respuesta HTTP?", "opts": ["Indica el idioma del contenido", "Indica el tamaño en bytes del cuerpo de la respuesta", "Indica cuántas cookies se han enviado", "Indica el método HTTP usado"], "correct": 1}, {"n": 27, "q": "¿Qué cabecera de petición identifica, de forma orientativa, el navegador o cliente que hace la petición?", "opts": ["User-Agent", "Host", "Set-Cookie", "ETag"], "correct": 0}, {"n": 28, "q": "Quieres que el servidor sepa que la petición trae un cuerpo en formato JSON. ¿Qué cabecera deberías enviar en la petición?", "opts": ["Accept: application/json", "Content-Type: application/json", "Host: application/json", "Cookie: application/json"], "correct": 1}, {"n": 29, "q": "¿Qué diferencia hay entre las cabeceras `Cookie` y `Set-Cookie`?", "opts": ["Son exactamente la misma cabecera con dos nombres", "`Cookie` la envía el cliente al servidor; `Set-Cookie` la envía el servidor al cliente", "`Set-Cookie` solo existe en HTTPS", "`Cookie` solo puede usarse una vez por sesión"], "correct": 1}, {"n": 30, "q": "Si una respuesta HTTP no incluye la cabecera `Content-Type`, ¿qué problema puede causar en el cliente?", "opts": ["Ninguno, es opcional y nunca afecta nada", "El cliente puede no saber cómo interpretar correctamente el cuerpo recibido", "La petición se convierte automáticamente en POST", "El servidor rechaza la petición"], "correct": 1}, {"n": 31, "q": "En la URL `https://tienda.com:8443/productos/3?color=rojo#opiniones`, ¿qué parte es `8443`?", "opts": ["El host", "El puerto", "La ruta", "El fragmento"], "correct": 1}, {"n": 32, "q": "En la misma URL, ¿qué parte es `color=rojo`?", "opts": ["El fragmento", "El host", "La query string (parámetros)", "El esquema"], "correct": 2}, {"n": 33, "q": "¿Qué parte de una URL nunca se envía al servidor en la petición HTTP?", "opts": ["El host", "La ruta", "El fragmento (lo que va después de #)", "El puerto"], "correct": 2}, {"n": 34, "q": "Si una URL no especifica puerto y usa `https://`, ¿qué puerto se usa por defecto?", "opts": ["21", "80", "443", "8080"], "correct": 2}, {"n": 35, "q": "¿Qué función cumple el DNS en la navegación web?", "opts": ["Cifra el tráfico HTTP", "Traduce nombres de dominio a direcciones IP", "Comprime las imágenes de una página", "Gestiona las sesiones de usuario"], "correct": 1}, {"n": 36, "q": "La primera vez que visitas un dominio tarda un poco más en cargar que las siguientes veces, aun con la misma conexión. ¿Qué explicación es más plausible desde el punto de vista de DNS?", "opts": ["La segunda vez el servidor pesa menos", "La resolución DNS puede quedar cacheada tras la primera consulta", "El navegador borra la caché DNS automáticamente", "HTTPS solo funciona a partir de la segunda visita"], "correct": 1}, {"n": 37, "q": "Si registras un dominio nuevo y apuntas sus registros DNS a un servidor, ¿por qué el cambio puede tardar en verse para todo el mundo?", "opts": ["Porque las direcciones IP cambian cada segundo", "Porque hay cachés DNS intermedias que tardan en actualizarse", "Porque HTTP no admite dominios nuevos", "Porque hace falta reiniciar el navegador de cada visitante manualmente"], "correct": 1}, {"n": 38, "q": "¿Qué comando de terminal usarías para consultar a qué IP resuelve un dominio?", "opts": ["ping -t", "curl -X POST", "nslookup (o dig)", "docker inspect"], "correct": 2}, {"n": 39, "q": "¿Cuál de estas NO es una parte estándar de una URL?", "opts": ["Esquema", "Host", "Query string", "Docker tag"], "correct": 3}, {"n": 40, "q": "¿Qué ocurre si cambias solo el fragmento de una URL (la parte después de `#`) y recargas?", "opts": ["Se envía una nueva petición HTTP completa al servidor", "El navegador la gestiona localmente, sin que el servidor la reciba como tal", "El servidor devuelve siempre un error 404", "Se invalida automáticamente la sesión"], "correct": 1}, {"n": 41, "q": "¿Por qué se dice que HTTP es un protocolo \"sin estado\" (stateless)?", "opts": ["Porque no puede transportar datos binarios", "Porque cada petición es independiente y el servidor no recuerda las anteriores por sí solo", "Porque no puede usarse con HTTPS", "Porque no tiene códigos de estado"], "correct": 1}, {"n": 42, "q": "¿Qué mecanismo permite que un servidor \"recuerde\" que ya iniciaste sesión en peticiones posteriores?", "opts": ["El propio protocolo HTTP, que guarda memoria por defecto", "Cookies, junto con un estado de sesión guardado en el servidor", "El DNS, que asocia tu IP a tu usuario", "El método HTTP usado"], "correct": 1}, {"n": 43, "q": "¿Qué suele contener realmente la cookie de sesión de un usuario autenticado, en vez de todos sus datos?", "opts": ["La contraseña en texto plano", "Un identificador de sesión, que el servidor usa para localizar el estado real", "El historial completo de navegación", "El código fuente de la aplicación"], "correct": 1}, {"n": 44, "q": "Si un usuario borra manualmente las cookies de su navegador, ¿qué efecto típico tiene sobre una sesión iniciada?", "opts": ["Ninguno, la sesión sigue activa igual", "Probablemente se cierre su sesión, al perder el identificador que la vinculaba", "Se elimina su cuenta de usuario", "El servidor deja de responder a ese dominio"], "correct": 1}, {"n": 45, "q": "¿Dónde se guarda habitualmente el estado \"real\" de una sesión (usuario, carrito, permisos), y no solo su identificador?", "opts": ["Únicamente en la cookie del navegador", "En el servidor (memoria o base de datos), asociado al ID de sesión", "En la caché DNS", "En la URL de cada petición"], "correct": 1}, {"n": 46, "q": "¿Qué problema de fondo resuelven las cookies de sesión, dado que HTTP no guarda estado por sí mismo?", "opts": ["Permiten cifrar la conexión", "Permiten que el servidor reconozca al mismo cliente a lo largo de varias peticiones", "Permiten resolver nombres de dominio", "Permiten comprimir las respuestas"], "correct": 1}, {"n": 47, "q": "Dos pestañas del mismo navegador visitan el mismo sitio donde ya iniciaste sesión. ¿Qué suele ocurrir con la sesión?", "opts": ["Cada pestaña tiene una sesión completamente distinta e incompatible", "Normalmente comparten la misma cookie de sesión, al ser el mismo navegador y dominio", "Es imposible abrir el mismo sitio en dos pestañas", "El servidor bloquea automáticamente la segunda pestaña"], "correct": 1}, {"n": 48, "q": "¿Qué significa, en la práctica, que una cookie tenga marcada la opción `HttpOnly`?", "opts": ["Que solo puede usarse en peticiones HTTP, nunca HTTPS", "Que no puede leerse mediante JavaScript, lo que reduce el riesgo de robo por scripts maliciosos", "Que caduca en una hora exacta siempre", "Que el servidor la ignora por completo"], "correct": 1}, {"n": 49, "q": "Si un sistema no usa cookies ni ningún otro mecanismo de estado, ¿qué consecuencia tendría para el usuario al navegar entre páginas?", "opts": ["Ninguna, HTTP recordaría igualmente que ya inició sesión", "El servidor no podría distinguir, por sí mismo, que las peticiones vienen del mismo usuario que ya se autenticó", "La navegación sería más rápida, sin ningún efecto negativo", "Las URLs dejarían de funcionar"], "correct": 1}, {"n": 50, "q": "¿Qué alternativa a las cookies de sesión tradicionales se usa habitualmente en APIs, basada en un token que el propio cliente guarda y reenvía (p. ej. en la cabecera `Authorization`)?", "opts": ["DNS tokens", "JWT (JSON Web Token) u otros tokens similares", "Content-Length tokens", "Fragmentos de URL"], "correct": 1}, {"n": 51, "q": "¿Cuál es el problema típico de meter interfaz, lógica de negocio y acceso a datos en un único bloque de código?", "opts": ["Que el código ocupa menos espacio en disco", "Que cualquier cambio obliga a tocar y entender todo el bloque a la vez, dificultando el mantenimiento", "Que ya no se puede ejecutar en un servidor", "Que deja de funcionar con HTTP"], "correct": 1}, {"n": 52, "q": "¿Qué caracteriza a una arquitectura de 1 sola capa?", "opts": ["Interfaz, lógica y datos están separados en máquinas distintas", "Todo (interfaz, lógica y datos) se ejecuta junto, típicamente en la misma máquina y bloque de código", "Es exclusiva de aplicaciones con microservicios", "Requiere obligatoriamente una base de datos distribuida"], "correct": 1}, {"n": 53, "q": "En una arquitectura de 2 capas, como una app de escritorio que se conecta directamente a una base de datos remota, ¿qué suele seguir mezclado?", "opts": ["La interfaz y la red, que son indistinguibles", "La lógica de negocio y el acceso a datos, en el mismo bloque", "El DNS y el HTTP", "Los microservicios y el monolito"], "correct": 1}, {"n": 54, "q": "¿Cuáles son las tres capas típicas de una arquitectura de 3 capas?", "opts": ["Presentación, negocio y datos", "Cliente, servidor y base de datos únicamente sin lógica", "Frontend, backend y DNS", "HTTP, HTTPS y FTP"], "correct": 0}, {"n": 55, "q": "¿Qué responsabilidad corresponde a la capa de negocio en una arquitectura de 3 capas?", "opts": ["Mostrar el HTML al usuario", "Aplicar las reglas, validaciones y cálculos propios de la aplicación", "Almacenar físicamente los datos en disco", "Resolver nombres de dominio"], "correct": 1}, {"n": 56, "q": "Si quieres cambiar el motor de base de datos de una aplicación bien organizada en 3 capas, ¿qué capa debería, idealmente, verse menos afectada?", "opts": ["La capa de presentación", "La capa de negocio", "Ambas por igual, siempre", "Ninguna capa se ve afectada nunca"], "correct": 1}, {"n": 57, "q": "¿Qué es la arquitectura N-capas en relación con la de 3 capas?", "opts": ["Una tecnología completamente distinta e incompatible", "Una generalización: se pueden añadir capas intermedias según haga falta, siendo 3 capas el caso más común", "Un sinónimo exacto de microservicios", "Una arquitectura exclusiva para bases de datos NoSQL"], "correct": 1}, {"n": 58, "q": "¿Cuál de estas secuencias describe mejor un flujo típico en una arquitectura N-capas con una capa de API intermedia?", "opts": ["Presentación → API/servicios → negocio → datos → base de datos", "Base de datos → presentación → negocio", "Negocio → presentación → base de datos → API", "API → base de datos → presentación (sin negocio)"], "correct": 0}, {"n": 59, "q": "¿Qué ventaja aporta poder escalar cada capa por separado?", "opts": ["Permite añadir más servidores donde realmente hace falta (p. ej. presentación con mucho tráfico) sin duplicar innecesariamente otras capas", "Elimina la necesidad de tener una capa de datos", "Hace innecesario el uso de HTTP", "Impide que la aplicación falle nunca"], "correct": 0}, {"n": 60, "q": "Un equipo divide su trabajo: unos en la interfaz, otros en las reglas de negocio, otros en el acceso a datos. ¿Qué arquitectura facilita este reparto?", "opts": ["Arquitectura de 1 capa", "Arquitectura en capas (3 o N capas)", "Arquitectura sin servidor en absoluto", "No depende de la arquitectura"], "correct": 1}, {"n": 61, "q": "¿Qué significa que una aplicación esté \"bien organizada en capas\" internamente, incluso si se despliega como monolito?", "opts": ["Que obligatoriamente usa microservicios", "Que, aunque se despliegue como una sola unidad, su código separa presentación, negocio y datos con claridad", "Que no tiene base de datos", "Que no puede escalar nunca"], "correct": 1}, {"n": 62, "q": "¿Cuál de estas NO es una ventaja típica de separar en capas?", "opts": ["Facilitar el mantenimiento", "Facilitar el trabajo en equipo por especialidad", "Permitir escalar partes concretas", "Garantizar automáticamente cero errores en producción"], "correct": 3}, {"n": 63, "q": "En una arquitectura de 3 capas, ¿qué parte ve directamente el usuario final?", "opts": ["La capa de negocio", "La capa de datos", "La capa de presentación", "Ninguna, el usuario nunca ve ninguna capa"], "correct": 2}, {"n": 64, "q": "¿Qué relación hay entre \"capas\" y \"arquitecturas a gran escala\" como monolito o microservicios?", "opts": ["Son exactamente lo mismo", "Las capas organizan el código dentro de una pieza; monolito/microservicios deciden cómo se reparte el sistema completo en piezas desplegables", "Las capas sustituyen a los microservicios siempre", "No tienen ninguna relación posible"], "correct": 1}, {"n": 65, "q": "Separar la capa de datos del resto permite, entre otras cosas, cambiar de base de datos relacional a NoSQL con menor impacto. ¿Por qué?", "opts": ["Porque las capas de negocio y presentación no deberían depender de los detalles concretos de cómo se almacenan los datos", "Porque NoSQL no necesita ningún tipo de capa de datos", "Porque las capas eliminan la necesidad de bases de datos", "Porque las capas obligan a usar siempre la misma base de datos"], "correct": 0}, {"n": 66, "q": "¿Cómo se despliega típicamente un monolito?", "opts": ["Como muchos servicios pequeños e independientes", "Como una sola unidad que incluye toda la aplicación", "Solo como funciones serverless", "Nunca se despliega, solo se ejecuta en el navegador"], "correct": 1}, {"n": 67, "q": "¿Es correcto decir que \"monolito\" significa \"código desordenado\"?", "opts": ["Sí, por definición un monolito siempre tiene código desordenado", "No: un monolito puede estar perfectamente organizado en capas por dentro; \"monolito\" se refiere a cómo se despliega, no a su calidad interna", "Sí, porque no admite ningún tipo de organización interna", "No, porque los monolitos no tienen código, solo configuración"], "correct": 1}, {"n": 68, "q": "¿Cuál es la principal desventaja de un monolito a medida que el proyecto crece mucho?", "opts": ["No puede tener base de datos", "Cualquier cambio pequeño obliga a volver a desplegar toda la aplicación", "No puede ejecutarse en un servidor real", "No permite usar HTTP"], "correct": 1}, {"n": 69, "q": "¿Qué caracteriza a una arquitectura SOA (Service-Oriented Architecture)?", "opts": ["El sistema se divide en servicios que se comunican entre sí, a menudo mediante un middleware centralizado", "Todo el sistema es un único bloque indivisible", "Es idéntica a una arquitectura de 1 capa", "No permite ningún tipo de comunicación entre componentes"], "correct": 0}, {"n": 70, "q": "¿Qué papel juega el ESB (Enterprise Service Bus) en una arquitectura SOA típica?", "opts": ["Es la base de datos principal del sistema", "Actúa como middleware centralizado de comunicación entre servicios", "Es el navegador del cliente", "Es un tipo de contenedor Docker"], "correct": 1}, {"n": 71, "q": "¿Qué caracteriza principalmente a una arquitectura de microservicios?", "opts": ["Servicios pequeños e independientes, que se despliegan por separado, cada uno con su propia responsabilidad", "Un único proceso que hace absolutamente todo", "La ausencia total de bases de datos", "Que solo puede ejecutarse en una máquina física"], "correct": 0}, {"n": 72, "q": "¿Por qué los microservicios encajan especialmente bien con Docker?", "opts": ["Porque Docker obliga a usar microservicios", "Porque cada microservicio puede empaquetarse y ejecutarse de forma aislada en su propio contenedor", "Porque los microservicios no necesitan red", "Porque Docker elimina la necesidad de bases de datos"], "correct": 1}, {"n": 73, "q": "Un equipo pequeño (3 personas) va a construir un MVP sencillo con poco tiempo. ¿Qué arquitectura suele ser más razonable al principio?", "opts": ["Microservicios desde el primer día", "Un monolito bien organizado en capas", "SOA con ESB corporativo", "Una arquitectura puramente P2P"], "correct": 1}, {"n": 74, "q": "¿Qué ventaja ofrecen los microservicios frente a un monolito en cuanto a fallos?", "opts": ["Un fallo en un microservicio nunca afecta a nada más, bajo ninguna circunstancia", "Un fallo puede quedar más aislado en el servicio afectado, en lugar de tumbar toda la aplicación", "Los microservicios no pueden fallar nunca", "El monolito aísla mejor los fallos que los microservicios"], "correct": 1}, {"n": 75, "q": "¿Qué complejidad adicional suelen introducir los microservicios respecto a un monolito?", "opts": ["Ninguna, son siempre más simples", "La necesidad de coordinar, desplegar y monitorizar múltiples servicios independientes que se comunican entre sí", "Dejan de necesitar ningún tipo de red", "Eliminan la necesidad de tener bases de datos"], "correct": 1}, {"n": 76, "q": "¿En qué se diferencian principalmente SOA y microservicios?", "opts": ["No hay ninguna diferencia, son sinónimos exactos", "SOA suele usar servicios más grandes y un middleware centralizado (ESB); los microservicios tienden a servicios más pequeños y autónomos", "Microservicios es una tecnología anterior a SOA", "SOA no permite ningún tipo de comunicación entre servicios"], "correct": 1}, {"n": 77, "q": "¿Por qué podría una empresa con muchos sistemas heredados optar por SOA en vez de microservicios?", "opts": ["Porque SOA es incompatible con cualquier sistema antiguo", "Porque SOA facilita integrar sistemas heredados distintos a través de un middleware común", "Porque SOA no requiere ningún tipo de comunicación entre sistemas", "Porque los sistemas heredados no pueden tener servicios"], "correct": 1}, {"n": 78, "q": "Si cada microservicio de un sistema tiene su propia base de datos independiente, ¿qué ventaja de aislamiento se consigue?", "opts": ["Un cambio en el esquema de datos de un servicio no obliga a tocar los demás servicios directamente", "Todos los servicios comparten obligatoriamente los mismos datos", "Las bases de datos dejan de necesitar copias de seguridad", "Se elimina la necesidad de desplegar cada servicio por separado"], "correct": 0}, {"n": 79, "q": "¿Cómo se comunican típicamente los componentes en una arquitectura orientada a eventos?", "opts": ["Llamándose directamente por su IP, sin intermediarios", "Publicando y reaccionando a eventos a través de una cola o broker de mensajes", "Compartiendo una única base de datos sin ningún tipo de mensaje", "No se comunican entre sí en ningún caso"], "correct": 1}, {"n": 80, "q": "¿Qué ventaja de desacoplamiento aporta una arquitectura orientada a eventos?", "opts": ["El que publica un evento no necesita saber quién (ni cuántos) lo van a consumir", "Obliga a que emisor y receptor estén siempre en el mismo servidor", "Elimina la necesidad de cualquier tipo de red", "Hace innecesarios los microservicios"], "correct": 0}, {"n": 81, "q": "En un sistema de e-commerce con arquitectura orientada a eventos, al confirmarse un pago se publica un evento \"pago confirmado\". ¿Qué módulos podrían reaccionar a él?", "opts": ["Ninguno, los eventos no pueden tener más de un receptor", "Potencialmente varios: envío de email, actualización de stock, generación de factura, todos de forma desacoplada", "Solo el propio módulo de pagos", "Solo el servidor DNS"], "correct": 1}, {"n": 82, "q": "¿Qué significa realmente \"serverless\" (FaaS) para quien desarrolla la aplicación?", "opts": ["Que la aplicación se ejecuta sin ningún tipo de servidor físico en el mundo", "Que no gestiona directamente los servidores: la plataforma los aprovisiona, escala y mantiene", "Que obliga a usar siempre arquitectura P2P", "Que no se puede cobrar por su uso"], "correct": 1}, {"n": 83, "q": "¿Cuál es un modelo de facturación habitual en plataformas serverless/FaaS?", "opts": ["Se paga una cuota fija mensual por tener el servidor encendido, se use o no", "Se paga principalmente por el tiempo de ejecución real de las funciones", "Es siempre gratuito, sin ningún coste", "Se paga por cada dirección IP registrada"], "correct": 1}, {"n": 84, "q": "¿Qué tipo de carga de trabajo encaja especialmente bien con serverless/FaaS?", "opts": ["Un servicio con tráfico constante y perfectamente predecible las 24 horas", "Tareas puntuales o con picos de carga impredecibles", "Una base de datos que debe estar siempre encendida", "Un sistema operativo completo"], "correct": 1}, {"n": 85, "q": "¿Qué caracteriza a una arquitectura peer-to-peer (P2P)?", "opts": ["Existe siempre un único servidor central que controla todo", "Cada nodo puede actuar a la vez como cliente y como servidor, sin un servidor central claro", "Es idéntica a una arquitectura cliente-servidor clásica", "Solo puede tener dos nodos como máximo"], "correct": 1}, {"n": 86, "q": "¿Qué tipo de aplicación es un ejemplo clásico de arquitectura P2P?", "opts": ["Una tienda online corporativa típica", "Una red de compartición de ficheros como BitTorrent", "Una API REST de un banco", "Un servidor de correo corporativo"], "correct": 1}, {"n": 87, "q": "¿Por qué la arquitectura P2P es poco habitual en aplicaciones de negocio \"normales\" (tiendas online, bancos, etc.)?", "opts": ["Porque es técnicamente imposible de implementar", "Porque este tipo de negocios suelen necesitar un control centralizado de datos, usuarios y transacciones que el modelo P2P no ofrece de forma natural", "Porque P2P no puede usar internet", "Porque P2P solo funciona con un único usuario"], "correct": 1}, {"n": 88, "q": "Una arquitectura orientada a eventos y una arquitectura de microservicios, ¿pueden combinarse?", "opts": ["No, son mutuamente excluyentes", "Sí: es habitual que microservicios se comuniquen entre sí mediante eventos para reducir el acoplamiento directo", "Solo si ambos usan exactamente el mismo lenguaje de programación", "Solo en sistemas P2P"], "correct": 1}, {"n": 89, "q": "¿Qué problema de un sistema con muchas llamadas directas entre servicios ayuda a resolver el modelo orientado a eventos?", "opts": ["El acoplamiento fuerte: que cada servicio dependa de conocer y llamar directamente a los demás", "El consumo de almacenamiento en disco", "La necesidad de usar HTTPS", "La resolución de nombres DNS"], "correct": 0}, {"n": 90, "q": "¿Cuál de estos NO es un estilo de arquitectura a gran escala visto en teoría?", "opts": ["Microservicios", "Serverless", "Arquitectura Hexagonal", "SOA"], "correct": 2}, {"n": 91, "q": "En el patrón MVC, ¿qué papel tiene el Modelo?", "opts": ["Mostrar el HTML al usuario", "Contener los datos y la lógica de negocio", "Recibir la petición HTTP directamente del navegador", "Gestionar exclusivamente la base de datos de sesiones"], "correct": 1}, {"n": 92, "q": "¿Qué componente de MVC suele encargarse de recibir la petición y coordinar Modelo y Vista?", "opts": ["El Modelo", "La Vista", "El Controlador", "El Adaptador"], "correct": 2}, {"n": 93, "q": "¿Qué diferencia principal introduce el patrón MVP (Modelo-Vista-Presentador) respecto a MVC?", "opts": ["Elimina por completo la Vista", "El Presentador asume más lógica, dejando la Vista más \"tonta\" y fácil de probar automáticamente", "El Presentador sustituye a la base de datos", "No existe ninguna diferencia real"], "correct": 1}, {"n": 94, "q": "¿Qué caracteriza al patrón MVVM (Modelo-Vista-Vistamodelo), muy usado en frameworks frontend modernos?", "opts": ["El ViewModel expone el estado de forma reactiva y la Vista se sincroniza automáticamente con él", "La Vista contiene toda la lógica de negocio", "El Modelo se comunica directamente con el navegador sin pasar por nada más", "Es exclusivo de aplicaciones de escritorio sin interfaz web"], "correct": 0}, {"n": 95, "q": "¿Cuál es la idea central de la arquitectura Hexagonal (puertos y adaptadores)?", "opts": ["Que la base de datos esté en el centro de todo el sistema", "Aislar la lógica de negocio del exterior, comunicándose mediante puertos (interfaces) y adaptadores (implementaciones concretas)", "Sustituir siempre al patrón MVC", "Obligar a usar microservicios"], "correct": 1}, {"n": 96, "q": "En arquitectura Hexagonal, si cambias de base de datos relacional a NoSQL, ¿qué se espera que ocurra con la lógica de negocio (el dominio)?", "opts": ["Debe reescribirse por completo junto con la base de datos", "Debería poder mantenerse prácticamente intacta, cambiando solo el adaptador correspondiente", "Deja de funcionar definitivamente", "Se convierte automáticamente en un microservicio"], "correct": 1}, {"n": 97, "q": "¿Qué tienen en común Clean Architecture y Onion Architecture con la arquitectura Hexagonal?", "opts": ["Las tres son completamente distintas sin ningún punto en común", "Las tres sitúan la lógica de negocio en el centro, con las dependencias apuntando siempre hacia dentro", "Las tres exigen usar exclusivamente microservicios", "Las tres son patrones de capas de presentación, nada más"], "correct": 1}, {"n": 98, "q": "¿Por qué estos patrones (Hexagonal, Clean, Onion, MVC con buena separación) facilitan las pruebas automáticas?", "opts": ["Porque obligan a desactivar los tests en producción", "Porque permiten probar la lógica de negocio de forma aislada, sin depender de una base de datos o framework real", "Porque eliminan la necesidad de escribir tests", "Porque solo funcionan sin conexión a internet"], "correct": 1}, {"n": 99, "q": "¿Es correcto decir que los patrones de diseño interno (MVC, Hexagonal...) son incompatibles con dividir el sistema en microservicios?", "opts": ["Sí, son mutuamente excluyentes por definición", "No: un microservicio puede, perfectamente, organizarse internamente con MVC o Hexagonal", "Sí, solo pueden usarse en monolitos", "No tiene sentido la pregunta porque los microservicios no tienen código interno"], "correct": 1}, {"n": 100, "q": "Una aplicación organizada con Hexagonal expone su lógica de negocio tanto a través de una API REST como de una cola de mensajes. ¿Qué concepto de esta arquitectura representa esa doble forma de entrada/salida?", "opts": ["Dos bases de datos distintas", "Dos adaptadores distintos conectados a los puertos correspondientes del dominio", "Dos monolitos ejecutándose en paralelo", "Dos servidores DNS redundantes"], "correct": 1}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>

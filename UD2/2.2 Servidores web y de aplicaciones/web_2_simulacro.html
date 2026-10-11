@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — arquitecturas web, bloque 2.2: servidores y despliegue</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — arquitecturas web, bloque 2.2: servidores y despliegue</h1>
+    <p>20 preguntas al azar del banco de 100 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 100 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "¿Qué caracteriza al contenido estático servido por un servidor web?", "opts": ["Se genera ejecutando código distinto en cada petición", "Se envía tal cual está guardado en disco, sin ejecutar código por petición", "Solo puede tratarse de imágenes", "Nunca puede cachearse"], "correct": 1}, {"n": 2, "q": "¿Cuál de estos recursos es previsiblemente contenido dinámico?", "opts": ["Un fichero `estilos.css`", "El resultado de una búsqueda personalizada en una tienda online", "Una imagen `logo.png`", "Una fuente tipográfica `.woff2`"], "correct": 1}, {"n": 3, "q": "Un servidor genera el HTML de una página consultando datos actualizados de una base de datos en cada visita. ¿Qué tipo de contenido es?", "opts": ["Estático", "Dinámico", "Ninguno de los dos, no existe esa categoría", "Depende solo del navegador usado"], "correct": 1}, {"n": 4, "q": "¿Por qué el contenido estático suele servirse más rápido que el dinámico?", "opts": ["Porque pesa siempre menos en bytes", "Porque el servidor solo tiene que leer un fichero, sin ejecutar lógica adicional", "Porque usa un protocolo distinto a HTTP", "Porque nunca pasa por DNS"], "correct": 1}, {"n": 5, "q": "Una página HTML generada dinámicamente referencia internamente un fichero `app.js`. ¿Qué es más probable respecto a `app.js`?", "opts": ["Que también se genere de cero en cada petición con datos distintos", "Que sea un recurso estático servido tal cual desde disco", "Que sea imposible de servir junto con contenido dinámico", "Que sustituya al servidor de aplicaciones"], "correct": 1}, {"n": 6, "q": "¿Cuál de estas afirmaciones es correcta sobre una misma página web?", "opts": ["Una página debe ser siempre 100% estática o 100% dinámica, nunca ambas", "Puede combinar HTML dinámico con recursos estáticos como CSS, JS o imágenes", "El contenido dinámico nunca puede incluir imágenes", "El contenido estático solo existe en servidores de aplicaciones"], "correct": 1}, {"n": 7, "q": "¿Qué ejemplo representa mejor contenido estático?", "opts": ["El precio actualizado en tiempo real de una acción bursátil", "Un documento PDF descargable que no cambia", "El feed personalizado de un usuario en una red social", "El resultado de iniciar sesión con credenciales concretas"], "correct": 1}, {"n": 8, "q": "¿Qué ventaja operativa tiene identificar bien qué partes de una web son estáticas?", "opts": ["Ninguna, da igual cómo se sirvan todos los recursos", "Permite servirlas de la forma más eficiente posible y, si hace falta, cachearlas", "Obliga a ejecutar siempre una base de datos", "Impide usar HTTPS en esos recursos"], "correct": 1}, {"n": 9, "q": "¿Qué ocurre si intentas tratar contenido claramente dinámico (p. ej. el carrito de la compra de un usuario) como si fuera estático?", "opts": ["No pasa nada, funciona exactamente igual", "Todos los usuarios verían el mismo contenido fijo, en vez del que les corresponde a cada uno", "El servidor lo rechaza automáticamente con un error", "Se vuelve automáticamente más rápido sin ningún problema"], "correct": 1}, {"n": 10, "q": "En el esquema `GET /tienda` que devuelve HTML dinámico referenciando `/css/estilos.css`, ¿qué parte es estática?", "opts": ["Todo el conjunto, incluido el HTML", "Solo `/css/estilos.css`", "Solo el HTML generado", "Ninguna parte lo es"], "correct": 1}, {"n": 11, "q": "¿Cuál es la función principal de un servidor web como Apache o Nginx?", "opts": ["Ejecutar exclusivamente lógica de negocio compleja", "Recibir peticiones HTTP y responder, típicamente sirviendo contenido estático con eficiencia", "Gestionar copias de seguridad de bases de datos", "Resolver nombres de dominio"], "correct": 1}, {"n": 12, "q": "¿Cuál de estos es un servidor web, no un servidor de aplicaciones?", "opts": ["Tomcat", "Nginx", "Node.js ejecutando Express", "PHP-FPM"], "correct": 1}, {"n": 13, "q": "Además de servir contenido, ¿qué otra función puede cumplir un servidor web como Nginx?", "opts": ["Actuar como proxy inverso, reenviando peticiones a otros servicios", "Sustituir completamente al DNS", "Eliminar la necesidad de certificados HTTPS", "Compilar código fuente de la aplicación"], "correct": 0}, {"n": 14, "q": "¿Por qué los servidores web están especialmente optimizados para servir contenido estático?", "opts": ["Porque no saben interpretar HTTP", "Porque su diseño prioriza responder rápido a muchísimas conexiones simultáneas con ficheros ya preparados", "Porque ejecutan bases de datos internamente", "Porque solo funcionan con HTTPS"], "correct": 1}, {"n": 15, "q": "¿Qué significa que Apache y Nginx sean, en el fondo, programas que \"hablan HTTP\"?", "opts": ["Que entienden y responden siguiendo las reglas del protocolo HTTP visto en el bloque 2.1", "Que solo funcionan dentro de contenedores Docker", "Que sustituyen completamente a los navegadores", "Que no pueden servir imágenes"], "correct": 0}, {"n": 16, "q": "¿En qué se diferenciaría, a nivel de uso típico, Apache/Nginx de un servidor de aplicaciones puro?", "opts": ["El servidor web no suele ejecutar por sí mismo la lógica de negocio de la aplicación", "El servidor web nunca puede recibir peticiones HTTP", "Apache y Nginx solo existen en entornos de pruebas", "No existe ninguna diferencia de uso típico"], "correct": 0}, {"n": 17, "q": "¿Qué tienen en común Apache y Nginx frente a Tomcat o Node.js, en el contexto visto en teoría?", "opts": ["Ambos son, ante todo, servidores web pensados para servir contenido HTTP de forma eficiente", "Ambos ejecutan directamente código Java por diseño", "Ambos son exclusivamente bases de datos", "Ambos sustituyen al DNS"], "correct": 0}, {"n": 18, "q": "Una empresa necesita servir miles de imágenes de producto rápidamente. ¿Qué tipo de servidor encaja mejor para esa tarea concreta?", "opts": ["Un servidor de aplicaciones puro, sin servidor web", "Un servidor web como Nginx, optimizado para servir ese tipo de contenido", "Ninguno, hace falta un servidor de bases de datos", "Un cliente DNS"], "correct": 1}, {"n": 19, "q": "¿Qué rol puede jugar un servidor web situado \"por delante\" de otros servicios, en el esquema visto en teoría?", "opts": ["Puerta de entrada (proxy inverso) hacia servicios internos, además de servir lo estático", "Sustituir completamente a la base de datos", "Eliminar la necesidad de contenedores", "Generar automáticamente certificados sin ninguna configuración"], "correct": 0}, {"n": 20, "q": "¿Qué detalle se profundiza específicamente en la UD3, relacionado con los servidores web vistos hoy?", "opts": ["La sintaxis básica de HTML", "La configuración real de Apache/Nginx: hosts virtuales, HTTPS, proxy inverso y rendimiento", "El funcionamiento interno de Git", "El PID1 de un contenedor"], "correct": 1}, {"n": 21, "q": "¿Cuál es la función principal de un servidor de aplicaciones?", "opts": ["Servir ficheros estáticos de la forma más eficiente posible", "Ejecutar la lógica de negocio de la aplicación para generar contenido dinámico", "Resolver nombres de dominio", "Cifrar el tráfico de red exclusivamente"], "correct": 1}, {"n": 22, "q": "¿Cuál de estos es un ejemplo de servidor de aplicaciones?", "opts": ["Nginx", "Apache HTTP Server", "Tomcat", "DNS"], "correct": 2}, {"n": 23, "q": "¿Qué necesita entender un servidor de aplicaciones que un servidor web puro no necesita?", "opts": ["El protocolo DNS exclusivamente", "El lenguaje o framework concreto en el que está escrita la lógica de la aplicación (Java, Node.js, Python...)", "Únicamente ficheros de imagen", "El hardware físico del servidor"], "correct": 1}, {"n": 24, "q": "Gunicorn y uWSGI son ejemplos de servidores de aplicaciones típicos de qué lenguaje?", "opts": ["Java", "Python", "PHP únicamente", "Ninguno, son servidores DNS"], "correct": 1}, {"n": 25, "q": "PHP-FPM actúa como:", "opts": ["Un servidor de aplicaciones que ejecuta código PHP para generar contenido dinámico", "Un servidor DNS especializado en dominios .php", "Un tipo de base de datos NoSQL", "Un sustituto directo de Docker"], "correct": 0}, {"n": 26, "q": "¿Puede un servidor de aplicaciones recibir peticiones HTTP directamente, sin un servidor web por delante?", "opts": ["No, es técnicamente imposible", "Sí, es posible, aunque en producción es habitual poner un servidor web delante por eficiencia y otras ventajas", "Solo si usa exclusivamente HTTPS", "Solo los fines de semana"], "correct": 1}, {"n": 27, "q": "¿Qué tipo de servidor sería responsable de ejecutar el código que consulta la base de datos para montar el feed personalizado de un usuario?", "opts": ["El servidor web puro", "El servidor de aplicaciones", "El servidor DNS", "Ninguno, lo hace directamente el navegador"], "correct": 1}, {"n": 28, "q": "¿Qué diferencia de \"entendimiento\" hay entre un servidor web puro y uno de aplicaciones frente al código de la app?", "opts": ["El servidor web entiende y ejecuta cualquier lenguaje de programación igual que el de aplicaciones", "El servidor de aplicaciones sabe ejecutar el código de la app; el servidor web puro no sabe interpretarlo por sí mismo", "Ninguno de los dos puede interactuar con el código de la aplicación", "Solo el servidor web puede ejecutar JavaScript"], "correct": 1}, {"n": 29, "q": "Node.js ejecutando una aplicación Express actúa, en esta clasificación, como:", "opts": ["Un servidor web puro, sin más", "Un servidor de aplicaciones", "Un servidor DNS", "Un proveedor de hosting compartido"], "correct": 1}, {"n": 30, "q": "¿Por qué no sería buena idea exponer directamente a internet un servidor de aplicaciones sin ningún servidor web ni proxy por delante en un entorno de producción con mucho tráfico?", "opts": ["Porque los servidores de aplicaciones no entienden HTTP", "Porque se perderían ventajas de eficiencia, balanceo y gestión centralizada de HTTPS que aporta un servidor web por delante", "Porque es ilegal", "Porque el servidor de aplicaciones no puede ejecutarse en un contenedor"], "correct": 1}, {"n": 31, "q": "En el patrón habitual de producción visto en teoría, ¿qué hace el servidor web con las peticiones a `/api/*`?", "opts": ["Las responde directamente sin reenviarlas a ningún sitio", "Las reenvía (hace de proxy) hacia el servidor de aplicaciones correspondiente", "Las descarta siempre con un error", "Las convierte automáticamente en contenido estático"], "correct": 1}, {"n": 32, "q": "¿Qué hace el servidor web con las peticiones a rutas como `/css/*` o `/img/*` en ese mismo patrón?", "opts": ["Las reenvía siempre al servidor de aplicaciones", "Las responde directamente él mismo, al ser contenido estático", "Las rechaza con un error 404 por defecto", "Consulta la base de datos antes de responder"], "correct": 1}, {"n": 33, "q": "¿Qué ventaja aporta que el servidor web gestione el HTTPS en un único punto, en vez de que cada servidor de aplicaciones lo haga por su cuenta?", "opts": ["Ninguna, da exactamente igual", "Simplifica la gestión de certificados al centralizarla en un solo sitio", "Hace innecesario el DNS", "Elimina por completo la necesidad de HTTP"], "correct": 1}, {"n": 34, "q": "¿Qué nombre recibe la técnica por la que un servidor web recibe la petición y la reenvía a otro servidor, devolviendo luego la respuesta al cliente como si fuera suya?", "opts": ["Proxy inverso", "DNS recursivo", "Contenedorización", "Serverless"], "correct": 0}, {"n": 35, "q": "Si un servidor web actuando como proxy inverso cae, ¿qué efecto tiene habitualmente sobre el acceso al servidor de aplicaciones de detrás?", "opts": ["Ninguno, el servidor de aplicaciones sigue siendo accesible igual desde fuera", "Los usuarios probablemente no puedan acceder, al perderse el punto de entrada", "Se vuelve automáticamente estático", "El DNS lo sustituye automáticamente"], "correct": 1}, {"n": 36, "q": "¿Qué combinación describe mejor un escenario típico de producción visto en teoría?", "opts": ["Solo servidor de aplicaciones, sin servidor web", "Solo servidor web, sin ningún tipo de lógica dinámica", "Un servidor web por delante sirviendo estático y reenviando lo dinámico a un servidor de aplicaciones por detrás", "Solo una base de datos, sin ningún servidor HTTP"], "correct": 2}, {"n": 37, "q": "¿Qué ventaja de rendimiento se consigue separando contenido estático (servidor web) de dinámico (servidor de aplicaciones)?", "opts": ["El servidor de aplicaciones solo gasta recursos en lo que realmente necesita ejecutar código", "El servidor web deja de necesitar CPU por completo", "Se elimina la necesidad de bases de datos", "El tráfico deja de pasar por DNS"], "correct": 0}, {"n": 38, "q": "¿Qué facilita, además del rendimiento, tener un único servidor web como punto de entrada hacia varios servicios internos?", "opts": ["Balancear la carga entre varios servidores de aplicaciones de forma centralizada", "Eliminar la necesidad de contenedores", "Que el DNS deje de ser necesario", "Que el contenido dinámico se convierta en estático automáticamente"], "correct": 0}, {"n": 39, "q": "¿Es el patrón \"servidor web delante + servidor de aplicaciones detrás\" exclusivo de aplicaciones muy grandes?", "opts": ["Sí, nunca se usa en proyectos pequeños", "No, es un patrón habitual independientemente del tamaño, aunque gana más relevancia cuanto más tráfico hay", "Sí, es obligatorio por ley para cualquier web", "No, solo se usa en aplicaciones sin base de datos"], "correct": 1}, {"n": 40, "q": "¿Qué parte del esquema sería responsable de devolver finalmente la respuesta combinada (datos dinámicos ya generados) al navegador?", "opts": ["El servidor web, tras recibir la respuesta del servidor de aplicaciones", "El DNS", "El propio navegador, sin intervención del servidor", "La base de datos directamente"], "correct": 0}, {"n": 41, "q": "¿Qué papel juega el dominio (p. ej. `miapp.com`) en el despliegue de una aplicación?", "opts": ["Es el nombre legible que los usuarios escriben para acceder a la aplicación", "Es el lenguaje de programación usado en el backend", "Es un tipo de certificado HTTPS", "Es sinónimo de servidor de aplicaciones"], "correct": 0}, {"n": 42, "q": "¿Qué papel juega el DNS en ese mismo contexto de despliegue?", "opts": ["Ejecuta la lógica de negocio de la aplicación", "Traduce el dominio que escribe el usuario a la IP del servidor donde vive la app", "Sirve el contenido estático directamente", "Genera automáticamente el contenido dinámico"], "correct": 1}, {"n": 43, "q": "Si cambias la IP del servidor donde se ejecuta tu aplicación, ¿qué tendrías que actualizar para que el dominio siga apuntando correctamente?", "opts": ["El código fuente de la aplicación", "El registro DNS correspondiente (p. ej. el registro A) para que apunte a la nueva IP", "El servidor de aplicaciones, pero no el DNS", "Nada, se actualiza solo sin configuración"], "correct": 1}, {"n": 44, "q": "¿Qué pieza necesitas sí o sí para que un usuario pueda escribir `miapp.com` y llegar a tu aplicación, además de tener la app desplegada?", "opts": ["Que el dominio esté registrado y su DNS apunte a la IP correcta del servidor", "Que el servidor use obligatoriamente Nginx", "Que la aplicación sea completamente estática", "Que el servidor de aplicaciones esté escrito en Java"], "correct": 0}, {"n": 45, "q": "¿Qué relación hay entre lo visto sobre DNS en el bloque 2.1 y lo visto hoy sobre despliegue?", "opts": ["Ninguna relación, son conceptos independientes", "El mismo mecanismo DNS que resuelve cualquier nombre de dominio es el que permite que el dominio de tu app apunte a su servidor real", "El DNS solo se usa para servidores de aplicaciones, no para servidores web", "El DNS sustituye por completo al servidor web"], "correct": 1}, {"n": 46, "q": "Si olvidas configurar correctamente el DNS de tu dominio tras desplegar la aplicación en un nuevo servidor, ¿qué consecuencia es más probable?", "opts": ["Ninguna, el servidor web lo detecta y lo corrige automáticamente", "Los usuarios que accedan por el dominio no llegarán al servidor correcto (o no llegarán a ninguno)", "La aplicación se vuelve automáticamente estática", "El servidor de aplicaciones deja de funcionar internamente"], "correct": 1}, {"n": 47, "q": "¿Qué es más preciso decir sobre la relación entre \"dominio\" y \"servidor\"?", "opts": ["Son el mismo concepto exacto", "El dominio es un nombre legible; el servidor es la máquina real donde se ejecuta la aplicación, localizada por su IP gracias al DNS", "El servidor es el nombre y el dominio es la IP", "No tienen ninguna relación entre sí"], "correct": 1}, {"n": 48, "q": "¿Puede un mismo dominio apuntar, a través de DNS, a distintas IPs en momentos distintos (p. ej. al migrar de proveedor)?", "opts": ["No, un dominio queda fijado para siempre a su primera IP", "Sí, los registros DNS pueden actualizarse para apuntar a una IP distinta", "Solo si se cambia también el nombre de dominio", "Solo si la aplicación es completamente estática"], "correct": 1}, {"n": 49, "q": "¿Qué suele explicar que, tras cambiar un registro DNS, algunos usuarios sigan viendo la versión antigua durante un tiempo?", "opts": ["Que el cambio es imposible de propagar", "La existencia de cachés DNS intermedias que aún no han actualizado la información", "Que el servidor de aplicaciones está caído", "Que el contenido es dinámico"], "correct": 1}, {"n": 50, "q": "¿Qué necesita configurarse para que tanto `miapp.com` como `www.miapp.com` lleven al mismo servidor?", "opts": ["Nada, funciona siempre automáticamente sin configurar nada", "Los registros DNS correspondientes para ambos nombres, apuntando al servidor adecuado", "Solo hace falta configurarlo en el servidor de aplicaciones, nunca en DNS", "Solo es posible con hosting compartido"], "correct": 1}, {"n": 51, "q": "¿Qué caracteriza al hosting compartido?", "opts": ["Una máquina física entera dedicada a un único cliente", "Varias webs de distintos clientes compartiendo un mismo servidor gestionado por el proveedor", "Recursos bajo demanda facturados por uso exacto", "Control total sobre el sistema operativo del servidor"], "correct": 1}, {"n": 52, "q": "¿Qué caracteriza a un VPS (servidor privado virtual)?", "opts": ["Es una máquina virtual para un único cliente, con control total sobre su propio sistema operativo, aunque comparte hardware físico con otros VPS", "Es idéntico al hosting compartido", "Es exclusivamente un servicio de DNS", "No permite instalar software propio"], "correct": 0}, {"n": 53, "q": "¿Qué caracteriza a un servidor dedicado?", "opts": ["Una máquina física entera reservada para un único cliente", "Un tipo de contenido estático", "Un servicio exclusivo de DNS", "Una base de datos distribuida"], "correct": 0}, {"n": 54, "q": "¿Qué caracteriza al hosting en la nube (cloud, tipo AWS/Azure/GCP)?", "opts": ["Recursos fijos que no pueden cambiar nunca", "Recursos bajo demanda, escalables, facturados típicamente por uso", "Es idéntico a un servidor dedicado clásico", "Solo sirve para contenido estático"], "correct": 1}, {"n": 55, "q": "Ordenando de menor a mayor control sobre el sistema operativo, ¿cuál sería el orden correcto entre estas cuatro opciones?", "opts": ["Hosting compartido, VPS, servidor dedicado, cloud (con recursos gestionados a medida)", "Servidor dedicado, VPS, hosting compartido, cloud", "Cloud, servidor dedicado, VPS, hosting compartido", "VPS, servidor dedicado, hosting compartido, cloud"], "correct": 0}, {"n": 56, "q": "¿Qué ventaja ofrece el hosting compartido frente a un VPS?", "opts": ["Mucho más control sobre el sistema operativo", "Un coste típicamente menor, a cambio de menos control y recursos compartidos", "Garantiza más potencia que cualquier otra opción", "Es obligatorio para aplicaciones grandes"], "correct": 1}, {"n": 57, "q": "Un proyecto necesita escalar automáticamente según la demanda, pagando solo por lo que usa. ¿Qué tipo de hosting encaja mejor?", "opts": ["Hosting compartido clásico", "Cloud", "Servidor dedicado fijo sin elasticidad", "No existe una opción adecuada"], "correct": 1}, {"n": 58, "q": "¿Por qué una empresa con requisitos muy específicos de hardware podría preferir un servidor dedicado?", "opts": ["Porque un servidor dedicado le da el control total de una máquina física completa, sin compartir recursos con nadie", "Porque es la única opción compatible con HTTP", "Porque un servidor dedicado no admite instalar Docker", "Porque el hosting compartido ofrece más control que un dedicado"], "correct": 0}, {"n": 59, "q": "¿Qué tienen en común el VPS y el servidor dedicado, frente al hosting compartido?", "opts": ["Ambos dan al cliente un control mucho mayor sobre su propio sistema operativo que el hosting compartido", "Ambos son gratuitos", "Ambos son exclusivamente de pago único sin mantenimiento", "Ninguno de los dos puede alojar aplicaciones dinámicas"], "correct": 0}, {"n": 60, "q": "¿Qué modelo de hosting sería razonable para una pequeña web personal con muy poco tráfico y presupuesto ajustado?", "opts": ["Un servidor dedicado de alta gama", "Hosting compartido", "Una infraestructura cloud compleja con autoescalado", "Ninguno, no es posible alojar webs pequeñas"], "correct": 1}, {"n": 61, "q": "¿Qué ventaja de Docker (visto en la UD1) resulta especialmente relevante a la hora de desplegar en producción?", "opts": ["Que las imágenes nunca pueden actualizarse", "Que el mismo contenedor probado en local es, en esencia, el que se ejecuta en producción", "Que Docker elimina la necesidad de servidores", "Que Docker sustituye al DNS"], "correct": 1}, {"n": 62, "q": "En un flujo de despliegue simple con Docker, ¿qué paso suele ir justo después de `docker build`?", "opts": ["Subir la imagen a un registry (p. ej. Docker Hub)", "Borrar el Dockerfile", "Configurar el DNS por primera vez, siempre en ese momento exacto", "Eliminar el contenedor en producción"], "correct": 0}, {"n": 63, "q": "¿Qué comandos se ejecutarían típicamente ya en el servidor de producción, tras haber subido la imagen a un registry?", "opts": ["`docker build` y `docker commit`", "`docker pull` y `docker run` (o `docker compose up`)", "`git clone` únicamente, sin Docker", "`nslookup` y `dig`"], "correct": 1}, {"n": 64, "q": "¿Qué papel juega un registry (como Docker Hub) en este flujo de despliegue?", "opts": ["Ejecuta directamente la aplicación en producción", "Almacena la imagen construida para que el servidor de producción pueda descargarla", "Resuelve nombres de dominio", "Sustituye al servidor web"], "correct": 1}, {"n": 65, "q": "¿Qué relación tiene este flujo de despliegue con lo que se verá en la UD5 (CI/CD)?", "opts": ["Ninguna relación", "En la UD5 se automatiza este mismo flujo (build, subida de imagen, despliegue) para que ocurra solo con cada cambio de código", "La UD5 elimina la necesidad de usar Docker", "La UD5 sustituye el despliegue por hosting compartido obligatoriamente"], "correct": 1}, {"n": 66, "q": "¿Qué parte del esquema de despliegue con Docker correspondería al servidor web (Nginx) visto antes en este mismo bloque?", "opts": ["Construir la imagen Docker", "Enrutar el tráfico entrante hacia el contenedor correspondiente", "Sustituir al registry", "Generar el Dockerfile automáticamente"], "correct": 1}, {"n": 67, "q": "Si despliegas tu aplicación como contenedor pero olvidas publicar el puerto necesario (`-p`), ¿qué problema es esperable?", "opts": ["Ninguno, Docker lo detecta y lo corrige solo", "El servicio dentro del contenedor no será accesible desde fuera en ese puerto", "El contenedor deja de arrancar por completo", "El DNS deja de funcionar para todo el dominio"], "correct": 1}, {"n": 68, "q": "¿Qué ventaja de reproducibilidad aporta usar la misma imagen Docker en desarrollo y en producción?", "opts": ["Reduce el riesgo de que algo que funciona en desarrollo falle en producción por diferencias de entorno", "Garantiza al 100% que no habrá ningún error nunca", "Elimina la necesidad de servidores de aplicaciones", "Hace innecesario tener un dominio"], "correct": 0}, {"n": 69, "q": "¿Qué comando usarías en el servidor de producción para traer la última versión de una imagen ya subida a un registry?", "opts": ["`docker build`", "`docker pull`", "`docker init`", "`docker logs`"], "correct": 1}, {"n": 70, "q": "¿Qué diferencia hay entre desplegar directamente copiando ficheros a un servidor y desplegar con contenedores?", "opts": ["Son exactamente lo mismo en todos los sentidos", "Con contenedores se empaqueta también el entorno de ejecución (dependencias, configuración), reduciendo diferencias entre máquinas", "Copiar ficheros siempre es más seguro", "Los contenedores no pueden ejecutarse en servidores de producción"], "correct": 1}, {"n": 71, "q": "En el flujo de despliegue simple visto en teoría, ¿qué es lo primero que debe existir antes de construir ninguna imagen?", "opts": ["El dominio ya apuntando por DNS", "El código de la aplicación y su Dockerfile en el repositorio", "El certificado HTTPS", "El servidor de producción ya con Nginx instalado"], "correct": 1}, {"n": 72, "q": "Después de tener el código y el Dockerfile, ¿cuál es el siguiente paso lógico del flujo visto?", "opts": ["Construir la imagen con `docker build`", "Configurar el DNS", "Contratar un servidor dedicado obligatoriamente", "Escribir el banco de preguntas de test"], "correct": 0}, {"n": 73, "q": "Tras construir la imagen, ¿qué paso permite que el servidor de producción pueda acceder a ella sin copiar ficheros manualmente?", "opts": ["Subirla a un registry", "Borrarla de tu máquina local", "Renombrar el Dockerfile", "Cambiar el dominio"], "correct": 0}, {"n": 74, "q": "Una vez la imagen está en el registry y se ha hecho `docker pull` en el servidor, ¿qué falta para que la aplicación esté realmente accesible?", "opts": ["Nada más, ya está accesible sin ejecutar nada", "Arrancar el contenedor (`docker run` o `docker compose up`) y que el servidor web enrute el tráfico hacia él", "Volver a escribir el código desde cero en el servidor", "Eliminar el registry"], "correct": 1}, {"n": 75, "q": "¿Qué papel tiene el servidor web (Nginx) al final de este flujo, una vez el contenedor ya está en marcha?", "opts": ["Construir una nueva imagen automáticamente", "Enrutar las peticiones entrantes del dominio hacia el contenedor correspondiente", "Sustituir el contenido del Dockerfile", "Eliminar el contenedor cada cierto tiempo"], "correct": 1}, {"n": 76, "q": "Si se despliega una nueva versión de la imagen, ¿qué pasos del flujo visto habría que repetir como mínimo?", "opts": ["Ninguno, se actualiza solo", "Build de la nueva imagen, subirla al registry, y en el servidor hacer pull y volver a arrancar el contenedor con la nueva versión", "Solo cambiar el DNS", "Solo reiniciar el servidor web, sin tocar la imagen"], "correct": 1}, {"n": 77, "q": "¿Qué ocurriría si en el servidor de producción ejecutas `docker run` con una imagen que no coincide con la última subida al registry?", "opts": ["Se ejecutaría igualmente esa versión concreta de la imagen, no necesariamente la más reciente", "Docker la actualiza automáticamente a la última sin avisar", "Es imposible, Docker lo impide siempre", "El DNS corrige automáticamente la discrepancia"], "correct": 0}, {"n": 78, "q": "¿Qué relación hay entre el Dockerfile del repositorio y la imagen que termina ejecutándose en producción?", "opts": ["Ninguna relación directa", "El Dockerfile son las instrucciones a partir de las cuales se construye (`docker build`) la imagen que luego se despliega", "El Dockerfile sustituye directamente al servidor web", "El Dockerfile solo se usa en desarrollo, nunca influye en producción"], "correct": 1}, {"n": 79, "q": "En este flujo, ¿en qué momento entraría en juego el DNS para que un usuario final pueda llegar a la aplicación ya desplegada?", "opts": ["Nunca, el DNS no interviene en absoluto en el despliegue", "El dominio debe tener sus registros DNS apuntando a la IP del servidor donde se ha desplegado el contenedor", "Solo si se usa hosting compartido", "Solo si no se usa Docker"], "correct": 1}, {"n": 80, "q": "¿Qué parte de este flujo se automatiza específicamente con herramientas de CI/CD, como se verá en la UD5?", "opts": ["Nada, la UD5 trata un tema completamente distinto", "La secuencia completa (build, subida al registry, despliegue) para que se dispare sola con cada cambio de código", "Solo la resolución de nombres DNS", "Solo la redacción del Dockerfile"], "correct": 1}, {"n": 81, "q": "En el esquema completo visto en teoría, ¿qué es lo primero que ocurre cuando un usuario escribe `miapp.com` en su navegador?", "opts": ["El servidor de aplicaciones ejecuta código inmediatamente", "El DNS resuelve el dominio a la IP del servidor", "Se genera directamente el contenido dinámico sin más pasos", "Se descarga automáticamente una imagen Docker"], "correct": 1}, {"n": 82, "q": "Tras resolver la IP, ¿a qué suele llegar primero la petición en el esquema típico de producción?", "opts": ["Directamente a la base de datos", "Al servidor web (p. ej. Nginx), que escucha en el puerto correspondiente", "Al registry de Docker", "Al servidor DNS de nuevo"], "correct": 1}, {"n": 83, "q": "Si la petición es a una ruta de recursos estáticos, ¿qué hace el servidor web en ese esquema?", "opts": ["La reenvía siempre al servidor de aplicaciones", "La responde directamente", "La descarta", "Consulta antes el registry de Docker"], "correct": 1}, {"n": 84, "q": "Si la petición es a una ruta dinámica (p. ej. `/api/productos`), ¿qué hace el servidor web?", "opts": ["La responde directamente sin más", "La reenvía a un contenedor con el servidor de aplicaciones correspondiente", "La convierte en estática automáticamente", "La elimina"], "correct": 1}, {"n": 85, "q": "Una vez el servidor de aplicaciones genera la respuesta dinámica (p. ej. JSON tras consultar la base de datos), ¿qué ocurre después en el esquema?", "opts": ["Se pierde, nunca llega al usuario", "Vuelve al servidor web, que la devuelve finalmente al navegador", "Se guarda permanentemente sin enviarse", "Sustituye al DNS para futuras peticiones"], "correct": 1}, {"n": 86, "q": "¿Qué puerto es habitual que use el servidor web para atender tráfico HTTPS en este esquema?", "opts": ["21", "25", "443", "3306"], "correct": 2}, {"n": 87, "q": "¿Qué papel tiene la base de datos en el esquema completo?", "opts": ["Resolver nombres de dominio", "Ser consultada por el servidor de aplicaciones para generar contenido dinámico", "Servir el contenido estático", "Sustituir al servidor web"], "correct": 1}, {"n": 88, "q": "¿Qué bloques de contenidos de la asignatura se combinan en este esquema completo, según lo explicado en teoría?", "opts": ["Solo lo visto en esta misma semana, sin relación con nada más", "DNS y HTTP del bloque 2.1, Docker de la UD1, y lo que se ampliará en UD3/UD4/UD5", "Únicamente contenidos de UD5", "Ninguno, es un esquema completamente nuevo sin relación con el resto del curso"], "correct": 1}, {"n": 89, "q": "¿Por qué se insiste en que este esquema \"no es una caja negra\"?", "opts": ["Porque es un esquema inventado sin relación con la realidad", "Porque cada pieza (DNS, HTTP, Docker, servidor web, servidor de aplicaciones) es algo que ya se ha visto o se profundizará pronto en UDs concretas", "Porque no se puede explicar con palabras", "Porque solo se aplica a aplicaciones muy pequeñas"], "correct": 1}, {"n": 90, "q": "¿Qué UD trata en detalle los servidores de aplicaciones vistos de forma introductoria en este esquema?", "opts": ["UD1", "UD2", "UD3", "UD4"], "correct": 3}, {"n": 91, "q": "¿Qué diferencia principal separa lo visto en el bloque 2.1 de lo visto en el bloque 2.2?", "opts": ["El 2.1 trata cómo se organiza una aplicación (capas, microservicios...) y el 2.2 trata dónde vive y quién la sirve físicamente", "No hay ninguna diferencia, tratan exactamente lo mismo", "El 2.1 es solo práctica y el 2.2 solo teoría", "El 2.2 no tiene ninguna relación con HTTP"], "correct": 0}, {"n": 92, "q": "¿Qué relación hay entre \"servidor web vs. servidor de aplicaciones\" (2.2) y \"arquitectura en capas\" (2.1)?", "opts": ["Ninguna relación posible", "La capa de presentación y la de negocio de una arquitectura en capas pueden, en la práctica, ejecutarse en un servidor web y uno de aplicaciones respectivamente", "Son términos exactamente sinónimos", "El servidor de aplicaciones sustituye siempre a todas las capas"], "correct": 1}, {"n": 93, "q": "¿Qué conexión hay entre microservicios (visto en 2.1) y despliegue con contenedores (visto en 2.2)?", "opts": ["Ninguna, son conceptos de asignaturas distintas", "Cada microservicio suele desplegarse en su propio contenedor, usando el flujo de despliegue visto en 2.2", "Los microservicios no pueden desplegarse nunca con Docker", "El despliegue con contenedores solo aplica a monolitos"], "correct": 1}, {"n": 94, "q": "Si una aplicación usa arquitectura Hexagonal (2.1) y se despliega como contenedor Docker detrás de Nginx (2.2), ¿son compatibles ambas decisiones?", "opts": ["No, son mutuamente excluyentes", "Sí, son decisiones de niveles distintos (organización interna del código vs. infraestructura de despliegue) y se combinan sin problema", "Solo si se elimina el servidor web", "Solo si la aplicación es completamente estática"], "correct": 1}, {"n": 95, "q": "¿Qué UD retoma y profundiza específicamente la configuración de Apache/Nginx introducida en el bloque 2.2?", "opts": ["UD1", "UD3", "UD4", "UD5"], "correct": 1}, {"n": 96, "q": "¿Qué UD retoma y profundiza específicamente los servidores de aplicaciones introducidos en el bloque 2.2?", "opts": ["UD1", "UD2", "UD3", "UD4"], "correct": 3}, {"n": 97, "q": "¿Qué UD automatiza el flujo de despliegue con Docker visto de forma manual en el bloque 2.2?", "opts": ["UD1", "UD3", "UD4", "UD5"], "correct": 3}, {"n": 98, "q": "¿Qué papel cumple el DNS tanto en el bloque 2.1 (fundamentos web) como en el 2.2 (despliegue)?", "opts": ["En 2.1 resuelve nombres para cualquier navegación; en 2.2 es la pieza que permite que el dominio de tu app apunte al servidor donde la has desplegado", "En 2.1 no se menciona el DNS en absoluto", "En 2.2 el DNS deja de ser necesario por usar Docker", "El DNS solo aplica a contenido estático"], "correct": 0}, {"n": 99, "q": "De todo lo visto en el bloque 2.2, ¿qué pieza sería imprescindible tanto si usas hosting compartido como si usas Docker en un VPS?", "opts": ["Ninguna, son flujos totalmente independientes sin nada en común", "Tener un dominio con DNS apuntando correctamente al punto de entrada de la aplicación", "Usar obligatoriamente Tomcat", "Evitar por completo el uso de servidores web"], "correct": 1}, {"n": 100, "q": "En resumen, ¿qué pregunta responde principalmente el bloque 2.2 que no respondía el 2.1?", "opts": ["Cómo se organiza el código de la aplicación por dentro", "Dónde se ejecuta físicamente la aplicación y cómo llega hasta ahí una petición real de un usuario", "Qué es un método HTTP", "Qué es una cookie de sesión"], "correct": 1}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
