@@ -89,6 +89,11 @@ Fichero requirements.txt
 Flask>=3.0,<4.0
 ```
 
+Para instalar dependencias y arrancar servidor:
+```bash
+pip install -r requirements.txt
+python app.py
+```
 
 ---
 
