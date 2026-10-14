@@ -37,94 +37,131 @@
       <nav class="tree">
         <div class="nav-top">
           {% for top in site.nav_top %}
-            {% assign top_url = top.url | relative_url %}
-            <a href="{{ top_url }}" class="node-label nav-top-link{% if top_url == page.url %} active{% endif %}">{{ top.title }}</a>
+            <a href="{{ top.url | relative_url }}" class="node-label nav-top-link{% if top.url == page.url %} active{% endif %}">{{ top.title }}</a>
           {% endfor %}
         </div>
 
         {% assign active_sub_id = "" %}
         {% assign active_block_id = "" %}
         {% assign active_unit_id = "" %}
-        {% for unit in site.nav %}
-          {% for block in unit.blocks %}
-            {% for sub in block.subs %}
-              {% if sub.pages %}
-                {% for leaf in sub.pages %}
-                  {% assign leaf_url = leaf.url | relative_url %}
-                  {% if leaf_url == page.url %}
-                    {% assign active_sub_id = sub.id %}
+        {% assign active_course_id = "" %}
+        {% for course in site.nav %}
+          {% for unit in course.units %}
+            {% for block in unit.blocks %}
+              {% for sub in block.subs %}
+                {% if sub.pages %}
+                  {% for leaf in sub.pages %}
+                    {% if leaf.url == page.url %}
+                      {% assign active_sub_id = sub.id %}
+                      {% assign active_block_id = block.id %}
+                      {% assign active_unit_id = unit.id %}
+                      {% assign active_course_id = course.id %}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+              {% if block.pages %}
+                {% for leaf in block.pages %}
+                  {% if leaf.url == page.url %}
                     {% assign active_block_id = block.id %}
                     {% assign active_unit_id = unit.id %}
+                    {% assign active_course_id = course.id %}
                   {% endif %}
                 {% endfor %}
               {% endif %}
             {% endfor %}
-            {% if block.pages %}
-              {% for leaf in block.pages %}
-                {% assign leaf_url = leaf.url | relative_url %}
-                {% if leaf_url == page.url %}
-                  {% assign active_block_id = block.id %}
+            {% if unit.pages %}
+              {% for leaf in unit.pages %}
+                {% if leaf.url == page.url %}
                   {% assign active_unit_id = unit.id %}
+                  {% assign active_course_id = course.id %}
                 {% endif %}
               {% endfor %}
             {% endif %}
           {% endfor %}
         {% endfor %}
 
-        {% for unit in site.nav %}
-          <details class="node unit"{% if unit.id == active_unit_id %} open{% endif %}>
+        {% for course in site.nav %}
+          <details class="node course"{% if course.id == active_course_id %} open{% endif %}>
             <summary>
-              <span class="chevron"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-              <span class="node-label">{{ unit.title }}</span>
+              <span class="chevron"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+              <span class="node-label">{{ course.title }}</span>
             </summary>
             <div class="children">
-              {% for block in unit.blocks %}
-                {% if block.subs %}
-                  <details class="node block"{% if block.id == active_block_id %} open{% endif %}>
+              {% for unit in course.units %}
+                {% if unit.blocks %}
+                  <details class="node unit"{% if unit.id == active_unit_id %} open{% endif %}>
                     <summary>
-                      <span class="chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-                      <span class="node-label">{{ block.title }}</span>
+                      <span class="chevron"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                      <span class="node-label">{{ unit.title }}</span>
                     </summary>
                     <div class="children">
-                      {% for sub in block.subs %}
-                        {% if sub.pages %}
-                          <details class="node sub"{% if sub.id == active_sub_id %} open{% endif %}>
+                      {% for block in unit.blocks %}
+                        {% if block.subs %}
+                          <details class="node block"{% if block.id == active_block_id %} open{% endif %}>
                             <summary>
-                              <span class="chevron"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#9aa2ad" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-                              <span class="node-label">{{ sub.title }}</span>
+                              <span class="chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                              <span class="node-label">{{ block.title }}</span>
+                            </summary>
+                            <div class="children">
+                              {% for sub in block.subs %}
+                                {% if sub.pages %}
+                                  <details class="node sub"{% if sub.id == active_sub_id %} open{% endif %}>
+                                    <summary>
+                                      <span class="chevron"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#9aa2ad" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                                      <span class="node-label">{{ sub.title }}</span>
+                                    </summary>
+                                    <div class="children pages">
+                                      {% for leaf in sub.pages %}
+                                        <a href="{{ leaf.url | relative_url }}" class="page-link{% if leaf.url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
+                                      {% endfor %}
+                                    </div>
+                                  </details>
+                                {% else %}
+                                  <div class="node sub sub-disabled">
+                                    <span class="node-label">{{ sub.title }}</span>
+                                    <span class="badge">PRÓX.</span>
+                                  </div>
+                                {% endif %}
+                              {% endfor %}
+                            </div>
+                          </details>
+                        {% elsif block.pages %}
+                          <details class="node block"{% if block.id == active_block_id %} open{% endif %}>
+                            <summary>
+                              <span class="chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                              <span class="node-label">{{ block.title }}</span>
                             </summary>
                             <div class="children pages">
-                              {% for leaf in sub.pages %}
-                                {% assign leaf_url = leaf.url | relative_url %}
-                                <a href="{{ leaf_url }}" class="page-link{% if leaf_url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
+                              {% for leaf in block.pages %}
+                                <a href="{{ leaf.url | relative_url }}" class="page-link{% if leaf.url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
                               {% endfor %}
                             </div>
                           </details>
                         {% else %}
-                          <div class="node sub sub-disabled">
-                            <span class="node-label">{{ sub.title }}</span>
+                          <div class="node block sub-disabled">
+                            <span class="node-label">{{ block.title }}</span>
                             <span class="badge">PRÓX.</span>
                           </div>
                         {% endif %}
                       {% endfor %}
                     </div>
                   </details>
-                {% elsif block.pages %}
-                  <details class="node block"{% if block.id == active_block_id %} open{% endif %}>
+                {% elsif unit.pages %}
+                  <details class="node unit"{% if unit.id == active_unit_id %} open{% endif %}>
                     <summary>
-                      <span class="chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-                      <span class="node-label">{{ block.title }}</span>
+                      <span class="chevron"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a93a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+                      <span class="node-label">{{ unit.title }}</span>
                     </summary>
                     <div class="children pages">
-                      {% for leaf in block.pages %}
-                        {% assign leaf_url = leaf.url | relative_url %}
-                        <a href="{{ leaf_url }}" class="page-link{% if leaf_url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
+                      {% for leaf in unit.pages %}
+                        <a href="{{ leaf.url | relative_url }}" class="page-link{% if leaf.url == page.url %} active{% endif %}"{% if leaf.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ leaf.title }}{% if leaf.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
                       {% endfor %}
                     </div>
                   </details>
                 {% else %}
-                  <div class="node block sub-disabled">
-                    <span class="node-label">{{ block.title }}</span>
+                  <div class="node unit sub-disabled">
+                    <span class="node-label">{{ unit.title }}</span>
                     <span class="badge">PRÓX.</span>
                   </div>
                 {% endif %}

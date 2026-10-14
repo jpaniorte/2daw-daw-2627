@@ -4,6 +4,10 @@ theme: default
 paginate: true
 backgroundColor: white
 footer: 'Proyecto Intermodular'
+layout: default
+title: "Proyecto Intermodular — Hito 0"
+permalink: /proyectos/hito0/
+pdf: "/proyectos/pdf/hito0.pdf"
 ---
 
 # Proyecto Intermodular — 2º DAW

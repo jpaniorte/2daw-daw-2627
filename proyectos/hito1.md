@@ -1,12 +1,28 @@
-# Hito 1: Boilerplate y repositorio base
+---
+layout: default
+title: "Proyecto Intermodular — Hito 1"
+permalink: /proyectos/hito1/
+pdf: "/proyectos/pdf/hito1.pdf"
+---
+
+# Hito 1: Scaffolding y repositorio base
+
+---
+
+> **Nota: scaffolding vs. boilerplate**
+>
+> - **Scaffolding**: la estructura inicial y funcional de un proyecto, generada automáticamente con la herramienta oficial de un framework (p. ej. `laravel new`, `ng new`, `npm create vite@latest`). Es justo lo que se pide en este hito.
+> - **Boilerplate**: código repetitivo y reutilizable que se copia tal cual entre proyectos (cabeceras de licencia, ficheros de configuración estándar, plantillas de componente...), sin necesidad de ninguna herramienta generadora.
 
 ---
 
 ## 1. Objetivo
 
-A partir de las tecnologías seleccionadas en el **Hito 0**, cada equipo debe crear la estructura inicial del proyecto con el *boilerplate* (o *starter kit*) de cada framework o tecnología elegida. Por ejemplo, si el backend es Laravel, el repositorio debe contener una carpeta `backend/` con la instalación base de Laravel.
+A partir de las tecnologías seleccionadas en el **Hito 0**, cada equipo debe crear la estructura inicial del proyecto con el *scaffolding* (o *starter kit*) de cada framework o tecnología elegida. Por ejemplo, si el backend es Laravel, el repositorio debe contener una carpeta `backend/` con la instalación base de Laravel.
 
 El resultado debe ser un proyecto sin lógica de negocio **funcionando en local y documentado**, que cualquier persona ajena al equipo pueda levantar siguiendo únicamente el README. Este hito es la base sobre la que se hará el despliegue en hitos posteriores.
+
+> Antes de generar el scaffolding, configura tu entorno siguiendo la guía [VSCode + Copilot CLI](/proyectos/vscode/).
 
 ---
 
@@ -18,8 +34,8 @@ Repositorio en GitHub o GitLab (accesible para el profesor) con esta estructura:
 
 ```
 proyecto/
-├── backend/        <- boilerplate / starter kit del backend
-├── frontend/       <- boilerplate del frontend
+├── backend/        <- scaffolding / starter kit del backend
+├── frontend/       <- scaffolding del frontend
 ├── docs/           <- documentación técnica
 ├── .gitignore
 ├── .env.example    <- variables necesarias, SIN secretos
@@ -28,7 +44,7 @@ proyecto/
 
 ---
 
-### 2.2 Boilerplate funcionando
+### 2.2 Scaffolding funcionando
 
 - El **backend** arranca y expone un endpoint de prueba (por ejemplo `/api/health`).
 - El **frontend** arranca y muestra la respuesta de ese endpoint, demostrando que ambas piezas se comunican.
@@ -105,7 +121,7 @@ Para comprobar la reproducibilidad, **otro equipo clonará vuestro repositorio y
 
 | Sesión | Trabajo previsto |
 |---|---|
-| Semana 1 · Miércoles (2 sesiones) | Creación estructura de carpetas, instalación del boilerplate de backend y frontend. |
+| Semana 1 · Miércoles (2 sesiones) | Creación estructura de carpetas, instalación del scaffolding de backend y frontend. |
 | Semana 1 · Viernes (1 sesion) | Festivo |
 | Semana 2 · Miércoles (2 sesiones) | Conexión front-back, README y documentación en `docs/`.   |
 | Semana 2 · Viernes (1 sesion) | Revisión cruzada entre equipos |

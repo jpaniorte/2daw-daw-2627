@@ -74,21 +74,25 @@ table { border-collapse: collapse; width: 100%; margin: 1em 0; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 th { background: var(--sidebar-bg); }
 
-/* Columnas: 1 ID, 2 Fecha, 3 Apartado, 4 Título, 5 Entregas, 6 Fecha Control.
-   Todas menos Título se encogen a su contenido más ancho; Título se reparte
-   el espacio sobrante para llegar al 100%. */
-.cal-table td:nth-child(1),
-.cal-table th:nth-child(1),
-.cal-table td:nth-child(2),
-.cal-table th:nth-child(2),
-.cal-table td:nth-child(3),
-.cal-table th:nth-child(3),
-.cal-table td:nth-child(5),
-.cal-table th:nth-child(5),
-.cal-table td:nth-child(6),
-.cal-table th:nth-child(6) {
+/* Todas las columnas se encogen a su contenido más ancho, excepto las tres
+   columnas "Título" (DAW: 4ª, Proyectos: 7ª, Digitalización: 9ª), que se
+   dejan flexibles para repartirse el espacio sobrante de la tabla. */
+.cal-table th,
+.cal-table td {
   white-space: nowrap;
   width: 1%;
+}
+.cal-table td:nth-child(4),
+.cal-table thead tr:last-child th:nth-child(4),
+.cal-table td:nth-child(7),
+.cal-table thead tr:last-child th:nth-child(7),
+.cal-table td:nth-child(9),
+.cal-table thead tr:last-child th:nth-child(9) {
+  white-space: normal;
+  width: 320px;
+}
+.cal-table thead tr:first-child th {
+  text-align: center;
 }
 
 /* Fila del calendario que corresponde a la fecha de hoy (calculada en JS,
@@ -283,12 +287,20 @@ html.nav-collapsed .nav-top { display: none; }
 details[open] > summary .chevron svg { transform: rotate(90deg); }
 
 .node-label { font-size: 13px; line-height: 1.35; }
+.node.course > summary .node-label {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
 .node.unit > summary .node-label { font-weight: 700; color: var(--text); }
 .node.block > summary .node-label { font-weight: 600; font-size: 12.5px; color: #333a45; }
 .node.sub > summary .node-label,
 .node.sub-disabled .node-label { font-size: 12px; color: #4b5563; }
 
 .children { padding-left: 17px; margin-left: 13px; border-left: 1px solid var(--border); }
+.node.course > .children { padding-left: 17px; margin-left: 13px; }
 .node.unit > .children { padding-left: 17px; margin-left: 13px; }
 .node.block > .children { padding-left: 16px; margin-left: 12px; border-left-color: #edeff1; }
 
