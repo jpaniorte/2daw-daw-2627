@@ -53,12 +53,42 @@ permalink: /docker/semana-2/practicas/
 
 ## Ejercicio 3 — Una app con dependencias
 
-1. Crea una carpeta nueva `practica-app` con un pequeño script (Node, Python o el lenguaje que prefieras) que imprima algo o levante un mini-servidor.
+1. Crea una carpeta nueva `practica-app` con un pequeño script (Node, Python o el lenguaje que prefieras) que imprima algo o levante un mini-servidor. He dejado un ejemplo al final del ejercicio.
 2. Si tu lenguaje usa gestor de dependencias (`package.json`, `requirements.txt`...), créalo con al menos una dependencia.
 3. Escribe un `Dockerfile` que: copie primero el fichero de dependencias, instale dependencias, copie después el resto del código, y defina `CMD` para ejecutar tu script.
 4. Construye la imagen como `mi-app:1.0`.
 
 **Resultado esperado**: `docker build` termina sin errores y `docker images` muestra `mi-app:1.0`.
+
+Fichero app.py
+```python
+import os
+
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+
+@app.get("/")
+def index():
+    return jsonify(message="Mini servidor listo")
+
+
+@app.get("/health")
+def health():
+    return jsonify(status="ok")
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port)
+```
+
+Fichero requirements.txt
+```txt
+Flask>=3.0,<4.0
+```
+
 
 ---
 
