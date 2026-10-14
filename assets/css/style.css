@@ -74,33 +74,53 @@ table { border-collapse: collapse; width: 100%; margin: 1em 0; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
 th { background: var(--sidebar-bg); }
 
-/* Todas las columnas se encogen a su contenido más ancho, excepto las tres
-   columnas "Título" (DAW: 4ª, Proyectos: 7ª, Digitalización: 9ª), que se
-   dejan flexibles para repartirse el espacio sobrante de la tabla. */
+/* Resto de columnas a partes iguales entre ellas; ID/Fecha (1-2)
+   se encogen al ancho mínimo de su celda más ancha (ver regla siguiente). */
 .cal-table th,
 .cal-table td {
+  width: 10%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+.cal-table td:nth-child(-n+2),
+.cal-table thead tr:first-child th:nth-child(-n+2) {
   white-space: nowrap;
   width: 1%;
 }
+/* Columnas "Entrega (Link)" (4, 7, 9) y "Control" (5): también al ancho
+   mínimo de su celda más ancha. */
 .cal-table td:nth-child(4),
-.cal-table thead tr:last-child th:nth-child(4),
+.cal-table td:nth-child(5),
 .cal-table td:nth-child(7),
-.cal-table thead tr:last-child th:nth-child(7),
 .cal-table td:nth-child(9),
-.cal-table thead tr:last-child th:nth-child(9) {
-  white-space: normal;
-  width: 320px;
+.cal-table thead tr:last-child th:nth-child(2),
+.cal-table thead tr:last-child th:nth-child(3),
+.cal-table thead tr:last-child th:nth-child(5),
+.cal-table thead tr:last-child th:nth-child(7) {
+  white-space: nowrap;
+  width: 1%;
 }
 .cal-table thead tr:first-child th {
   text-align: center;
 }
 
+/* Sombreado muy suave para distinguir de un vistazo el bloque DAW (3-5) y
+   Digitalización (8-9) del bloque Proyectos (6-7). ID y Fecha (1-2) quedan
+   siempre sin sombrear, al ser comunes a las tres asignaturas. */
+.cal-table td:nth-child(n+3):nth-child(-n+5) {
+  background: rgba(21, 120, 120, 0.035);
+}
+.cal-table td:nth-child(n+8) {
+  background: rgba(181, 82, 77, 0.035);
+}
+
 /* Fila del calendario que corresponde a la fecha de hoy (calculada en JS,
-   con la fecha real del visitante, no la del último build). Solo se resaltan
-   ID, Fecha, Apartado y Título (columnas 1-4); Sesiones, Entregas y Fecha
-   Control quedan fuera. */
-.cal-table tr.cal-today > td:nth-child(-n+4) {
-  background: rgba(21, 120, 120, 0.12);
+   con la fecha real del visitante, no la del último build). Se resaltan
+   todas las columnas, de ID hasta el Link de Digitalización. */
+.cal-table tr.cal-today > td {
+  /* !important: debe ganar siempre al sombreado suave de columnas (que,
+     por usar varios :nth-child, puede acabar con más especificidad). */
+  background: rgba(21, 120, 120, 0.12) !important;
   font-weight: 700;
 }
 
