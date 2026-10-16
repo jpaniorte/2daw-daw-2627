@@ -28,3 +28,9 @@ _site/
 .jekyll-cache/
 .jekyll-metadata
 .dev-services/
+
+# Autocorrector: fotos de exámenes de alumnos, nunca se suben al repositorio
+# público (privacidad). Se mantiene la estructura de carpetas con .gitkeep.
+autocorrector/sources/**
+!autocorrector/sources/**/
+!autocorrector/sources/**/.gitkeep

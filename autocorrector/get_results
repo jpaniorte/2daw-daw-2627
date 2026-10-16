@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# Autocorrector de examenes en papel a partir de fotos.
+#
+# Uso:
+#   ./get_results git2
+#   ./get_results git3
+#
+# Lee todas las fotos de autocorrector/sources/<bloque>/ (sin subcarpetas,
+# todas sueltas: cara 1 y cara 2 de cada examen se emparejan solas leyendo
+# el numero de "Version" impreso en el pie de pagina de cada foto), las
+# compara contra la clave de correccion del bloque correspondiente, y
+# muestra por terminal la nota (0-10) y las preguntas falladas de cada
+# version de examen encontrada.
+#
+# Esto NO es un OCR determinista: se apoya en la propia capacidad
+# multimodal de Claude Code (vision) para leer que opcion ha marcado el
+# alumno en cada pregunta. En fotos borrosas o con marcas ambiguas,
+# revisa el resultado a mano.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+BLOCK="${1:-}"
+
+if [[ -z "$BLOCK" ]]; then
+  echo "Uso: $0 <git2|git3>" >&2
+  exit 1
+fi
+
+case "$BLOCK" in
+  git2)
+    SOL_FILE="$REPO_ROOT/UD1/1.1 Git/1.1.2 Git parte 2/git_2_examen_sol.md"
+    EXAM_LABEL="git parte 2 (gestion de ramas)"
+    ;;
+  git3)
+    SOL_FILE="$REPO_ROOT/UD1/1.1 Git/1.1.3 Git parte 3/git_3_examen_sol.md"
+    EXAM_LABEL="git parte 3 (repositorios remotos)"
+    ;;
+  *)
+    echo "Bloque no reconocido: '$BLOCK'. Usa 'git2' o 'git3'." >&2
+    exit 1
+    ;;
+esac
+
+SOURCES_DIR="$SCRIPT_DIR/sources/$BLOCK"
+
+if [[ ! -d "$SOURCES_DIR" ]]; then
+  echo "No existe la carpeta $SOURCES_DIR" >&2
+  exit 1
+fi
+
+if [[ ! -f "$SOL_FILE" ]]; then
+  echo "No se encuentra el fichero de soluciones: $SOL_FILE" >&2
+  exit 1
+fi
+
+# Cuenta ficheros que no sean .gitkeep ni carpetas.
+PHOTO_COUNT=$(find "$SOURCES_DIR" -maxdepth 1 -type f ! -name '.gitkeep' | wc -l | tr -d ' ')
+
+if [[ "$PHOTO_COUNT" -eq 0 ]]; then
+  echo "No hay fotos en $SOURCES_DIR todavia. Copia ahi las fotos de los examenes (cara 1 y cara 2, sueltas) y vuelve a lanzar el comando." >&2
+  exit 1
+fi
+
+PROMPT=$(cat <<EOF
+Vas a corregir examenes en papel de "$EXAM_LABEL" a partir de fotos.
+
+1. Usa Glob para listar todos los ficheros de imagen (jpg, jpeg, png, heic...) dentro de:
+   $SOURCES_DIR
+   Ignora cualquier fichero .gitkeep.
+
+2. Lee con la herramienta Read cada una de esas imagenes.
+
+3. Cada examen fisico tiene DOS caras (dos fotos), impresas a partir de una plantilla con
+   un pie de pagina que indica la version, por ejemplo:
+   - Cara 1: "Version NN . Pagina 1/2 . ..." y contiene las preguntas 1 a 10.
+   - Cara 2: "Version NN (continuacion)" y "Pagina 2/2", y contiene las preguntas 11 a 20.
+   Agrupa las fotos por el numero de version NN que leas en su pie de pagina (puede
+   aparecer pequeno, en una esquina). Dos fotos con el mismo NN son las dos caras del
+   mismo examen. Si una version aparece mas de una vez (mas de un examen fisico con esa
+   version), trata cada pareja de fotos como un examen distinto y numera los resultados
+   igualmente por esa version (puedes anadir un sufijo como "Version 5 (b)" si hace
+   falta distinguirlos).
+
+4. Para cada examen, identifica que opcion (A, B, C o D) ha marcado el alumno a mano
+   (rodeada, marcada con un circulo, una X, subrayada, etc.) en cada una de las 20
+   preguntas. Si una pregunta no tiene ninguna marca clara o tiene mas de una, anotala
+   igualmente como fallo (no como acierto).
+
+5. Lee el fichero de soluciones con Read:
+   $SOL_FILE
+   Es una tabla en Markdown con la letra correcta de cada pregunta (1 a 20) para cada
+   version. El numero entre parentesis junto a la letra (p. ej. "B (#18)") es el numero
+   de pregunta original en el banco: ignoralo por completo, usa solo la LETRA, y
+   localiza la columna correspondiente a la version detectada en el paso 3.
+
+6. Compara, para cada examen, las 20 respuestas del alumno con las 20 correctas de su
+   version. Cuenta los aciertos y calcula la nota con la formula:
+     nota = (aciertos / 20) * 10
+   Redondea la nota a un decimal.
+
+7. Devuelve EXCLUSIVAMENTE el resultado, una linea por examen, con este formato exacto
+   (sin explicaciones antes ni despues, sin markdown, sin backticks):
+     Version N: Nota X, Errores: lista de numeros de pregunta (1-20) separados por comas
+   Si no hay ningun fallo, escribe "Errores: ninguno". Ordena las lineas por numero de
+   version.
+EOF
+)
+
+claude -p "$PROMPT" --allowedTools "Read Glob" --permission-mode acceptEdits

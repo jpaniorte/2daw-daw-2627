@@ -8,6 +8,7 @@ kramdown:
 
 exclude:
   - UD0
+  - autocorrector
   - themes
   - build.py
   - ra.pdf
@@ -174,6 +175,19 @@ nav:
         pages:
           - { title: "Documento", url: "/proyectos/hito1/" }
           - { title: "VSCode", url: "/proyectos/vscode/" }
+      - id: requisitos
+        title: "Requisitos del proyecto"
+        blocks:
+          - id: req_daw
+            title: "Despliegue de Aplicaciones Web"
+            pages:
+              - { title: "Requisitos", url: "/proyectos/requisitos-daw/" }
+          - id: req_dwes
+            title: "Desarrollo Web en Entorno Servidor"
+          - id: req_diw
+            title: "Diseño de Interfaces Web"
+          - id: req_dwec
+            title: "Programación Web en Entorno Cliente"
   - id: digitalizacion
     title: "Digitalización"
     units:
