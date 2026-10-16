@@ -34,3 +34,14 @@ _site/
 autocorrector/sources/**
 !autocorrector/sources/**/
 !autocorrector/sources/**/.gitkeep
+
+# Gemas de Ruby instaladas en local con "bundle install" (config en .bundle/,
+# gemas en vendor/bundle/). Jekyll ya excluye vendor/ de la web.
+.bundle/
+vendor/
+
+# Python (build.py, autocorrector) y secretos/ficheros temporales de editor.
+__pycache__/
+*.pyc
+.env
+*.swp

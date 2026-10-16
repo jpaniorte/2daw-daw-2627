@@ -52,11 +52,20 @@ permalink: /docker/semana-3/practicas/
 
 ## Ejercicio 3 — Comunicación por nombre
 
-1. Entra en el contenedor de `web` con `docker compose exec web sh` (o `bash`).
-2. Desde dentro, intenta hacer ping o resolver el nombre `db` (si tu imagen no tiene `ping`, instala `curl`/`ping` o usa otra herramienta disponible).
-3. Comprueba que `db` se resuelve, aunque no hayas publicado ningún puerto de la base de datos al host.
+Este ejercicio usa un `docker-compose.yml` **aparte** para no tocar el stack `web` + `db` de los ejercicios anteriores.
 
-**Resultado esperado**: entiendes que los servicios se ven entre sí por nombre, sin necesidad de `ports`.
+1. Crea una carpeta nueva `practica-ubuntu` con un `docker-compose.yml` que defina **dos servicios** llamados `ubuntu1` y `ubuntu2`, ambos con la imagen `ubuntu:24.04` (versión concreta, nunca `latest`), **sin `ports`**.
+2. Una imagen de Ubuntu se para en cuanto arranca porque no tiene ningún proceso que mantener. Añade a cada servicio `command: sleep infinity` para que se quede en marcha.
+3. Levántalos con `docker compose up -d` y comprueba con `docker compose ps` que los dos están "Up".
+4. La imagen de Ubuntu no trae `ping`. Instálalo en el primer contenedor:
+   `docker compose exec ubuntu1 bash -c "apt-get update && apt-get install -y iputils-ping"`
+5. Desde `ubuntu1`, haz ping a `ubuntu2` **por su nombre**:
+   `docker compose exec ubuntu1 ping -c 3 ubuntu2`
+6. Repite en sentido contrario: instala `ping` en `ubuntu2` y haz ping a `ubuntu1`.
+7. Mira qué IP tiene cada nombre: `docker compose exec ubuntu1 getent hosts ubuntu2`.
+8. Limpia: `docker compose down`.
+
+**Resultado esperado**: `ubuntu1` y `ubuntu2` se hacen ping por nombre en los dos sentidos sin haber publicado ningún puerto ni haber creado ninguna red: Compose la crea sola.
 
 ---
 
