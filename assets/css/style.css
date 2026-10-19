@@ -394,6 +394,67 @@ html.nav-collapsed .icon-btn svg { transform: rotate(180deg); }
 }
 .pdf-download:hover { background: #eef0f2; color: var(--text); }
 
+/* Tabla de píldoras: la columna "Bloque" se fusiona (rowspan) para todas
+   las filas de ese bloque, con el texto en vertical (de arriba a abajo). */
+.pildoras-table td.bloque {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-weight: 700;
+  background: var(--sidebar-bg);
+}
+
+/* Sombreado alterno por bloque (impares en gris muy claro) para
+   distinguir visualmente dónde empieza/acaba cada bloque. */
+.pildoras-table tr.bloque-shade > td {
+  background: #f4f4f5;
+}
+.pildoras-table tr.bloque-shade > td.bloque {
+  background: #e9e9ec;
+}
+
+/* Enlace al audio (Drive, se abre en pestaña nueva) y botón de
+   "completada", en sus propias columnas de ancho fijo. */
+.pildoras-table td:nth-child(4) {
+  width: 160px;
+  min-width: 160px;
+}
+.pildoras-table td:nth-child(5) {
+  width: 150px;
+  min-width: 150px;
+  text-align: center;
+}
+.pildora-play-link,
+.pildora-complete-btn {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.pildora-play-link:hover,
+.pildora-complete-btn:hover {
+  background: var(--sidebar-bg);
+}
+.pildora-complete-btn.done {
+  background: var(--brand);
+  border-color: var(--brand-dark);
+  color: #fff;
+}
+.pildoras-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: -4px;
+}
+
 @media (max-width: 860px) {
   .layout { display: block; }
   .sidebar {

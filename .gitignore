@@ -1,5 +1,9 @@
 .DS_Store
 
+# Temario fuente de las píldoras (material de una academia externa, con
+# derechos de terceros): se usa como referencia local, no se sube al repo.
+pildoras.pdf
+
 # Exámenes: no se suben a git (contienen preguntas/respuestas que no deben
 # quedar públicas en el historial). Se generan localmente con el script
 # correspondiente y se imprimen desde el PDF, sin pasar por el repositorio.

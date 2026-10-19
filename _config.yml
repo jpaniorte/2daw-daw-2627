@@ -12,6 +12,7 @@ exclude:
   - themes
   - build.py
   - ra.pdf
+  - pildoras.pdf
   - Gemfile
   - Gemfile.lock
   - "**/README.md"
@@ -203,3 +204,7 @@ nav:
         title: "5. Los datos y su protección"
       - id: dig6
         title: "6. Plan de transformación digital"
+      - id: pildoras
+        title: "Píldoras"
+        pages:
+          - { title: "Píldoras", url: "/digitalizacion/pildoras/" }
