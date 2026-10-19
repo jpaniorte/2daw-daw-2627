@@ -417,11 +417,11 @@ html.nav-collapsed .icon-btn svg { transform: rotate(180deg); }
 
 /* Enlace al audio (Drive, se abre en pestaña nueva) y botón de
    "completada", en sus propias columnas de ancho fijo. */
-.pildoras-table td:nth-child(4) {
+.pildoras-table td.pildora-reproductor {
   width: 160px;
   min-width: 160px;
 }
-.pildoras-table td:nth-child(5) {
+.pildoras-table td.pildora-completada {
   width: 150px;
   min-width: 150px;
   text-align: center;
