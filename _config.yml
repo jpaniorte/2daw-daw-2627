@@ -173,6 +173,9 @@ nav:
           - { title: "VSCode", url: "/proyectos/vscode/" }
           - { title: "Azure account", url: "/proyectos/maquina-remota/" }
           - { title: "VM Ubuntu Server", url: "/proyectos/vm-ubuntu/" }
+      - id: anteproyecto
+        title: "Anteproyecto"
+        url: "/proyectos/anteproyecto/"
       - id: requisitos
         title: "Requisitos de proyecto"
         url: "https://github.com/jpaniorte/2daw-tfc-2627/wiki"
