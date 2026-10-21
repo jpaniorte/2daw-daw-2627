@@ -328,7 +328,7 @@ volumes:
 
 ## Ejemplos reales para inspirarte
 
-No hace falta escribir siempre un `docker-compose.yml` desde cero: Docker mantiene un repositorio con ejemplos oficiales y reales, `docker/awesome-compose`:
+No hace falta escribir siempre un `docker-compose.yml` desde cero: Docker mantiene un repositorio con ejemplos oficiales y reales, [`docker/awesome-compose`](https://github.com/docker/awesome-compose):
 
 - **WordPress**: `github.com/docker/awesome-compose/blob/master/official-documentation-samples/wordpress/README.md`
 - **Django**: `github.com/docker/awesome-compose/blob/master/official-documentation-samples/django/README.md`
@@ -341,7 +341,7 @@ No hace falta escribir siempre un `docker-compose.yml` desde cero: Docker mantie
 Lo visto hoy (`services`, `image`, `build`, `ports`, `environment`, `volumes`, `networks`, `depends_on`...) es solo una parte de lo que admite Compose.
 
 **Referencia oficial del fichero Compose**:
-`docs.docker.com/reference/compose-file/`
+[`docs.docker.com/reference/compose-file/`](https://docs.docker.com/reference/compose-file/)
 
 Ahí están documentadas también claves más avanzadas (`healthcheck`, `profiles`, `deploy`...) que no cubrimos hoy.
 
