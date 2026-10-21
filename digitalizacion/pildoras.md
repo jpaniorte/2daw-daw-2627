@@ -12,7 +12,7 @@ permalink: /digitalizacion/pildoras/
 2. Durante la escucha de la píldora, el alumno puede ir tomando apuntes en un folio en blanco. Durante la realización del control puede hacer uso de este folio. Se recomienda que los estudiantes se organicen para poder cubrir el máximo de píldoras y compartir estos folios de apuntes entre ellos.
 3. No hay orden: el alumno elige con qué píldora empezar y cuál quiere que se le evalúe, según sus preferencias. Fecha límite para hacer el control: **5 de febrero**.
 4. Las notas de los controles aparecerán en **"Qualificacions"** de Aules.
-5. Se debe superar al menos el **50% de las píldoras (37 aptos)** para poder evaluar esta sección. Se recomienda al estudiante progresar a un ritmo de 3 píldoras por semana.
+5. Se debe superar al menos el **50% de las píldoras (36 aptos)** para poder evaluar esta sección. Se recomienda al estudiante progresar a un ritmo de 3 píldoras por semana.
 6. Estas píldoras suponen el **60% de la nota final**.
 7. El otro 40% de la nota será la media de controles y prácticas.
 
@@ -256,10 +256,6 @@ permalink: /digitalizacion/pildoras/
 </tr>
 </tbody>
 </table>
-
-*Los temas 1-10, 13, 15, 21, 23, 27, 30, 34, 40, 46, 48, 68 y 74 están disponibles, con su audio y el botón para marcar la píldora como completada. El resto de temas se irán publicando progresivamente.*
-
-<p class="pildoras-note">El botón "Marcar como completada" guarda el estado únicamente en este navegador (no sustituye al control ni se envía al profesor); sirve solo para que lleves tu propio seguimiento.</p>
 
 <script>
 (function () {

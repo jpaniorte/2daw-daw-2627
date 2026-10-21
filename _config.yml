@@ -167,44 +167,43 @@ nav:
   - id: proyectos
     title: "Proyectos"
     units:
-      - id: hito0
-        title: "Hito 0"
+      - id: guias
+        title: "Guías"
         pages:
-          - { title: "Documento", url: "/proyectos/hito0/" }
-      - id: hito1
-        title: "Hito 1"
-        pages:
-          - { title: "Documento", url: "/proyectos/hito1/" }
           - { title: "VSCode", url: "/proyectos/vscode/" }
+          - { title: "Azure account", url: "/proyectos/maquina-remota/" }
+          - { title: "VM Ubuntu Server", url: "/proyectos/vm-ubuntu/" }
       - id: requisitos
-        title: "Requisitos del proyecto"
-        blocks:
-          - id: req_daw
-            title: "Despliegue de Aplicaciones Web"
-            pages:
-              - { title: "Requisitos", url: "/proyectos/requisitos-daw/" }
-          - id: req_dwes
-            title: "Desarrollo Web en Entorno Servidor"
-          - id: req_diw
-            title: "Diseño de Interfaces Web"
-          - id: req_dwec
-            title: "Programación Web en Entorno Cliente"
+        title: "Requisitos de proyecto"
+        url: "https://github.com/jpaniorte/2daw-tfc-2627/wiki"
+        external: true
   - id: digitalizacion
     title: "Digitalización"
     units:
       - id: dig1
         title: "1. Digitalización en los sistemas productivos"
+        url: "https://aules.edu.gva.es/fp/course/section.php?id=1873298"
+        external: true
       - id: dig2
         title: "2. Caracterización de tecnologías habilitadoras"
+        url: "https://aules.edu.gva.es/fp/course/section.php?id=1873301"
+        external: true
       - id: dig3
         title: "3. La nube"
+        url: "https://aules.edu.gva.es/fp/course/section.php?id=1873302"
+        external: true
       - id: dig4
         title: "4. La inteligencia artificial"
+        url: "https://aules.edu.gva.es/fp/course/section.php?id=1873304"
+        external: true
       - id: dig5
         title: "5. Los datos y su protección"
+        url: "https://aules.edu.gva.es/fp/course/section.php?id=1873305"
+        external: true
       - id: dig6
         title: "6. Plan de transformación digital"
+        url: "https://aules.edu.gva.es/fp/course/section.php?id=1873306"
+        external: true
       - id: pildoras
         title: "Píldoras"
-        pages:
-          - { title: "Píldoras", url: "/digitalizacion/pildoras/" }
+        url: "/digitalizacion/pildoras/"

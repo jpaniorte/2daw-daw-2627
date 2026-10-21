@@ -69,6 +69,10 @@
                   {% endif %}
                 {% endfor %}
               {% endif %}
+              {% if block.url and block.url == page.url %}
+                {% assign active_unit_id = unit.id %}
+                {% assign active_course_id = course.id %}
+              {% endif %}
             {% endfor %}
             {% if unit.pages %}
               {% for leaf in unit.pages %}
@@ -77,6 +81,9 @@
                   {% assign active_course_id = course.id %}
                 {% endif %}
               {% endfor %}
+            {% endif %}
+            {% if unit.url and unit.url == page.url %}
+              {% assign active_course_id = course.id %}
             {% endif %}
           {% endfor %}
         {% endfor %}
@@ -138,6 +145,10 @@
                               {% endfor %}
                             </div>
                           </details>
+                        {% elsif block.url %}
+                          <div class="node block">
+                            <a href="{{ block.url | relative_url }}" class="unit-link{% if block.url == page.url %} active{% endif %}"{% if block.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ block.title }}{% if block.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
+                          </div>
                         {% else %}
                           <div class="node block sub-disabled">
                             <span class="node-label">{{ block.title }}</span>
@@ -159,6 +170,10 @@
                       {% endfor %}
                     </div>
                   </details>
+                {% elsif unit.url %}
+                  <div class="node unit">
+                    <a href="{{ unit.url | relative_url }}" class="unit-link{% if unit.url == page.url %} active{% endif %}"{% if unit.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ unit.title }}{% if unit.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
+                  </div>
                 {% else %}
                   <div class="node unit sub-disabled">
                     <span class="node-label">{{ unit.title }}</span>

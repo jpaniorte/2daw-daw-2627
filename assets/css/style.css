@@ -326,6 +326,23 @@ details[open] > summary .chevron svg { transform: rotate(90deg); }
 
 .node.sub-disabled { color: #aab0b9; cursor: default; }
 .node.sub-disabled .node-label { color: #aab0b9; }
+
+/* Unidad sin nivel intermedio (enlace directo a una página, como
+   "Digitalización > Píldoras", sin un segundo nivel redundante). */
+.unit-link {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--text);
+  padding: 7px 8px;
+  border-radius: 6px;
+}
+.unit-link:hover { background: #eef0f2; }
+.unit-link.active {
+  background: rgba(21, 120, 120, 0.1);
+  color: var(--brand);
+}
 .badge {
   flex: 0 0 auto;
   font-size: 9.5px;
@@ -377,6 +394,16 @@ html.nav-collapsed .icon-btn svg { transform: rotate(180deg); }
   padding: 28px 40px 80px;
 }
 .content h1:first-child { margin-top: 0; }
+.content img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.content img.screenshot-sm {
+  max-width: 480px;
+  display: block;
+}
 
 .pdf-download {
   display: inline-flex;
