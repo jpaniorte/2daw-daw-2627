@@ -56,4 +56,4 @@ El profesorado revisará la propuesta y:
 
 ## Siguientes pasos
 
-Una vez tengáis el visto bueno de vuestro anteproyecto, continuad con las [Guías](/proyectos/vscode/) para preparar vuestro entorno de desarrollo y vuestro servidor en Azure, y consultad los [Requisitos de proyecto](https://github.com/jpaniorte/2daw-tfc-2627/wiki) completos para el repositorio y la entrega final.
+Una vez tengáis el visto bueno de vuestro anteproyecto, continuad con las [Guías]({{ '/proyectos/vscode/' | relative_url }}) para preparar vuestro entorno de desarrollo y vuestro servidor en Azure, y consultad los [Requisitos de proyecto](https://github.com/jpaniorte/2daw-tfc-2627/wiki) completos para el repositorio y la entrega final.

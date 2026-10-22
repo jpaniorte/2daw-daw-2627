@@ -6,13 +6,13 @@ permalink: /proyectos/vm-ubuntu/
 
 # VM Ubuntu Server
 
-Con la cuenta de [Azure for Students](/proyectos/maquina-remota/) activa y el crédito disponible, toca crear la máquina virtual que será vuestro servidor: una **Ubuntu Server** a la que os conectaréis por **SSH**.
+Con la cuenta de [Azure for Students]({{ '/proyectos/maquina-remota/' | relative_url }}) activa y el crédito disponible, toca crear la máquina virtual que será vuestro servidor: una **Ubuntu Server** a la que os conectaréis por **SSH**.
 
 ---
 
 ## Antes de empezar
 
-- Haber completado la [Fase 1: Azure account](/proyectos/maquina-remota/) (crédito de 100$ activo).
+- Haber completado la [Fase 1: Azure account]({{ '/proyectos/maquina-remota/' | relative_url }}) (crédito de 100$ activo).
 - Tener un par de claves SSH en vuestro equipo. Si no las tenéis, generadlas en una terminal:
 
 ```
@@ -31,12 +31,12 @@ Aceptad la ubicación por defecto (`~/.ssh/id_ed25519`) y, si queréis, proteged
 2. Desde la página de **"Education"** (la del crédito de 100$), buscad la tarjeta **"Servicios gratuitos"** y pulsad **"Explorar todo"** (o buscad directamente **"Servicios gratuitos"** en la barra de búsqueda superior).
 3. Veréis un catálogo de servicios con cuota mensual gratuita durante 12 meses. Buscad la tarjeta **"Máquina virtual con Linux"** (750 horas, usando las VM ampliables **B2pts v2** (Arm) o **B2ats v2** (AMD)) y pulsad su botón **"Crear"**:
 
-   <img src="/assets/img/proyectos/azure-servicios-gratuitos.png" alt="Pantalla Servicios gratuitos de Azure, con la tarjeta Máquina virtual con Linux y su botón Crear" class="screenshot-sm">
+   <img src="{{ '/assets/img/proyectos/azure-servicios-gratuitos.png' | relative_url }}" alt="Pantalla Servicios gratuitos de Azure, con la tarjeta Máquina virtual con Linux y su botón Crear" class="screenshot-sm">
 
    Esto os lleva al mismo formulario **"Crear una máquina virtual"**, pero con el tamaño ya preconfigurado a una opción gratuita — así no tenéis que ir buscando a mano un tamaño disponible.
 4. Esta vía abre un formulario **simplificado** (más corto que el genérico de "Máquinas virtuales"):
 
-   <img src="/assets/img/proyectos/azure-crear-vm.png" alt="Formulario simplificado de creación de máquina virtual, llegando desde Servicios gratuitos" class="screenshot-sm">
+   <img src="{{ '/assets/img/proyectos/azure-crear-vm.png' | relative_url }}" alt="Formulario simplificado de creación de máquina virtual, llegando desde Servicios gratuitos" class="screenshot-sm">
 
    - **Suscripción**: ya aparece **"Azure for Students"** seleccionada.
    - **Grupo de recursos**: Azure os propone uno nuevo automáticamente (p. ej. `vm-proyecto_group`, a partir del nombre que le deis a la VM). No hace falta tocarlo — es solo la "carpeta" lógica donde se agrupan todos los recursos de este proyecto.

@@ -19,7 +19,7 @@ Esta guía tiene dos fases:
 
 Al terminar esta fase debéis llegar a una pantalla como esta, dentro del portal de Azure (`portal.azure.com`), mostrando **100 US$ de 100 US$** de crédito disponible:
 
-<img src="/assets/img/proyectos/azure-students-credito.jpg" alt="Pantalla de Azure Education con 100$ de crédito disponible" class="screenshot-sm">
+<img src="{{ '/assets/img/proyectos/azure-students-credito.jpg' | relative_url }}" alt="Pantalla de Azure Education con 100$ de crédito disponible" class="screenshot-sm">
 
 
 Fijaos en dos datos concretos de esa pantalla, porque son los que tenéis que comprobar al final:
@@ -94,4 +94,4 @@ Al terminar, Azure os llevará al portal (`portal.azure.com`) dentro de la secci
 
 ## Próximos pasos (Fase 2)
 
-Con la cuenta activa y el crédito disponible, continuad con la [Fase 2: VM Ubuntu Server](/proyectos/vm-ubuntu/), donde crearemos juntos una máquina virtual con Ubuntu Server dentro de Azure y os conectaréis a ella por SSH.
+Con la cuenta activa y el crédito disponible, continuad con la [Fase 2: VM Ubuntu Server]({{ '/proyectos/vm-ubuntu/' | relative_url }}), donde crearemos juntos una máquina virtual con Ubuntu Server dentro de Azure y os conectaréis a ella por SSH.
