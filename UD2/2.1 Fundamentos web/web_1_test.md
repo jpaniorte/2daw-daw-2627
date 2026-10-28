@@ -1,1182 +1,619 @@
 ---
-marp: true
-theme: default
-paginate: true
-backgroundColor: white
-footer: 'Despliegue de Aplicaciones Web (0614) · UD2: Arquitecturas Web'
 layout: default
-title: "Arquitecturas Web — Bloque 2.1: Fundamentos web (Banco de test)"
+title: "Arquitecturas Web — Bloque 2.1: Fundamentos web (Test)"
 permalink: /web/semana-1/test/
 ---
 
-<!-- _class: lead -->
-# arquitecturas web
-## Test de repaso — bloque 2.1: fundamentos web
-### 100 preguntas · 4 opciones, 1 correcta
+# Bloque 2.1 — Test de fundamentos web: redes, HTTP y arquitecturas
 
----
-
-## Cómo usar este banco de preguntas
-
-- Cada diapositiva contiene una pregunta con 4 opciones (A-D), solo 1 correcta.
-- No incluye las respuestas: úsalo para practicar de cara al cuestionario. TODAS las preguntas del cuestionario saldrán de este banco de preguntas.
-
----
-
-<!-- _class: lead -->
-# Bloque 1
-## Cliente-servidor y métodos HTTP
-
----
-
-## Pregunta 1
-
-En el modelo cliente-servidor de la web, ¿quién inicia típicamente la comunicación?
-
-A) El servidor, enviando datos sin que nadie los pida
-B) El cliente, haciendo una petición
-C) Ambos a la vez, siempre de forma simultánea
-D) Ninguno: la comunicación la inicia el DNS
-
----
-
-## Pregunta 2
-
-¿Qué método HTTP se considera el adecuado para pedir un recurso sin modificar nada en el servidor?
-
-A) POST
-B) DELETE
-C) GET
-D) PUT
-
----
-
-## Pregunta 3
-
-Un formulario web envía los datos de un usuario nuevo para crear su cuenta. ¿Qué método HTTP es el más apropiado?
-
-A) GET
-B) POST
-C) HEAD
-D) OPTIONS
-
----
-
-## Pregunta 4
-
-¿Qué diferencia hay, en esencia, entre `PUT` y `PATCH`?
-
-A) No hay diferencia, son sinónimos
-B) `PUT` reemplaza el recurso completo; `PATCH` lo modifica parcialmente
-C) `PATCH` solo sirve para borrar recursos
-D) `PUT` nunca lleva cuerpo en la petición
-
----
-
-## Pregunta 5
-
-¿Qué método HTTP se usa típicamente para eliminar un recurso?
-
-A) GET
-B) DELETE
-C) HEAD
-D) CONNECT
-
----
-
-## Pregunta 6
-
-Al enviar un formulario con el método GET, ¿dónde terminan apareciendo los datos introducidos?
-
-A) En el cuerpo de la petición, ocultos
-B) En la URL, como parte de la query string
-C) Nunca llegan al servidor
-D) En una cabecera llamada `Body`
-
----
-
-## Pregunta 7
-
-¿Cuál de estas afirmaciones sobre GET y POST es correcta?
-
-A) GET es más adecuado para enviar contraseñas porque es más rápido
-B) POST permite enviar más cantidad de datos y no los deja visibles en la URL
-C) GET y POST son exactamente intercambiables en todos los casos
-D) POST no puede usarse para enviar ficheros
-
----
-
-## Pregunta 8
-
-¿Qué método HTTP devuelve solo las cabeceras de la respuesta, sin el cuerpo?
-
-A) HEAD
-B) GET
-C) TRACE
-D) OPTIONS
-
----
-
-## Pregunta 9
-
-Una API REST bien diseñada usa `GET /productos/7` para consultar un producto. ¿Qué método usarías para actualizar completamente ese producto?
-
-A) GET /productos/7
-B) POST /productos
-C) PUT /productos/7
-D) DELETE /productos/7
-
----
-
-## Pregunta 10
-
-¿Por qué se dice que `GET` debería ser una operación "segura" (sin efectos secundarios)?
-
-A) Porque usa HTTPS obligatoriamente
-B) Porque, en teoría, repetir la misma petición GET no debería cambiar el estado del servidor
-C) Porque no puede fallar nunca
-D) Porque no puede llevar parámetros
-
----
-
-<!-- _class: lead -->
-# Bloque 2
-## Códigos de estado HTTP
-
----
-
-## Pregunta 11
-
-¿A qué rango de códigos de estado HTTP pertenece un error causado por el propio cliente (p. ej. una URL mal escrita)?
-
-A) 2xx
-B) 3xx
-C) 4xx
-D) 5xx
-
----
-
-## Pregunta 12
-
-Un servidor sufre una caída interna al procesar una petición válida del cliente. ¿Qué rango de código de estado es esperable?
-
-A) 2xx
-B) 3xx
-C) 4xx
-D) 5xx
-
----
-
-## Pregunta 13
-
-¿Qué código de estado indica que una petición se completó con éxito y no hay contenido que devolver?
-
-A) 200
-B) 201
-C) 204
-D) 404
-
----
-
-## Pregunta 14
-
-Tras enviar un formulario que crea un nuevo recurso, ¿qué código de estado sería el más preciso devolver?
-
-A) 200
-B) 201
-C) 204
-D) 400
-
----
-
-## Pregunta 15
-
-Visitas `http://miempresa.com` y el servidor te lleva automáticamente a `https://miempresa.com`. ¿Qué tipo de código de estado está implicado?
-
-A) 2xx
-B) 3xx
-C) 4xx
-D) 5xx
-
----
-
-## Pregunta 16
-
-¿Qué código de estado verías si intentas acceder a una sección que exige haber iniciado sesión y no lo has hecho?
-
-A) 200
-B) 401
-C) 403
-D) 500
-
----
-
-## Pregunta 17
-
-Ya has iniciado sesión, pero intentas entrar al panel de administración sin tener permisos de administrador. ¿Qué código es más apropiado?
-
-A) 401
-B) 403
-C) 404
-D) 503
-
----
-
-## Pregunta 18
-
-¿Qué código de estado HTTP se asocia habitualmente a "recurso no encontrado"?
-
-A) 400
-B) 404
-C) 410
-D) 500
-
----
-
-## Pregunta 19
-
-Un servidor está temporalmente saturado y no puede atender más peticiones. ¿Qué código de estado encajaría mejor?
-
-A) 404
-B) 409
-C) 503
-D) 301
-
----
-
-## Pregunta 20
-
-¿Qué significa, en general, un código de estado que empieza por `5`?
-
-A) Un error cometido por el cliente al construir la petición
-B) Una redirección
-C) Un error ocurrido dentro del servidor al procesar una petición válida
-D) Que la petición fue exitosa
-
----
-
-<!-- _class: lead -->
-# Bloque 3
-## Cabeceras HTTP
-
----
-
-## Pregunta 21
-
-¿Qué cabecera HTTP indica al cliente cómo debe interpretar el cuerpo de la respuesta (HTML, JSON, imagen...)?
-
-A) Content-Type
-B) Host
-C) User-Agent
-D) Accept-Language
-
----
-
-## Pregunta 22
-
-¿Qué cabecera de petición identifica el dominio al que va dirigida la petición (importante si un servidor aloja varios sitios)?
-
-A) Host
-B) Content-Length
-C) Set-Cookie
-D) ETag
-
----
-
-## Pregunta 23
-
-¿Qué cabecera usa el servidor para indicarle al navegador que guarde una cookie?
-
-A) Cookie
-B) Set-Cookie
-C) Authorization
-D) Accept
-
----
-
-## Pregunta 24
-
-Un cliente envía `Accept: application/json` en su petición. ¿Qué está indicando?
-
-A) Que solo acepta recibir la respuesta en formato JSON
-B) Que está enviando datos en JSON
-C) Que quiere forzar una redirección
-D) Que no quiere recibir cookies
-
----
-
-## Pregunta 25
-
-¿Qué cabecera suele llevar el token de autenticación en muchas APIs modernas?
-
-A) Authorization
-B) Host
-C) Referer
-D) Content-Length
-
----
-
-## Pregunta 26
-
-¿Para qué sirve la cabecera `Content-Length` en una respuesta HTTP?
-
-A) Indica el idioma del contenido
-B) Indica el tamaño en bytes del cuerpo de la respuesta
-C) Indica cuántas cookies se han enviado
-D) Indica el método HTTP usado
-
----
-
-## Pregunta 27
-
-¿Qué cabecera de petición identifica, de forma orientativa, el navegador o cliente que hace la petición?
-
-A) User-Agent
-B) Host
-C) Set-Cookie
-D) ETag
-
----
-
-## Pregunta 28
-
-Quieres que el servidor sepa que la petición trae un cuerpo en formato JSON. ¿Qué cabecera deberías enviar en la petición?
-
-A) Accept: application/json
-B) Content-Type: application/json
-C) Host: application/json
-D) Cookie: application/json
-
----
-
-## Pregunta 29
-
-¿Qué diferencia hay entre las cabeceras `Cookie` y `Set-Cookie`?
-
-A) Son exactamente la misma cabecera con dos nombres
-B) `Cookie` la envía el cliente al servidor; `Set-Cookie` la envía el servidor al cliente
-C) `Set-Cookie` solo existe en HTTPS
-D) `Cookie` solo puede usarse una vez por sesión
-
----
-
-## Pregunta 30
-
-Si una respuesta HTTP no incluye la cabecera `Content-Type`, ¿qué problema puede causar en el cliente?
-
-A) Ninguno, es opcional y nunca afecta nada
-B) El cliente puede no saber cómo interpretar correctamente el cuerpo recibido
-C) La petición se convierte automáticamente en POST
-D) El servidor rechaza la petición
-
----
-
-<!-- _class: lead -->
-# Bloque 4
-## URLs y DNS
-
----
-
-## Pregunta 31
-
-En la URL `https://tienda.com:8443/productos/3?color=rojo#opiniones`, ¿qué parte es `8443`?
-
-A) El host
-B) El puerto
-C) La ruta
-D) El fragmento
-
----
-
-## Pregunta 32
-
-En la misma URL, ¿qué parte es `color=rojo`?
+**Módulo:** Despliegue de Aplicaciones Web (0614) · 2º DAW · UD2: Arquitecturas web
 
-A) El fragmento
-B) El host
-C) La query string (parámetros)
-D) El esquema
+## Instrucciones
 
----
-
-## Pregunta 33
-
-¿Qué parte de una URL nunca se envía al servidor en la petición HTTP?
-
-A) El host
-B) La ruta
-C) El fragmento (lo que va después de #)
-D) El puerto
-
----
-
-## Pregunta 34
-
-Si una URL no especifica puerto y usa `https://`, ¿qué puerto se usa por defecto?
-
-A) 21
-B) 80
-C) 443
-D) 8080
-
----
-
-## Pregunta 35
-
-¿Qué función cumple el DNS en la navegación web?
-
-A) Cifra el tráfico HTTP
-B) Traduce nombres de dominio a direcciones IP
-C) Comprime las imágenes de una página
-D) Gestiona las sesiones de usuario
-
----
-
-## Pregunta 36
-
-La primera vez que visitas un dominio tarda un poco más en cargar que las siguientes veces, aun con la misma conexión. ¿Qué explicación es más plausible desde el punto de vista de DNS?
-
-A) La segunda vez el servidor pesa menos
-B) La resolución DNS puede quedar cacheada tras la primera consulta
-C) El navegador borra la caché DNS automáticamente
-D) HTTPS solo funciona a partir de la segunda visita
-
----
-
-## Pregunta 37
-
-Si registras un dominio nuevo y apuntas sus registros DNS a un servidor, ¿por qué el cambio puede tardar en verse para todo el mundo?
-
-A) Porque las direcciones IP cambian cada segundo
-B) Porque hay cachés DNS intermedias que tardan en actualizarse
-C) Porque HTTP no admite dominios nuevos
-D) Porque hace falta reiniciar el navegador de cada visitante manualmente
-
----
-
-## Pregunta 38
-
-¿Qué comando de terminal usarías para consultar a qué IP resuelve un dominio?
-
-A) ping -t
-B) curl -X POST
-C) nslookup (o dig)
-D) docker inspect
-
----
-
-## Pregunta 39
-
-¿Cuál de estas NO es una parte estándar de una URL?
-
-A) Esquema
-B) Host
-C) Query string
-D) Docker tag
-
----
-
-## Pregunta 40
-
-¿Qué ocurre si cambias solo el fragmento de una URL (la parte después de `#`) y recargas?
-
-A) Se envía una nueva petición HTTP completa al servidor
-B) El navegador la gestiona localmente, sin que el servidor la reciba como tal
-C) El servidor devuelve siempre un error 404
-D) Se invalida automáticamente la sesión
-
----
-
-<!-- _class: lead -->
-# Bloque 5
-## Estado, cookies y sesiones
-
----
-
-## Pregunta 41
-
-¿Por qué se dice que HTTP es un protocolo "sin estado" (stateless)?
-
-A) Porque no puede transportar datos binarios
-B) Porque cada petición es independiente y el servidor no recuerda las anteriores por sí solo
-C) Porque no puede usarse con HTTPS
-D) Porque no tiene códigos de estado
-
----
-
-## Pregunta 42
-
-¿Qué mecanismo permite que un servidor "recuerde" que ya iniciaste sesión en peticiones posteriores?
-
-A) El propio protocolo HTTP, que guarda memoria por defecto
-B) Cookies, junto con un estado de sesión guardado en el servidor
-C) El DNS, que asocia tu IP a tu usuario
-D) El método HTTP usado
-
----
-
-## Pregunta 43
-
-¿Qué suele contener realmente la cookie de sesión de un usuario autenticado, en vez de todos sus datos?
-
-A) La contraseña en texto plano
-B) Un identificador de sesión, que el servidor usa para localizar el estado real
-C) El historial completo de navegación
-D) El código fuente de la aplicación
-
----
-
-## Pregunta 44
-
-Si un usuario borra manualmente las cookies de su navegador, ¿qué efecto típico tiene sobre una sesión iniciada?
-
-A) Ninguno, la sesión sigue activa igual
-B) Probablemente se cierre su sesión, al perder el identificador que la vinculaba
-C) Se elimina su cuenta de usuario
-D) El servidor deja de responder a ese dominio
-
----
-
-## Pregunta 45
-
-¿Dónde se guarda habitualmente el estado "real" de una sesión (usuario, carrito, permisos), y no solo su identificador?
-
-A) Únicamente en la cookie del navegador
-B) En el servidor (memoria o base de datos), asociado al ID de sesión
-C) En la caché DNS
-D) En la URL de cada petición
-
----
-
-## Pregunta 46
-
-¿Qué problema de fondo resuelven las cookies de sesión, dado que HTTP no guarda estado por sí mismo?
-
-A) Permiten cifrar la conexión
-B) Permiten que el servidor reconozca al mismo cliente a lo largo de varias peticiones
-C) Permiten resolver nombres de dominio
-D) Permiten comprimir las respuestas
-
----
-
-## Pregunta 47
-
-Dos pestañas del mismo navegador visitan el mismo sitio donde ya iniciaste sesión. ¿Qué suele ocurrir con la sesión?
-
-A) Cada pestaña tiene una sesión completamente distinta e incompatible
-B) Normalmente comparten la misma cookie de sesión, al ser el mismo navegador y dominio
-C) Es imposible abrir el mismo sitio en dos pestañas
-D) El servidor bloquea automáticamente la segunda pestaña
-
----
-
-## Pregunta 48
-
-¿Qué significa, en la práctica, que una cookie tenga marcada la opción `HttpOnly`?
-
-A) Que solo puede usarse en peticiones HTTP, nunca HTTPS
-B) Que no puede leerse mediante JavaScript, lo que reduce el riesgo de robo por scripts maliciosos
-C) Que caduca en una hora exacta siempre
-D) Que el servidor la ignora por completo
-
----
-
-## Pregunta 49
-
-Si un sistema no usa cookies ni ningún otro mecanismo de estado, ¿qué consecuencia tendría para el usuario al navegar entre páginas?
-
-A) Ninguna, HTTP recordaría igualmente que ya inició sesión
-B) El servidor no podría distinguir, por sí mismo, que las peticiones vienen del mismo usuario que ya se autenticó
-C) La navegación sería más rápida, sin ningún efecto negativo
-D) Las URLs dejarían de funcionar
+- 80 preguntas con 4 opciones y **una sola respuesta correcta**.
+- Puntuación: acierto **+1** · error **−1/3** · en blanco **0**.
+- Nota sobre 10 = (aciertos − errores / 3) × 10 / 80. Si el resultado es negativo, la nota es 0.
+- Con esta penalización, responder al azar da de media un 0: si no sabes la respuesta, déjala en blanco.
+- Tiempo orientativo: 70 minutos.
 
----
-
-## Pregunta 50
-
-¿Qué alternativa a las cookies de sesión tradicionales se usa habitualmente en APIs, basada en un token que el propio cliente guarda y reenvía (p. ej. en la cabecera `Authorization`)?
-
-A) DNS tokens
-B) JWT (JSON Web Token) u otros tokens similares
-C) Content-Length tokens
-D) Fragmentos de URL
-
----
-
-<!-- _class: lead -->
-# Bloque 6
-## Arquitecturas en capas
-
----
-
-## Pregunta 51
-
-¿Cuál es el problema típico de meter interfaz, lógica de negocio y acceso a datos en un único bloque de código?
-
-A) Que el código ocupa menos espacio en disco
-B) Que cualquier cambio obliga a tocar y entender todo el bloque a la vez, dificultando el mantenimiento
-C) Que ya no se puede ejecutar en un servidor
-D) Que deja de funcionar con HTTP
-
----
-
-## Pregunta 52
-
-¿Qué caracteriza a una arquitectura de 1 sola capa?
-
-A) Interfaz, lógica y datos están separados en máquinas distintas
-B) Todo (interfaz, lógica y datos) se ejecuta junto, típicamente en la misma máquina y bloque de código
-C) Es exclusiva de aplicaciones con microservicios
-D) Requiere obligatoriamente una base de datos distribuida
-
----
-
-## Pregunta 53
-
-En una arquitectura de 2 capas, como una app de escritorio que se conecta directamente a una base de datos remota, ¿qué suele seguir mezclado?
-
-A) La interfaz y la red, que son indistinguibles
-B) La lógica de negocio y el acceso a datos, en el mismo bloque
-C) El DNS y el HTTP
-D) Los microservicios y el monolito
 
----
-
-## Pregunta 54
-
-¿Cuáles son las tres capas típicas de una arquitectura de 3 capas?
-
-A) Presentación, negocio y datos
-B) Cliente, servidor y base de datos únicamente sin lógica
-C) Frontend, backend y DNS
-D) HTTP, HTTPS y FTP
-
----
-
-## Pregunta 55
-
-¿Qué responsabilidad corresponde a la capa de negocio en una arquitectura de 3 capas?
-
-A) Mostrar el HTML al usuario
-B) Aplicar las reglas, validaciones y cálculos propios de la aplicación
-C) Almacenar físicamente los datos en disco
-D) Resolver nombres de dominio
-
----
+## 1. Redes y modelos de comunicación
 
-## Pregunta 56
+**1.** Según el bloque, ¿qué ocurrió el 1 de enero de 1983?
 
-Si quieres cambiar el motor de base de datos de una aplicación bien organizada en 3 capas, ¿qué capa debería, idealmente, verse menos afectada?
+- A) Se estableció la primera conexión de ARPANET.
+- B) ARPANET adoptó TCP/IP como protocolo oficial.
+- C) Se publicó la primera versión estable de HTTP.
+- D) La ISO publicó el modelo de referencia OSI.
 
-A) La capa de presentación
-B) La capa de negocio
-C) Ambas por igual, siempre
-D) Ninguna capa se ve afectada nunca
+**2.** ¿Qué afirmación distingue correctamente un **modelo** de una **arquitectura**?
 
----
-
-## Pregunta 57
-
-¿Qué es la arquitectura N-capas en relación con la de 3 capas?
-
-A) Una tecnología completamente distinta e incompatible
-B) Una generalización: se pueden añadir capas intermedias según haga falta, siendo 3 capas el caso más común
-C) Un sinónimo exacto de microservicios
-D) Una arquitectura exclusiva para bases de datos NoSQL
-
----
-
-## Pregunta 58
-
-¿Cuál de estas secuencias describe mejor un flujo típico en una arquitectura N-capas con una capa de API intermedia?
-
-A) Presentación → API/servicios → negocio → datos → base de datos
-B) Base de datos → presentación → negocio
-C) Negocio → presentación → base de datos → API
-D) API → base de datos → presentación (sin negocio)
-
----
+- A) El modelo es el marco teórico; la arquitectura, las capas y protocolos concretos que lo implementan.
+- B) La arquitectura es el marco teórico y el modelo es su implementación concreta con protocolos.
+- C) El modelo define las reglas de un servicio concreto, como HTTP o FTP, y la arquitectura define los medios físicos y el cableado de la red.
+- D) Modelo y arquitectura son sinónimos; solo el protocolo es un concepto distinto.
 
-## Pregunta 59
+**3.** ¿En qué capa del modelo OSI se encapsulan los datos en tramas y se detectan y corrigen errores al transmitirlas entre equipos contiguos?
 
-¿Qué ventaja aporta poder escalar cada capa por separado?
+- A) Física (capa 1).
+- B) Red (capa 3).
+- C) Transporte (capa 4).
+- D) Enlace de datos (capa 2).
 
-A) Permite añadir más servidores donde realmente hace falta (p. ej. presentación con mucho tráfico) sin duplicar innecesariamente otras capas
-B) Elimina la necesidad de tener una capa de datos
-C) Hace innecesario el uso de HTTP
-D) Impide que la aplicación falle nunca
+**4.** ¿Qué capa OSI «establece, mantiene y controla el diálogo entre las aplicaciones origen y destino»?
 
----
+- A) Presentación (capa 6).
+- B) Aplicación (capa 7).
+- C) Transporte (capa 4).
+- D) Sesión (capa 5).
 
-## Pregunta 60
+**5.** ¿Cuál es el orden correcto de las unidades de datos de las capas OSI 4, 3 y 2, en ese orden?
 
-Un equipo divide su trabajo: unos en la interfaz, otros en las reglas de negocio, otros en el acceso a datos. ¿Qué arquitectura facilita este reparto?
+- A) Paquete → segmento → trama.
+- B) Segmento → paquete → trama.
+- C) Segmento → trama → paquete.
+- D) Trama → paquete → segmento.
 
-A) Arquitectura de 1 capa
-B) Arquitectura en capas (3 o N capas)
-C) Arquitectura sin servidor en absoluto
-D) No depende de la arquitectura
+**6.** En el modelo TCP/IP, ¿a qué capa o capas de OSI corresponde la capa **Internet**?
 
----
+- A) Solo a la capa 3 (Red).
+- B) A las capas 3 y 4.
+- C) A las capas 2 y 3.
+- D) A las capas 5, 6 y 7.
 
-<!-- _class: lead -->
-# Bloque 7
-## Monolito, SOA y microservicios
+**7.** ¿Cuál de estas correspondencias entre OSI y TCP/IP es **INCORRECTA**?
 
----
+- A) Transporte de OSI corresponde a Transporte de TCP/IP.
+- B) Aplicación, Presentación y Sesión de OSI se agrupan en la capa Aplicación de TCP/IP.
+- C) Transporte y Red de OSI se agrupan en la capa Internet de TCP/IP.
+- D) Enlace de datos y Física de OSI se agrupan en la capa Acceso a la red de TCP/IP.
 
-## Pregunta 61
+**8.** ¿Qué pareja protocolo/puerto típico es **INCORRECTA** según la tabla de protocolos?
 
-¿Qué significa que una aplicación esté "bien organizada en capas" internamente, incluso si se despliega como monolito?
+- A) IMAP → 143.
+- B) POP3 → 110.
+- C) DNS → 53.
+- D) FTPS → 22.
 
-A) Que obligatoriamente usa microservicios
-B) Que, aunque se despliegue como una sola unidad, su código separa presentación, negocio y datos con claridad
-C) Que no tiene base de datos
-D) Que no puede escalar nunca
+**9.** ¿Qué afirmación sobre DHCP es correcta?
 
----
+- A) Asigna automáticamente la configuración IP a un equipo, usando los puertos 67/68 (UDP).
+- B) Traduce nombres de dominio a direcciones IP usando el puerto 53.
+- C) Asocia cada dirección IP con su dirección MAC, en la capa de acceso a la red, y viceversa.
+- D) Traduce las direcciones IP privadas de la red local a direcciones IP públicas, en la capa Internet.
 
-## Pregunta 62
+**10.** Según la tabla de protocolos, ARP y RARP…
 
-¿Cuál de estas NO es una ventaja típica de separar en capas?
+- A) pertenecen a la capa de acceso a la red y asocian direcciones IP con direcciones MAC.
+- B) pertenecen a la capa Internet y traducen direcciones IP privadas a públicas.
+- C) pertenecen a la capa de transporte y numeran los segmentos para garantizar que llegan en orden.
+- D) pertenecen a la capa de aplicación y asignan direcciones IP automáticamente.
 
-A) Facilitar el mantenimiento
-B) Facilitar el trabajo en equipo por especialidad
-C) Permitir escalar partes concretas
-D) Garantizar automáticamente cero errores en producción
+**11.** En una misma máquina se ejecutan Nginx (puertos 80 y 443) y MySQL (puerto 3306). ¿Qué es cierto?
 
----
+- A) Se distinguen por la dirección MAC que el sistema asigna a cada programa.
+- B) Comparten el puerto y se distinguen por el protocolo de transporte que usa cada uno.
+- C) Comparten IP y se distinguen por el puerto, que identifica el programa que escucha.
+- D) Necesitan direcciones IP distintas, porque cada dirección IP solo puede ofrecer un único servicio.
 
-## Pregunta 63
 
-En una arquitectura de 3 capas, ¿qué parte ve directamente el usuario final?
+## 2. Cliente-servidor, URL y DNS
 
-A) La capa de negocio
-B) La capa de datos
-C) La capa de presentación
-D) Ninguna, el usuario nunca ve ninguna capa
+**12.** En `https://www.ejemplo.com:443/productos/42?color=rojo&talla=m#resenas`, ¿qué parte **nunca** llega al servidor?
 
----
+- A) `#resenas`
+- B) `:443`
+- C) `?color=rojo&talla=m`
+- D) `/productos/42`
 
-## Pregunta 64
+**13.** En la query string `?color=rojo&talla=m`, ¿qué carácter separa un parámetro del siguiente?
 
-¿Qué relación hay entre "capas" y "arquitecturas a gran escala" como monolito o microservicios?
+- A) `&`
+- B) `=`
+- C) `#`
+- D) `?`
 
-A) Son exactamente lo mismo
-B) Las capas organizan el código dentro de una pieza; monolito/microservicios deciden cómo se reparte el sistema completo en piezas desplegables
-C) Las capas sustituyen a los microservicios siempre
-D) No tienen ninguna relación posible
+**14.** Un usuario escribe `http://www.miweb.com/documento.html`. ¿A qué puerto se conectará el navegador?
 
----
+- A) Al 80, porque es el puerto por defecto de HTTP y no hace falta escribirlo.
+- B) Al 8080, porque es el puerto alternativo cuando no se indica ninguno.
+- C) Al 443, porque es el puerto web estándar para cualquier esquema.
+- D) A ninguno: sin puerto explícito en la URL no se puede abrir la conexión TCP.
 
-## Pregunta 65
+**15.** Cuando un nombre no está en ninguna caché, ¿qué secuencia de resolución DNS describe el bloque?
 
-Separar la capa de datos del resto permite, entre otras cosas, cambiar de base de datos relacional a NoSQL con menor impacto. ¿Por qué?
+- A) El sistema pregunta primero al resolver y solo consulta el fichero `hosts` si el resolver no responde a tiempo.
+- B) El resolver consulta primero a ejemplo.com, después a .com y por último a la raíz.
+- C) El sistema mira sus cachés y el fichero `hosts`; si no está, un resolver recorre raíz → .com → ejemplo.com.
+- D) El navegador pregunta directamente a un servidor raíz, que conoce todas las IP y devuelve la de www.ejemplo.com.
 
-A) Porque las capas de negocio y presentación no deberían depender de los detalles concretos de cómo se almacenan los datos
-B) Porque NoSQL no necesita ningún tipo de capa de datos
-C) Porque las capas eliminan la necesidad de bases de datos
-D) Porque las capas obligan a usar siempre la misma base de datos
+**16.** ¿Por qué, al cambiar la IP de un dominio, el cambio «tarda en propagarse»?
 
----
+- A) Porque las conexiones persistentes de HTTP/1.1 mantienen la IP antigua.
+- B) Porque el fichero `hosts` de cada equipo debe actualizarse a mano.
+- C) Porque los servidores raíz solo sincronizan sus datos con los demás servidores una vez al día.
+- D) Porque las respuestas DNS se guardan en caché durante un tiempo (TTL).
 
-## Pregunta 66
+**17.** ¿Cuál de estas herramientas **NO** aparece en el bloque como herramienta de consulta DNS?
 
-¿Cómo se despliega típicamente un monolito?
+- A) `nslookup`
+- B) `dig`
+- C) `curl`
+- D) `host`
 
-A) Como muchos servicios pequeños e independientes
-B) Como una sola unidad que incluye toda la aplicación
-C) Solo como funciones serverless
-D) Nunca se despliega, solo se ejecuta en el navegador
+**18.** Según el bloque, ¿qué afirmación sobre el modelo cliente-servidor es correcta?
 
----
+- A) El servidor inicia la comunicación y envía la página en cuanto detecta que un cliente se ha conectado a la red.
+- B) El cliente siempre inicia; el servidor es un programa que escucha en un puerto.
+- C) Cliente y servidor se turnan para iniciar la comunicación según quién tenga datos nuevos.
+- D) El servidor tiene que ser necesariamente una máquina física dedicada.
 
-## Pregunta 67
 
-¿Es correcto decir que "monolito" significa "código desordenado"?
+## 3. El protocolo HTTP
 
-A) Sí, por definición un monolito siempre tiene código desordenado
-B) No: un monolito puede estar perfectamente organizado en capas por dentro; "monolito" se refiere a cómo se despliega, no a su calidad interna
-C) Sí, porque no admite ningún tipo de organización interna
-D) No, porque los monolitos no tienen código, solo configuración
+**19.** ¿Quién creó HTTP y dónde?
 
----
+- A) La ISO, en 1984, junto con el modelo OSI.
+- B) Tim Berners-Lee, en ARPANET, en 1983, al adoptar TCP/IP.
+- C) Tim Berners-Lee, en el CERN, entre 1989 y 1991.
+- D) El equipo de ARPANET, en 1969, para su primera conexión.
 
-## Pregunta 68
+**20.** ¿Qué afirmación sobre HTTPS es correcta?
 
-¿Cuál es la principal desventaja de un monolito a medida que el proyecto crece mucho?
+- A) Funciona sobre UDP en el puerto 443 para ser más rápido que HTTP.
+- B) Cifra solo el cuerpo de las peticiones POST; las cabeceras viajan en claro.
+- C) Es HTTP cifrado con TLS: el mismo protocolo, que viaja protegido por el puerto 443.
+- D) Es un protocolo distinto de HTTP, con sus propios métodos, cabeceras y códigos de estado cifrados.
 
-A) No puede tener base de datos
-B) Cualquier cambio pequeño obliga a volver a desplegar toda la aplicación
-C) No puede ejecutarse en un servidor real
-D) No permite usar HTTP
+**21.** Una página HTML referencia 2 hojas CSS, 3 imágenes y 1 fichero JS. Sin caché, ¿cuántas peticiones HTTP hace como mínimo el navegador para cargarla entera?
 
----
+- A) 6
+- B) 7
+- C) 2
+- D) 1
 
-## Pregunta 69
+**22.** ¿Qué versión de HTTP hizo obligatoria la cabecera `Host`?
 
-¿Qué caracteriza a una arquitectura SOA (Service-Oriented Architecture)?
+- A) HTTP/2
+- B) HTTP/1.1
+- C) HTTP/0.9
+- D) HTTP/1.0
 
-A) El sistema se divide en servicios que se comunican entre sí, a menudo mediante un middleware centralizado
-B) Todo el sistema es un único bloque indivisible
-C) Es idéntica a una arquitectura de 1 capa
-D) No permite ningún tipo de comunicación entre componentes
+**23.** ¿Qué versión de HTTP **no** funciona sobre TCP?
 
----
+- A) HTTP/1.0
+- B) HTTP/3
+- C) HTTP/2
+- D) HTTP/1.1
 
-## Pregunta 70
+**24.** ¿Cuál fue la novedad principal de HTTP/2?
 
-¿Qué papel juega el ESB (Enterprise Service Bus) en una arquitectura SOA típica?
+- A) Funcionar sobre QUIC en lugar de TCP.
+- B) Conexiones persistentes y cabecera `Host` obligatoria para todos los dominios.
+- C) Introducir los métodos POST y HEAD, los códigos de estado y los tipos MIME.
+- D) Formato binario y multiplexación de peticiones.
 
-A) Es la base de datos principal del sistema
-B) Actúa como middleware centralizado de comunicación entre servicios
-C) Es el navegador del cliente
-D) Es un tipo de contenedor Docker
+**25.** Según el bloque, ¿qué cambia entre HTTP/1.1, HTTP/2 y HTTP/3?
 
----
+- A) Cómo viajan los mensajes; métodos, códigos y cabeceras se mantienen.
+- B) Los códigos de estado, que en HTTP/2 pasan a enviarse en binario con una numeración nueva.
+- C) Los métodos disponibles, que se amplían en cada versión.
+- D) Las cabeceras obligatorias de cada petición.
 
-<!-- _class: lead -->
-# Bloque 8
-## Event-driven, serverless y P2P
+**26.** ¿Qué afirmación sobre la conexión TCP en HTTP es correcta?
 
----
+- A) En HTTP/1.1 la conexión solo se mantiene abierta si se usa HTTPS.
+- B) Tanto HTTP/1.0 como HTTP/1.1 cierran la conexión tras cada petición; solo HTTP/2 la reutiliza.
+- C) En HTTP/1.0 se usa una conexión por petición; desde HTTP/1.1 las conexiones son persistentes por defecto.
+- D) En HTTP/1.0 las conexiones eran persistentes, y HTTP/1.1 las cierra tras cada petición para ahorrar recursos.
 
-## Pregunta 71
+**27.** ¿Qué método es seguro e idempotente, no lleva cuerpo y hace que el servidor devuelva solo las cabeceras del recurso, sin su contenido?
 
-¿Qué caracteriza principalmente a una arquitectura de microservicios?
+- A) GET
+- B) HEAD
+- C) DELETE
+- D) OPTIONS
 
-A) Servicios pequeños e independientes, que se despliegan por separado, cada uno con su propia responsabilidad
-B) Un único proceso que hace absolutamente todo
-C) La ausencia total de bases de datos
-D) Que solo puede ejecutarse en una máquina física
+**28.** Según la tabla de métodos, ¿cuál de estos **NO** es idempotente?
 
----
+- A) GET
+- B) POST
+- C) DELETE
+- D) PUT
 
-## Pregunta 72
+**29.** ¿Qué combinación de características corresponde a PUT?
 
-¿Por qué los microservicios encajan especialmente bien con Docker?
+- A) No es seguro, sí es idempotente, lleva cuerpo y reemplaza el recurso completo.
+- B) No es seguro, es idempotente, no lleva cuerpo y elimina el recurso.
+- C) No es seguro, no es idempotente, lleva cuerpo y modifica solo una parte concreta del recurso.
+- D) Es seguro e idempotente, no lleva cuerpo y devuelve los métodos admitidos.
 
-A) Porque Docker obliga a usar microservicios
-B) Porque cada microservicio puede empaquetarse y ejecutarse de forma aislada en su propio contenedor
-C) Porque los microservicios no necesitan red
-D) Porque Docker elimina la necesidad de bases de datos
+**30.** Un cliente envía dos veces seguidas el mismo `POST /pedidos` (crear pedido) y, aparte, dos veces `DELETE /pedidos/42`. ¿Qué ocurre?
 
----
+- A) Ambos casos duplican su efecto: dos pedidos creados y dos pedidos borrados.
+- B) Se crea un solo pedido, y el segundo DELETE provoca un error que deshace el borrado.
+- C) Ambos casos dejan el servidor igual que con una sola petición, porque HTTP descarta los duplicados.
+- D) Se crean dos pedidos; el pedido 42 queda borrado igual que si se hubiera enviado una sola vez.
 
-## Pregunta 73
+**31.** ¿Qué método usan los navegadores en las comprobaciones previas de CORS?
 
-Un equipo pequeño (3 personas) va a construir un MVP sencillo con poco tiempo. ¿Qué arquitectura suele ser más razonable al principio?
+- A) OPTIONS
+- B) CONNECT
+- C) TRACE
+- D) HEAD
 
-A) Microservicios desde el primer día
-B) Un monolito bien organizado en capas
-C) SOA con ESB corporativo
-D) Una arquitectura puramente P2P
+**32.** Sobre GET y POST, ¿qué afirmación es **FALSA**?
 
----
+- A) POST cifra el cuerpo, así que sirve para enviar contraseñas aunque no haya HTTPS.
+- B) POST se usa típicamente para enviar formularios o subir ficheros.
+- C) En GET los datos van en la query string y quedan visibles en el historial y en los logs.
+- D) La longitud de los datos en GET está limitada por navegadores y servidores.
 
-## Pregunta 74
+**33.** ¿Qué es WebDAV?
 
-¿Qué ventaja ofrecen los microservicios frente a un monolito en cuanto a fallos?
+- A) La versión cifrada de FTP, que funciona en el puerto 990 y sustituye a SFTP en servidores web.
+- B) Un protocolo de transporte alternativo a TCP para ficheros grandes.
+- C) Una extensión de HTTP para gestionar ficheros y carpetas remotos (PROPFIND, MKCOL…).
+- D) La versión de HTTP que añadió los métodos PUT y DELETE para gestionar ficheros en el servidor.
 
-A) Un fallo en un microservicio nunca afecta a nada más, bajo ninguna circunstancia
-B) Un fallo puede quedar más aislado en el servicio afectado, en lugar de tumbar toda la aplicación
-C) Los microservicios no pueden fallar nunca
-D) El monolito aísla mejor los fallos que los microservicios
+**34.** En un mensaje de petición HTTP, ¿qué marca el final de las cabeceras?
 
----
+- A) Una línea en blanco (CRLF).
+- B) La cabecera `Content-Length`.
+- C) Nada: el servidor sabe cuántas cabeceras hay por la versión del protocolo.
+- D) Una cabecera especial `End-Headers`.
 
-## Pregunta 75
+**35.** ¿Cuál de estas es una línea de **petición** bien formada?
 
-¿Qué complejidad adicional suelen introducir los microservicios respecto a un monolito?
+- A) `HTTP/1.1 200 OK`
+- B) `HTTP/1.1 GET /index.html`
+- C) `GET /index.html HTTP/1.1`
+- D) `GET HTTP/1.1 /index.html`
 
-A) Ninguna, son siempre más simples
-B) La necesidad de coordinar, desplegar y monitorizar múltiples servicios independientes que se comunican entre sí
-C) Dejan de necesitar ningún tipo de red
-D) Eliminan la necesidad de tener bases de datos
+**36.** En el POST de ejemplo, con cuerpo `nombre=Ana&edad=20`, la cabecera `Content-Length` vale 18. ¿Qué indica?
 
----
+- A) La longitud total del mensaje, incluidas las cabeceras.
+- B) El número de cabeceras del mensaje.
+- C) El tamaño del cuerpo en bytes.
+- D) El número de caracteres de la línea de petición.
 
-## Pregunta 76
+**37.** ¿Qué `Content-Type` corresponde a un formulario HTML **sin ficheros adjuntos** enviado por POST?
 
-¿En qué se diferencian principalmente SOA y microservicios?
+- A) `text/html`
+- B) `application/json`
+- C) `multipart/form-data`
+- D) `application/x-www-form-urlencoded`
 
-A) No hay ninguna diferencia, son sinónimos exactos
-B) SOA suele usar servicios más grandes y un middleware centralizado (ESB); los microservicios tienden a servicios más pequeños y autónomos
-C) Microservicios es una tecnología anterior a SOA
-D) SOA no permite ningún tipo de comunicación entre servicios
+**38.** ¿Cuál es el tipo MIME correcto para datos JSON?
 
----
+- A) `text/json`
+- B) `application/javascript`
+- C) `text/plain+json`
+- D) `application/json`
 
-## Pregunta 77
+**39.** Una API recibe un encargo que procesará en segundo plano y responde inmediatamente, antes de haberlo procesado. ¿Qué código encaja?
 
-¿Por qué podría una empresa con muchos sistemas heredados optar por SOA en vez de microservicios?
+- A) 201 Created
+- B) 202 Accepted
+- C) 204 No Content
+- D) 100 Continue
 
-A) Porque SOA es incompatible con cualquier sistema antiguo
-B) Porque SOA facilita integrar sistemas heredados distintos a través de un middleware común
-C) Porque SOA no requiere ningún tipo de comunicación entre sistemas
-D) Porque los sistemas heredados no pueden tener servicios
+**40.** Un cliente reanuda una descarga pidiendo solo una parte del fichero. ¿Qué es correcto?
 
----
+- A) El servidor responde 206; el cliente pide la parte con `Range` y la respuesta trae `Content-Range`.
+- B) El servidor responde 203 Non-Authoritative Information, porque el contenido está incompleto.
+- C) El servidor responde 200 OK; el cliente indica la parte con `Content-Length`.
+- D) El servidor responde 206; el cliente envía `Content-Range` y la respuesta incluye la cabecera `Range`.
 
-## Pregunta 78
+**41.** ¿Qué diferencia hay entre 301 y 302?
 
-Si cada microservicio de un sistema tiene su propia base de datos independiente, ¿qué ventaja de aislamiento se consigue?
+- A) 301 es definitivo (los buscadores actualizan su índice) y 302 temporal; ambos usan `Location`.
+- B) 301 indica el destino en la cabecera `Location`; 302 lo indica en el cuerpo HTML de la respuesta.
+- C) 302 obliga a repetir la petición con el mismo método y 301 permite cambiarlo a GET.
+- D) 301 indica un traslado temporal y 302, uno definitivo.
 
-A) Un cambio en el esquema de datos de un servicio no obliga a tocar los demás servicios directamente
-B) Todos los servicios comparten obligatoriamente los mismos datos
-C) Las bases de datos dejan de necesitar copias de seguridad
-D) Se elimina la necesidad de desplegar cada servicio por separado
+**42.** Tras procesar un formulario enviado por POST, el servidor quiere que el navegador cargue `/gracias` **con GET**, para que recargar la página no reenvíe el formulario. ¿Qué código usa?
 
----
+- A) 304 Not Modified
+- B) 303 See Other
+- C) 308 Permanent Redirect
+- D) 307 Temporary Redirect
 
-## Pregunta 79
+**43.** ¿Qué diferencia a 308 Permanent Redirect de 301 Moved Permanently?
 
-¿Cómo se comunican típicamente los componentes en una arquitectura orientada a eventos?
+- A) Indica un traslado temporal, mientras que 301 es definitivo.
+- B) Solo existe en HTTP/2 y HTTP/3.
+- C) No utiliza la cabecera `Location`, sino el cuerpo.
+- D) Obliga a repetir la petición con el mismo método.
 
-A) Llamándose directamente por su IP, sin intermediarios
-B) Publicando y reaccionando a eventos a través de una cola o broker de mensajes
-C) Compartiendo una única base de datos sin ningún tipo de mensaje
-D) No se comunican entre sí en ningún caso
+**44.** El navegador envía `If-None-Match` con la versión que tiene en caché, y el recurso no ha cambiado. ¿Qué responde el servidor?
 
----
+- A) 302 Found, redirigiendo a la caché del navegador.
+- B) 204 No Content, para indicar que no hay nada nuevo.
+- C) 304 Not Modified, sin cuerpo.
+- D) 200 OK con el cuerpo vacío y `Content-Length: 0`.
 
-## Pregunta 80
+**45.** Un usuario que ha iniciado sesión correctamente intenta entrar en el panel de administración, pero no tiene permisos. ¿Qué código corresponde?
 
-¿Qué ventaja de desacoplamiento aporta una arquitectura orientada a eventos?
+- A) 405 Method Not Allowed
+- B) 403 Forbidden
+- C) 404 Not Found
+- D) 401 Unauthorized
 
-A) El que publica un evento no necesita saber quién (ni cuántos) lo van a consumir
-B) Obliga a que emisor y receptor estén siempre en el mismo servidor
-C) Elimina la necesidad de cualquier tipo de red
-D) Hace innecesarios los microservicios
+**46.** ¿Qué cabecera debe acompañar obligatoriamente a una respuesta 401?
 
----
+- A) `Authorization`
+- B) `Location`
+- C) `Set-Cookie`
+- D) `WWW-Authenticate`
 
-<!-- _class: lead -->
-# Bloque 9
-## Patrones de diseño interno (I)
+**47.** Se envía `DELETE` a una página estática que existe, pero que no admite ese método. ¿Qué código corresponde?
 
----
+- A) 501 Not Implemented
+- B) 404 Not Found
+- C) 403 Forbidden
+- D) 405 Method Not Allowed
 
-## Pregunta 81
+**48.** Nginx está delante de una aplicación. La aplicación tarda demasiado en contestar y Nginx deja de esperar. ¿Qué código recibe el cliente?
 
-En un sistema de e-commerce con arquitectura orientada a eventos, al confirmarse un pago se publica un evento "pago confirmado". ¿Qué módulos podrían reaccionar a él?
+- A) 504 Gateway Timeout
+- B) 503 Service Unavailable
+- C) 502 Bad Gateway
+- D) 500 Internal Server Error
 
-A) Ninguno, los eventos no pueden tener más de un receptor
-B) Potencialmente varios: envío de email, actualización de stock, generación de factura, todos de forma desacoplada
-C) Solo el propio módulo de pagos
-D) Solo el servidor DNS
+**49.** Sobre los códigos 5xx, ¿qué afirmación es **FALSA**?
 
----
+- A) 501 indica que el servidor no soporta la funcionalidad necesaria para atender la petición.
+- B) 503 indica que el servidor recibió una respuesta no válida del servidor al que reenviaba.
+- C) 500 indica un fallo interno del servidor que no es culpa del cliente.
+- D) 504 indica que la pasarela o proxy no recibió respuesta a tiempo del servidor de detrás.
 
-## Pregunta 82
+**50.** Según la clasificación clásica de cabeceras del bloque, ¿cuál es una cabecera **general**?
 
-¿Qué significa realmente "serverless" (FaaS) para quien desarrolla la aplicación?
+- A) `Server`
+- B) `Host`
+- C) `Location`
+- D) `Cache-Control`
 
-A) Que la aplicación se ejecuta sin ningún tipo de servidor físico en el mundo
-B) Que no gestiona directamente los servidores: la plataforma los aprovisiona, escala y mantiene
-C) Que obliga a usar siempre arquitectura P2P
-D) Que no se puede cobrar por su uso
+**51.** ¿Qué afirmación sobre la cabecera `Host` es correcta?
 
----
+- A) Indica la dirección IP del cliente, para que el servidor sepa a qué máquina debe responder.
+- B) Es opcional en HTTP/1.1 y obligatoria solo desde HTTP/2.
+- C) Es obligatoria en HTTP/1.1 y permite servir varios dominios desde una sola IP.
+- D) Indica el puerto local que ha abierto el navegador.
 
-## Pregunta 83
+**52.** ¿Qué afirmación sobre `Accept-Encoding` y `Content-Encoding` es correcta?
 
-¿Cuál es un modelo de facturación habitual en plataformas serverless/FaaS?
+- A) Con `Content-Encoding` el cliente indica las compresiones que entiende; con `Accept-Encoding` el servidor indica la aplicada.
+- B) `Content-Encoding` indica el juego de caracteres del cuerpo, por ejemplo UTF-8.
+- C) Ambas son cabeceras de petición e indican el juego de caracteres del cliente.
+- D) Con `Accept-Encoding` el cliente dice qué compresiones entiende; `Content-Encoding` indica la aplicada al cuerpo.
 
-A) Se paga una cuota fija mensual por tener el servidor encendido, se use o no
-B) Se paga principalmente por el tiempo de ejecución real de las funciones
-C) Es siempre gratuito, sin ningún coste
-D) Se paga por cada dirección IP registrada
+**53.** ¿Con qué cabeceras hace el cliente una petición **condicional** («dámelo solo si ha cambiado»)?
 
----
+- A) `Last-Modified` y `ETag`.
+- B) `Accept` y `Accept-Encoding`.
+- C) `Cache-Control` y `Connection`.
+- D) `If-Modified-Since` e `If-None-Match`.
 
-## Pregunta 84
 
-¿Qué tipo de carga de trabajo encaja especialmente bien con serverless/FaaS?
+## 4. Estado y sesiones
 
-A) Un servicio con tráfico constante y perfectamente predecible las 24 horas
-B) Tareas puntuales o con picos de carga impredecibles
-C) Una base de datos que debe estar siempre encendida
-D) Un sistema operativo completo
+**54.** HTTP no tiene estado. Según el bloque, ¿cómo «recuerda» una tienda online lo que hay en tu carrito?
 
----
+- A) El servidor guarda el carrito asociado a un ID de sesión que el navegador reenvía en una cookie.
+- B) HTTP/1.1 mantiene la conexión persistente y el servidor asocia el carrito a esa conexión TCP.
+- C) El servidor identifica al usuario por su `User-Agent` y guarda el carrito asociado a él.
+- D) Lo habitual es que la cookie contenga todos los datos del carrito, para que el servidor no tenga que guardar nada.
 
-## Pregunta 85
+**55.** ¿Qué cabecera usa el servidor para pedir que se guarde una cookie, y cuál usa el navegador para reenviarla?
 
-¿Qué caracteriza a una arquitectura peer-to-peer (P2P)?
+- A) `Cookie` (servidor) y `Set-Cookie` (navegador).
+- B) `Set-Cookie` (servidor) y `Cookie` (navegador).
+- C) `Cookie` (servidor) y `Authorization` (navegador).
+- D) `Set-Cookie` en ambos casos.
 
-A) Existe siempre un único servidor central que controla todo
-B) Cada nodo puede actuar a la vez como cliente y como servidor, sin un servidor central claro
-C) Es idéntica a una arquitectura cliente-servidor clásica
-D) Solo puede tener dos nodos como máximo
+**56.** Una vez guardada una cookie, ¿en qué peticiones la reenvía automáticamente el navegador?
 
----
+- A) En cada petición siguiente a ese dominio.
+- B) En las peticiones a cualquier dominio que se visite después.
+- C) Solo en las peticiones POST.
+- D) Solo en la petición inmediatamente posterior.
 
-## Pregunta 86
+**57.** En una sesión bien diseñada, ¿qué viaja realmente dentro de la cookie de sesión?
 
-¿Qué tipo de aplicación es un ejemplo clásico de arquitectura P2P?
+- A) Un hash de la IP del cliente.
+- B) El usuario, el carrito y los permisos, serializados.
+- C) Un identificador aleatorio y difícil de adivinar.
+- D) El usuario y la contraseña cifrados.
 
-A) Una tienda online corporativa típica
-B) Una red de compartición de ficheros como BitTorrent
-C) Una API REST de un banco
-D) Un servidor de correo corporativo
+**58.** Según el bloque, ¿dónde guarda normalmente el servidor el estado real de cada sesión?
 
----
+- A) Solo en la memoria del proceso, nunca en ficheros ni en una base de datos.
+- B) Únicamente en la cookie del navegador.
+- C) En memoria, en ficheros o en una base de datos.
+- D) En la caché DNS del servidor.
 
-## Pregunta 87
+**59.** ¿Qué afirmación describe correctamente el **robo de sesión** (*session hijacking*)?
 
-¿Por qué la arquitectura P2P es poco habitual en aplicaciones de negocio "normales" (tiendas online, bancos, etc.)?
+- A) Solo es posible si la cookie de sesión lleva el atributo `SameSite`.
+- B) Consiste en que otra web provoque peticiones en tu nombre aprovechando que el navegador envía tus cookies solo.
+- C) El atacante necesita tu cookie de sesión y también tu contraseña para suplantarte.
+- D) Quien lea tu cookie de sesión (p. ej. por XSS) puede suplantarte sin conocer tu contraseña.
 
-A) Porque es técnicamente imposible de implementar
-B) Porque este tipo de negocios suelen necesitar un control centralizado de datos, usuarios y transacciones que el modelo P2P no ofrece de forma natural
-C) Porque P2P no puede usar internet
-D) Porque P2P solo funciona con un único usuario
+**60.** ¿Qué describe el ataque CSRF?
 
----
+- A) Unas cookies de terceros rastrean tu navegación entre distintas páginas.
+- B) El atacante adivina tu identificador de sesión probando valores consecutivos hasta dar con uno válido.
+- C) El navegador envía tus cookies aunque la petición la inicie otra página, y el atacante actúa en tu nombre.
+- D) Un script malicioso inyectado en la página lee tu cookie de sesión y se la envía al servidor del propio atacante.
 
-## Pregunta 88
+**61.** ¿Qué atributo de cookie reduce el riesgo de que un script inyectado (XSS) robe la cookie de sesión?
 
-Una arquitectura orientada a eventos y una arquitectura de microservicios, ¿pueden combinarse?
+- A) `Secure`
+- B) `Path`
+- C) `HttpOnly`
+- D) `SameSite`
 
-A) No, son mutuamente excluyentes
-B) Sí: es habitual que microservicios se comuniquen entre sí mediante eventos para reducir el acoplamiento directo
-C) Solo si ambos usan exactamente el mismo lenguaje de programación
-D) Solo en sistemas P2P
+**62.** ¿Qué atributo restringe el envío de la cookie en peticiones iniciadas desde otros sitios, mitigando CSRF?
 
----
+- A) `HttpOnly`
+- B) `Domain`
+- C) `SameSite`
+- D) `Secure`
 
-## Pregunta 89
+**63.** Sobre los atributos de las cookies, ¿qué afirmación es **FALSA**?
 
-¿Qué problema de un sistema con muchas llamadas directas entre servicios ayuda a resolver el modelo orientado a eventos?
+- A) `SameSite` restringe el envío de la cookie en peticiones iniciadas desde otros sitios.
+- B) Con `HttpOnly`, `Secure` y `SameSite`, la aplicación ya no necesita validar los datos.
+- C) `Secure` hace que la cookie solo se envíe por HTTPS, nunca en claro por HTTP.
+- D) `HttpOnly` impide que la cookie se lea desde JavaScript.
 
-A) El acoplamiento fuerte: que cada servicio dependa de conocer y llamar directamente a los demás
-B) El consumo de almacenamiento en disco
-C) La necesidad de usar HTTPS
-D) La resolución de nombres DNS
 
----
+## 5. Arquitecturas en capas
 
-## Pregunta 90
+**64.** Una aplicación de escritorio se conecta directamente a una base de datos remota. Según el bloque, ¿cuál es la limitación de esta arquitectura de 2 capas?
 
-¿Cuál de estos NO es un estilo de arquitectura a gran escala visto en teoría?
+- A) La lógica de negocio y el acceso a datos siguen mezclados.
+- B) No permite que el cliente se ejecute en una máquina distinta de la base de datos.
+- C) Obliga a tener servidores de presentación separados de los de negocio.
+- D) Interfaz, lógica y datos están en el mismo bloque de código y en la misma máquina.
 
-A) Microservicios
-B) Serverless
-C) Arquitectura Hexagonal
-D) SOA
+**65.** En una arquitectura de 3 capas, ¿en qué capa van las reglas, las validaciones y los cálculos?
 
----
+- A) Acceso a la red.
+- B) Negocio.
+- C) Presentación.
+- D) Datos.
 
-<!-- _class: lead -->
-# Bloque 10
-## Patrones de diseño interno (II) y síntesis
+**66.** Sobre *layer* y *tier*, ¿qué afirmación es correcta?
 
----
+- A) Son sinónimos: los dos se refieren a la separación lógica del código.
+- B) Una aplicación de 3 capas lógicas debe desplegarse obligatoriamente en 3 servidores físicos distintos.
+- C) *Layer* es la separación física en máquinas distintas y *tier*, la separación lógica del código.
+- D) *Layer* es la separación lógica y *tier* la física; 3 capas lógicas caben en una sola máquina.
 
-## Pregunta 91
+**67.** Una aplicación web de 3 capas recibe muchísimas visitas. ¿Qué ventaja de esta arquitectura cita el bloque para este caso?
 
-En el patrón MVC, ¿qué papel tiene el Modelo?
+- A) Se puede duplicar la base de datos en cada servidor de presentación.
+- B) Se puede escalar la capa de presentación por separado, sin duplicar la base de datos.
+- C) Se puede eliminar la capa de negocio y conectar la presentación directamente a los datos.
+- D) Se puede pasar a 1 capa para reducir la comunicación entre componentes.
 
-A) Mostrar el HTML al usuario
-B) Contener los datos y la lógica de negocio
-C) Recibir la petición HTTP directamente del navegador
-D) Gestionar exclusivamente la base de datos de sesiones
+**68.** ¿Qué relación hay entre la arquitectura de 3 capas y la de N capas?
 
----
+- A) N capas implica siempre usar microservicios.
+- B) N capas es un caso particular de 3 capas.
+- C) 3 capas es el caso particular más común de N capas.
+- D) Son arquitecturas excluyentes: o se usa una o la otra.
 
-## Pregunta 92
+**69.** ¿Qué describe la arquitectura de 1 capa?
 
-¿Qué componente de MVC suele encargarse de recibir la petición y coordinar Modelo y Vista?
+- A) Interfaz, lógica y datos juntos, en la misma máquina; no escala en complejidad ni en usuarios.
+- B) Cliente y servidor separados en máquinas distintas, con la lógica en el servidor.
+- C) Una sola capa de servicios a la que acceden varios clientes distintos.
+- D) Presentación y negocio separados en máquinas distintas, pero con los datos dentro del bloque de negocio.
 
-A) El Modelo
-B) La Vista
-C) El Controlador
-D) El Adaptador
 
----
+## 6. Arquitecturas a gran escala
 
-## Pregunta 93
+**70.** ¿Qué afirmación sobre un monolito es correcta?
 
-¿Qué diferencia principal introduce el patrón MVP (Modelo-Vista-Presentador) respecto a MVC?
+- A) Implica necesariamente código desordenado y sin capas.
+- B) Se despliega y escala como una sola unidad, y puede estar bien organizado en capas.
+- C) Cada funcionalidad se construye y se despliega por separado, aunque todas comparten la misma base de datos.
+- D) No puede usar una base de datos propia.
 
-A) Elimina por completo la Vista
-B) El Presentador asume más lógica, dejando la Vista más "tonta" y fácil de probar automáticamente
-C) El Presentador sustituye a la base de datos
-D) No existe ninguna diferencia real
+**71.** ¿Qué diferencia a SOA de los microservicios, según el bloque?
 
----
+- A) Los microservicios necesitan obligatoriamente un ESB para comunicarse.
+- B) En SOA los servicios son más pequeños y autónomos que en los microservicios, y no comparten middleware.
+- C) En SOA los servicios suelen ser más grandes y usan un middleware central (ESB).
+- D) No hay diferencia: son dos nombres para la misma arquitectura.
 
-## Pregunta 94
+**72.** ¿Qué significan las siglas ESB?
 
-¿Qué caracteriza al patrón MVVM (Modelo-Vista-Vistamodelo), muy usado en frameworks frontend modernos?
+- A) External Service Balancer.
+- B) Enterprise Service Bus.
+- C) Event Stream Broker.
+- D) Enterprise Security Bridge.
 
-A) El ViewModel expone el estado de forma reactiva y la Vista se sincroniza automáticamente con él
-B) La Vista contiene toda la lógica de negocio
-C) El Modelo se comunica directamente con el navegador sin pasar por nada más
-D) Es exclusivo de aplicaciones de escritorio sin interfaz web
+**73.** En una arquitectura orientada a eventos, ¿qué es cierto?
 
----
+- A) Los componentes se llaman directamente entre sí por su dirección IP, sin intermediarios ni colas de mensajes.
+- B) Sustituye a HTTP como protocolo de transporte entre servicios.
+- C) Quien publica un evento debe conocer a todos sus consumidores.
+- D) Publican y reaccionan a eventos mediante un intermediario, sin que el emisor conozca a los consumidores.
 
-## Pregunta 95
+**74.** ¿Qué afirmación sobre serverless / FaaS es correcta?
 
-¿Cuál es la idea central de la arquitectura Hexagonal (puertos y adaptadores)?
+- A) Despliegas funciones; la plataforma decide cuándo y dónde ejecutarlas y pagas por ejecución.
+- B) No hay servidores físicos en ningún lugar: el código se ejecuta en el navegador.
+- C) Tú decides cuántos servidores hay y cuándo se encienden; la plataforma solo se encarga de parchearlos.
+- D) Pagas por tener los servidores encendidos todo el día, aunque la plataforma los gestione por ti.
 
-A) Que la base de datos esté en el centro de todo el sistema
-B) Aislar la lógica de negocio del exterior, comunicándose mediante puertos (interfaces) y adaptadores (implementaciones concretas)
-C) Sustituir siempre al patrón MVC
-D) Obligar a usar microservicios
+**75.** Según la comparativa entre monolito y microservicios, ¿qué afirmación es correcta?
 
----
+- A) Con microservicios se escala toda la aplicación a la vez.
+- B) Los microservicios tienen una complejidad inicial baja, porque cada servicio es pequeño y sencillo.
+- C) En un monolito, un fallo suele quedar aislado en una parte del sistema.
+- D) Para un proyecto simple, los microservicios pueden ser sobreingeniería.
 
-## Pregunta 96
 
-En arquitectura Hexagonal, si cambias de base de datos relacional a NoSQL, ¿qué se espera que ocurra con la lógica de negocio (el dominio)?
+## 7. Diseño interno del código
 
-A) Debe reescribirse por completo junto con la base de datos
-B) Debería poder mantenerse prácticamente intacta, cambiando solo el adaptador correspondiente
-C) Deja de funcionar definitivamente
-D) Se convierte automáticamente en un microservicio
+**76.** En el patrón MVC, ¿dónde reside la lógica de negocio?
 
----
+- A) En el Controlador.
+- B) En el Modelo.
+- C) Repartida a partes iguales entre la Vista y el Controlador.
+- D) En la Vista.
 
-## Pregunta 97
+**77.** ¿Qué distingue a MVVM de MVP, según el bloque?
 
-¿Qué tienen en común Clean Architecture y Onion Architecture con la arquitectura Hexagonal?
+- A) MVVM es el patrón habitual de frameworks de backend como Django o Laravel.
+- B) MVVM: el ViewModel expone el estado de forma reactiva y la Vista se sincroniza sola; MVP: el Presentador deja la Vista casi «tonta».
+- C) MVP sustituye el Modelo por un Presentador que accede directamente a la base de datos.
+- D) MVP: la Vista se sincroniza sola de forma reactiva con el Presentador; MVVM: el ViewModel asume la lógica y deja la Vista casi «tonta».
 
-A) Las tres son completamente distintas sin ningún punto en común
-B) Las tres sitúan la lógica de negocio en el centro, con las dependencias apuntando siempre hacia dentro
-C) Las tres exigen usar exclusivamente microservicios
-D) Las tres son patrones de capas de presentación, nada más
+**78.** ¿Qué regla comparten la arquitectura hexagonal, Clean Architecture y Onion Architecture?
 
----
+- A) Las dependencias apuntan hacia fuera: el dominio depende de la base de datos y del framework.
+- B) Obligan a desplegar la aplicación como microservicios.
+- C) Las dependencias apuntan hacia dentro: el dominio no depende de detalles técnicos.
+- D) Son incompatibles con el patrón MVC.
 
-## Pregunta 98
 
-¿Por qué estos patrones (Hexagonal, Clean, Onion, MVC con buena separación) facilitan las pruebas automáticas?
+## 8. Panorama general
 
-A) Porque obligan a desactivar los tests en producción
-B) Porque permiten probar la lógica de negocio de forma aislada, sin depender de una base de datos o framework real
-C) Porque eliminan la necesidad de escribir tests
-D) Porque solo funcionan sin conexión a internet
+**79.** ¿Cuál de estas opciones responde a la pregunta «¿cómo organizo el código dentro de cada pieza?» y no a «¿cómo reparto el sistema en piezas desplegables?»?
 
----
+- A) Orientada a eventos.
+- B) SOA.
+- C) Serverless / FaaS.
+- D) Arquitectura hexagonal.
 
-## Pregunta 99
+**80.** Según la guía rápida, ¿qué arquitectura es razonable para integrar los sistemas heredados de una gran empresa?
 
-¿Es correcto decir que los patrones de diseño interno (MVC, Hexagonal...) son incompatibles con dividir el sistema en microservicios?
+- A) Microservicios.
+- B) Monolito en 3 capas.
+- C) Serverless / FaaS.
+- D) SOA.
 
-A) Sí, son mutuamente excluyentes por definición
-B) No: un microservicio puede, perfectamente, organizarse internamente con MVC o Hexagonal
-C) Sí, solo pueden usarse en monolitos
-D) No tiene sentido la pregunta porque los microservicios no tienen código interno
 
 ---
 
-## Pregunta 100
+## Hoja de respuestas
 
-Una aplicación organizada con Hexagonal expone su lógica de negocio tanto a través de una API REST como de una cola de mensajes. ¿Qué concepto de esta arquitectura representa esa doble forma de entrada/salida?
+Nombre: ______________________________________
 
-A) Dos bases de datos distintas
-B) Dos adaptadores distintos conectados a los puertos correspondientes del dominio
-C) Dos monolitos ejecutándose en paralelo
-D) Dos servidores DNS redundantes
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|
+| 1: ___ | 2: ___ | 3: ___ | 4: ___ | 5: ___ | 6: ___ | 7: ___ | 8: ___ | 9: ___ | 10: ___ |
+| 11: ___ | 12: ___ | 13: ___ | 14: ___ | 15: ___ | 16: ___ | 17: ___ | 18: ___ | 19: ___ | 20: ___ |
+| 21: ___ | 22: ___ | 23: ___ | 24: ___ | 25: ___ | 26: ___ | 27: ___ | 28: ___ | 29: ___ | 30: ___ |
+| 31: ___ | 32: ___ | 33: ___ | 34: ___ | 35: ___ | 36: ___ | 37: ___ | 38: ___ | 39: ___ | 40: ___ |
+| 41: ___ | 42: ___ | 43: ___ | 44: ___ | 45: ___ | 46: ___ | 47: ___ | 48: ___ | 49: ___ | 50: ___ |
+| 51: ___ | 52: ___ | 53: ___ | 54: ___ | 55: ___ | 56: ___ | 57: ___ | 58: ___ | 59: ___ | 60: ___ |
+| 61: ___ | 62: ___ | 63: ___ | 64: ___ | 65: ___ | 66: ___ | 67: ___ | 68: ___ | 69: ___ | 70: ___ |
+| 71: ___ | 72: ___ | 73: ___ | 74: ___ | 75: ___ | 76: ___ | 77: ___ | 78: ___ | 79: ___ | 80: ___ |

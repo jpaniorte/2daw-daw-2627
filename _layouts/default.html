@@ -37,7 +37,7 @@
       <nav class="tree">
         <div class="nav-top">
           {% for top in site.nav_top %}
-            <a href="{{ top.url | relative_url }}" class="node-label nav-top-link{% if top.url == page.url %} active{% endif %}">{{ top.title }}</a>
+            <a href="{{ top.url | relative_url }}" class="node-label nav-top-link{% if top.url == page.url %} active{% endif %}"{% if top.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ top.title }}{% if top.external %} <span class="ext-icon" aria-hidden="true">↗</span>{% endif %}</a>
           {% endfor %}
         </div>
 
@@ -191,7 +191,7 @@
       {% if page.pdf %}
         <a class="pdf-download" href="{{ page.pdf | relative_url }}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
-          Descargar en PDF
+          {{ page.pdf_label | default: "Descargar en PDF" }}
         </a>
       {% endif %}
       {{ content }}
