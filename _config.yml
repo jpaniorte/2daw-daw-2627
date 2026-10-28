@@ -29,6 +29,7 @@ exclude:
   - "**/*_examen.pdf"
   - "**/*_examen_sol.pdf"
   - "**/*_practica_sol.md"
+  - "**/*_test_sol.md"
   - vendor
   - .bundle
 

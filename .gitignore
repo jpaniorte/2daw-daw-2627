@@ -9,6 +9,7 @@ pildoras.pdf
 # correspondiente y se imprimen desde el PDF, sin pasar por el repositorio.
 *_examen.md
 *_examen_sol.md
+*_test_sol.md
 *_examen.pdf
 *_examen_sol.pdf
 *_examen.pptx
