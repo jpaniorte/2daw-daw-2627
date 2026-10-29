@@ -1,0 +1,5 @@
+faster-whisper
+# faster-whisper 1.2.1 usa av.open(metadata_errors=...), que PyAV 17+ ya no acepta
+av<17
+gdown
+openai

@@ -50,3 +50,10 @@ __pycache__/
 *.pyc
 .env
 *.swp
+
+# Generador de dosieres y controles de las píldoras: los scripts se versionan,
+# pero audios, transcripciones, dosieres, bancos y exámenes generados no
+# (material propio que no se publica), ni la clave de OpenRouter ni el venv.
+digitalizacion/generador/data/
+digitalizacion/generador/.env
+digitalizacion/generador/.venv/

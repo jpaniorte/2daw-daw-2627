@@ -30,6 +30,7 @@ exclude:
   - "**/*_examen_sol.pdf"
   - "**/*_practica_sol.md"
   - "**/*_test_sol.md"
+  - digitalizacion/generador
   - vendor
   - .bundle
 
