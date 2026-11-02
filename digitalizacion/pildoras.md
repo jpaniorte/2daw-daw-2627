@@ -100,10 +100,10 @@ permalink: /digitalizacion/pildoras/
 <td>24</td><td>Lenguajes de programación. Tipos. Características</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
 </tr>
 <tr>
-<td>25</td><td>Programación estructurada. Estructuras básicas, Funciones y Procedimientos</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>25</td><td>Programación estructurada. Estructuras básicas, Funciones y Procedimientos</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/16Q3eGYBHK2Qf1X-zHd8NLhTCteJuj-IV/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="25" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
-<td>26</td><td>Programación modular. Diseño de funciones. Recursividad. Librerías</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>26</td><td>Programación modular. Diseño de funciones. Recursividad. Librerías</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1GpssfTHXn3eJuISwRZ2TrOwLF9y0AZ3i/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="26" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
 <td>27</td><td>Programación orientada a objetos. Objetos. Clases. Herencia. Polimorfismo. Lenguajes</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1GeOnqOHfHvFZOAfS1DcRcVjurTWeKV-t/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="27" type="button">Marcar como completada</button></td>
@@ -121,17 +121,17 @@ permalink: /digitalizacion/pildoras/
 <td>31</td><td>Lenguaje C: Características generales. Elementos del lenguaje. Estructura de un programa. Funciones de librería y usuario. Entorno de compilación. Herramientas para la elaboración y depuración de programas en lenguaje C</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
 </tr>
 <tr>
-<td>32</td><td>Lenguaje C: Manipulación de estructuras de datos dinámicas y estáticas. Entrada y salida de datos. Gestión de punteros. Punteros a funciones</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>32</td><td>Lenguaje C: Manipulación de estructuras de datos dinámicas y estáticas. Entrada y salida de datos. Gestión de punteros. Punteros a funciones</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/15k1q3LoMn9PgroNpuPogceHTjviJ1m-z/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="32" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
-<td>33</td><td>Programación en lenguaje ensamblador. Instrucciones básicas. Formatos. Direccionamientos</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>33</td><td>Programación en lenguaje ensamblador. Instrucciones básicas. Formatos. Direccionamientos</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1_FMhS0FnQlJ34OY-uVUcQAJnEuPalwm5/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="33" type="button">Marcar como completada</button></td>
 </tr>
 <tr class="bloque-shade">
 <td rowspan="11" class="bloque">Bases de datos</td>
 <td>34</td><td>Sistemas gestores de base de datos. Funciones. Componentes. Arquitecturas de referencia y operacionales. Tipos de sistemas</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/16UwCCr5kLhol6JdhQ7mDMDx4D1OcnXtp/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="34" type="button">Marcar como completada</button></td>
 </tr>
 <tr class="bloque-shade">
-<td>35</td><td>La definición de datos. Niveles de descripción. Lenguajes. Diccionario de datos</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>35</td><td>La definición de datos. Niveles de descripción. Lenguajes. Diccionario de datos</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1eljQsAegMBS_sEdPb4I2cAvLCNtdJS5O/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="35" type="button">Marcar como completada</button></td>
 </tr>
 <tr class="bloque-shade">
 <td>36</td><td>La manipulación de datos. Operaciones. Lenguajes. Optimización de consultas</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
@@ -140,7 +140,7 @@ permalink: /digitalizacion/pildoras/
 <td>37</td><td>Modelo de datos jerárquico y en red. Estructuras. Operaciones</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
 </tr>
 <tr class="bloque-shade">
-<td>38</td><td>Modelo de datos relacional. Estructuras. Operaciones. Álgebra relacional</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>38</td><td>Modelo de datos relacional. Estructuras. Operaciones. Álgebra relacional</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1qGRC2NuLZ-cYp-PbGHEjg1UTaM_tw00K/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="38" type="button">Marcar como completada</button></td>
 </tr>
 <tr class="bloque-shade">
 <td>39</td><td>Lenguajes para la definición y manipulación de datos en sistemas de base de datos relacionales. Tipos. Características. Lenguaje SQL</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
