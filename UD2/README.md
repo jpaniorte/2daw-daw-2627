@@ -27,27 +27,39 @@ Reparto semanal: **1h de teoría + 2h de práctica** (teoría y arranque de la p
 
 ### Bloque 2.2 — Servidores web y de aplicaciones
 - Contenido estático vs. dinámico.
-- Servidor web (Apache/Nginx) vs. servidor de aplicaciones (Tomcat, Node.js, PHP-FPM...).
-- El patrón servidor web + servidor de aplicaciones detrás.
-- Qué significa desplegar: dominio, DNS, tipos de hosting (compartido, VPS, dedicado, cloud).
-- Despliegue con contenedores Docker (sin entrar todavía en CI/CD, que es UD5).
+- Renderizado (CSR, SSR, hidratación, SSG), SEO, CDN y *cache busting*.
+- Servidor web (Apache/Nginx) vs. servidor de aplicaciones (Tomcat, Node.js, Gunicorn, PHP-FPM...): compresión, modelos de concurrencia y frameworks frontend/backend.
+- CORS: orígenes, cabeceras `Access-Control-Allow-*` y preflight.
+- El patrón servidor web + servidores de aplicaciones detrás: proxy inverso, 502/504, balanceo, escalado, health checks.
+- Qué significa desplegar: dominio, DNS, hosting (compartido, VPS, dedicado, IaaS/PaaS), entornos, artefactos versionados (SemVer), configuración y secretos.
+- Despliegue con contenedores Docker y estrategias sin corte (rolling, blue-green, canary, feature flags), sin entrar todavía en CI/CD, que es UD5.
 
 ## Entorno de prácticas
 
-El bloque 2.1 no necesita ningún entorno especial: navegador con herramientas de desarrollador y una terminal con `curl`/`nslookup`. El bloque 2.2 usa Docker (ya conocido de la UD1) de forma ligera, lanzando contenedores ya construidos sin entrar en la configuración real de Apache/Nginx, que se reserva para la UD3.
+Las dos prácticas se hacen con `curl` (en Windows, desde Git Bash) y un entorno de Docker Compose que el alumnado descarga como zip desde la página de la práctica (`web_N_practica_entorno.zip`). Cada zip trae un `README.md` con un plan B por si Docker no funciona.
+
+- **2.1:** httpbin (un "espejo" de HTTP) y una mini aplicación PHP con login y sesiones.
+- **2.2:** Nginx delante de dos instancias de una app Node.js, más una segunda web en otro puerto para la parte de CORS. Se toca la configuración de Nginx solo lo justo (balanceo, compresión, caché); Apache/Nginx a fondo se ve en la UD3.
 
 ## Evaluación
 
-Al final de cada bloque (sesión del viernes) se realiza un **cuestionario en papel** de repaso, con el mismo formato que en UD1: preguntas tipo test sacadas de un banco de 100 preguntas, con una versión distinta por alumno para evitar copias.
+Al final de cada bloque (sesión del viernes) se realiza un **cuestionario en papel** de repaso, con el mismo formato que en UD1: preguntas tipo test sacadas de un banco de 80 preguntas, con una versión distinta por alumno para evitar copias.
 
 ## Estructura de carpetas
 
 Cada carpeta `2.N <nombre del bloque>` sigue la misma convención que UD1, con prefijo `web_N_` (al no haber "partes" dentro de cada bloque):
 
 - `web_N_teoria.md` — diapositivas de teoría (Marp).
-- `web_N_practicas.md` — ejercicios guiados + retos.
-- `web_N_test.md` — banco de 100 preguntas de repaso (sin soluciones).
-- `web_N_examen.md` — cuestionario imprimible de cierre de bloque (20 versiones).
-- `web_N_examen_sol.md` — soluciones del cuestionario, para uso del profesor.
-- `web_N_simulacro.html` — simulacro interactivo (20 preguntas al azar del banco de 100).
-- `pdf/` y `pptx/` — generados con `python3 build.py` desde la raíz del repo, no se editan a mano.
+- `web_N_teoria_presentacion.pdf` — presentación de la teoría (botón «Presentación» de la web).
+- `web_N_practica.md` — práctica guiada con preguntas ❓ para entregar.
+- `web_N_practica_entorno.zip` — entorno de Docker Compose de la práctica.
+- `web_N_practica_sol.md` — solucionario de la práctica, para uso del profesor (no se sube).
+- `web_N_test.md` — banco de 80 preguntas de repaso (sin soluciones).
+- `web_N_test_sol.md` — soluciones del banco con explicación de cada pregunta (no se sube).
+- `web_N_simulacro.html` — simulacro interactivo (20 preguntas al azar del banco, con las explicaciones del solucionario).
+- `web_N_examen.md` / `web_N_examen_sol.md` y `pdf/` — cuestionario imprimible (20 versiones de 20 preguntas) y sus soluciones. No se suben: se generan desde el banco con `examenes.py` en la raíz del repo:
+
+  ```bash
+  python3 examenes.py "UD2/2.2 Servidores web y de aplicaciones" web_2 \
+    --titulo "web bloque 2.2: Servidores web y de aplicaciones" --pie "UD2: Arquitecturas Web"
+  ```

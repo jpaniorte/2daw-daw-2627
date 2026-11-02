@@ -1,3 +1,11 @@
+---
+layout: default
+title: "Arquitecturas Web — Bloque 2.2: Servidores web y de aplicaciones (Teoría)"
+permalink: /web/semana-2/teoria/
+pdf: "/UD2/2.2%20Servidores%20web%20y%20de%20aplicaciones/web_2_teoria_presentacion.pdf"
+pdf_label: "Presentación"
+---
+
 # Bloque 2.2 — Servidores web, servidores de aplicaciones y despliegue
 
 **Módulo:** Despliegue de Aplicaciones Web (0614) · 2º DAW · UD2: Arquitecturas web

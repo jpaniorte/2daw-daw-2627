@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — arquitecturas web, bloque 2.2: servidores web y de aplicaciones</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+  .explanation {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--brand);
+    background: #eff4ff;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .explanation:empty { display: none; }
+  .explanation p { margin: 0 0 8px; }
+  .explanation p:last-child { margin-bottom: 0; }
+  .explanation .ref { color: var(--muted); font-size: 0.85rem; }
+  .review-item .explanation { margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — arquitecturas web, bloque 2.2: servidores web y de aplicaciones</h1>
+    <p>20 preguntas al azar del banco de 80 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 80 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="explanation" id="explanation"></div>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "¿Qué caracteriza al contenido estático?", "opts": ["El servidor ejecuta un programa en cada petición para generar la respuesta.", "Solo puede ser HTML: las imágenes y las hojas de estilo se consideran dinámicas.", "Se envía tal cual está guardado en disco, sin ejecutar código por petición.", "Se genera una vez por usuario y se guarda en su sesión para las visitas siguientes."], "correct": 2, "exp": "El contenido estático es el que el servidor envía tal cual está guardado en disco: lee el fichero y lo manda, sin ejecutar ningún código por petición. Por eso es tan rápido de servir.\n\nEjecutar un programa en cada petición es justo la definición de contenido dinámico. Las imágenes y las hojas de estilo son ejemplos típicos de estático, no de dinámico. Y guardar algo por usuario en su sesión no tiene nada que ver con que el contenido sea estático.", "ref": "Apartado de la teoría: §1.1."}, {"n": 2, "q": "¿Cuál de estos es un ejemplo de contenido dinámico?", "opts": ["La hoja de estilos `estilos.css` de la web.", "El logotipo `logo.png` que aparece en la cabecera.", "El resultado de una búsqueda en la tienda.", "Una fuente tipográfica que descarga el navegador."], "correct": 2, "exp": "El resultado de una búsqueda depende de lo que pide cada usuario y de los datos en ese momento: el servidor tiene que ejecutar código (por ejemplo, consultar la base de datos) para generarlo. Es contenido dinámico.\n\nLa hoja de estilos, el logotipo y las fuentes son ficheros que se envían tal cual están en disco, iguales para todos los usuarios: son los ejemplos clásicos de contenido estático que da el bloque.", "ref": "Apartado de la teoría: §1.2."}, {"n": 3, "q": "Una petición `GET /tienda` devuelve un HTML con los precios y el stock actuales, que referencia `/css/estilos.css` y `/img/logo.png`. ¿Qué es correcto?", "opts": ["El HTML es dinámico; el CSS y el logo son estáticos, aunque se pidan después.", "Todo es dinámico, porque la página muestra precios que cambian.", "Todo es estático, porque se sirve por HTTP desde el mismo servidor.", "El HTML es estático y el CSS es dinámico, porque se descarga después."], "correct": 0, "exp": "Es el ejemplo del bloque: una misma página mezcla los dos tipos. El HTML de `/tienda` se genera en cada petición con los precios y el stock (dinámico), y los ficheros que referencia (CSS, imágenes, JS) se sirven tal cual (estáticos).\n\nQue la página muestre datos que cambian no convierte en dinámicos los ficheros que referencia, y servir algo por HTTP no lo hace estático. El CSS no se vuelve dinámico por descargarse después del HTML: el navegador simplemente hace otra petición para obtenerlo.", "ref": "Apartado de la teoría: §1.3."}, {"n": 4, "q": "En una aplicación con CSR (*Client-Side Rendering*), ¿qué envía inicialmente el servidor?", "opts": ["El HTML completo de la página, con todos los datos ya incluidos dentro.", "Solo un JSON con los datos, sin ninguna página HTML que lo acompañe.", "Un HTML casi vacío (`<div id=\"app\"></div>`) y mucho JavaScript.", "Una imagen de la página que el navegador muestra mientras carga los datos."], "correct": 2, "exp": "En CSR el servidor envía un HTML casi vacío, normalmente con un único `<div id=\"app\"></div>`, junto con un paquete grande de JavaScript. Es el navegador quien ejecuta ese JavaScript y construye el HTML real.\n\nEnviar el HTML completo con los datos es lo que hace SSR. El JavaScript del CSR suele pedir después los datos a una API en JSON, pero la primera respuesta sí es un HTML (aunque esté casi vacío). Lo de la imagen de la página no aparece en ningún modelo de renderizado.", "ref": "Apartado de la teoría: §2.2."}, {"n": 5, "q": "¿Cuál es el inconveniente típico del CSR, según el bloque?", "opts": ["La navegación entre páginas es lenta, porque cada clic recarga la página entera.", "Necesita un servidor de aplicaciones en producción para montar el HTML.", "La primera carga es lenta: la página sale en blanco hasta que acaba el JavaScript.", "Solo funciona con frameworks de backend como Django, Laravel o Spring."], "correct": 2, "exp": "El inconveniente del CSR es la primera carga: hay que descargar y ejecutar el JavaScript antes de ver nada, así que la página está en blanco hasta que termina. A cambio, una vez cargada, la navegación entre páginas es muy fluida.\n\nLa navegación lenta con recarga completa es lo contrario de lo que ocurre en una SPA. El CSR no necesita servidor de aplicaciones para montar el HTML, porque lo monta el navegador. Y es típico de frameworks de frontend (React, Vue, Angular), no de Django o Laravel.", "ref": "Apartado de la teoría: §2.2."}, {"n": 6, "q": "¿Qué frameworks cita el bloque para hacer SSR moderno con React y Vue?", "opts": ["Vite y webpack.", "Nginx y Apache.", "Gunicorn y uWSGI.", "Next.js y Nuxt."], "correct": 3, "exp": "Next.js (sobre React) y Nuxt (sobre Vue) son los frameworks que cita el bloque para hacer SSR moderno, combinando el HTML generado en el servidor con la interactividad del JavaScript en el navegador.\n\nNginx y Apache son servidores web, y Gunicorn y uWSGI, servidores de aplicaciones para Python: ninguno es un framework de renderizado. Vite y webpack son herramientas de build del frontend (las que generan los nombres con hash para el *cache busting*).", "ref": "Apartado de la teoría: §2.3."}, {"n": 7, "q": "¿Qué es la hidratación (*hydration*)?", "opts": ["Recargar la página automáticamente cada cierto tiempo para mostrar datos frescos.", "Generar todo el HTML una sola vez, en tiempo de build, antes de desplegar.", "Comprimir el HTML que genera el servidor antes de enviarlo, para que ocupe menos.", "El navegador engancha el JavaScript al HTML ya renderizado por el servidor."], "correct": 3, "exp": "La hidratación es la técnica habitual del SSR moderno: el servidor manda el HTML ya renderizado y después el navegador «engancha» el JavaScript a ese HTML para que vuelva a ser interactivo (clics, formularios…), sin redibujarlo desde cero. Combina la carga inicial rápida del SSR con la interactividad del CSR.\n\nRecargar la página periódicamente o comprimir el HTML no tienen nada que ver con la hidratación. Generar todo el HTML una sola vez en el build es la definición de SSG.", "ref": "Apartado de la teoría: §2.4."}, {"n": 8, "q": "En SSG (*Static Site Generation*), ¿cuándo se genera el HTML?", "opts": ["Una sola vez, en tiempo de build, antes de desplegar la web.", "En el navegador, al ejecutar el JavaScript de la página.", "En el servidor, en cada petición que llega.", "En la CDN, cada vez que un usuario pide la página."], "correct": 0, "exp": "En SSG el HTML se genera una sola vez, en tiempo de build, antes de desplegar. El resultado es, en la práctica, contenido estático.\n\nGenerarlo en el servidor en cada petición es SSR, y generarlo en el navegador, CSR. La CDN puede servir ese HTML ya generado (es estático y se cachea muy bien), pero no lo genera.", "ref": "Apartado de la teoría: §2.5."}, {"n": 9, "q": "¿Para cuál de estas páginas no basta SSG por sí solo?", "opts": ["Un carrito con precios actualizados al momento.", "Un blog personal con artículos que se publican cada semana.", "La página «Quiénes somos» de una empresa.", "La documentación de una librería, con su buscador."], "correct": 0, "exp": "SSG genera el HTML una sola vez, en el build, así que solo sirve para contenido que no cambia por usuario ni a cada momento. Un carrito con precios actualizados y la sesión del usuario necesita SSR o contenido dinámico real.\n\nLa documentación, un blog o una página institucional cambian poco y son iguales para todos los visitantes: son justo los casos típicos que el bloque pone para SSG.", "ref": "Apartado de la teoría: §2.5."}, {"n": 10, "q": "Según la tabla comparativa del bloque, ¿qué modelos de renderizado no necesitan un servidor de aplicaciones en producción?", "opts": ["Solo SSR.", "SSR y SSG.", "CSR y SSG.", "Los tres lo necesitan."], "correct": 2, "exp": "En CSR el HTML lo monta el navegador y en SSG se genera en el build: en los dos casos lo que se despliega son ficheros estáticos que puede servir Nginx o una CDN, sin servidor de aplicaciones.\n\nSSR sí necesita un servidor de aplicaciones en producción, porque genera el HTML en cada petición. Por eso cualquier opción que incluya SSR entre los que «no lo necesitan» es incorrecta. Ojo: la aplicación puede necesitar además una API con su backend; aquí se pregunta solo por el renderizado de las páginas.", "ref": "Apartado de la teoría: §2.5."}, {"n": 11, "q": "¿Por qué un CSR puro dificulta el SEO?", "opts": ["Porque los buscadores penalizan cualquier página que use React, Vue o Angular.", "Porque el crawler recibe un HTML casi vacío y debe ejecutar el JavaScript.", "Porque en CSR no se pueden usar las etiquetas `<title>` ni `<meta>` en la cabecera de la página.", "Porque las páginas CSR no tienen URL propia y los buscadores no pueden enlazarlas."], "correct": 1, "exp": "Un crawler que visita una página CSR recibe al principio un HTML casi vacío. Para ver el contenido real tiene que ejecutar el JavaScript, y no todos los rastreadores lo hacen igual de bien ni con la misma rapidez. SSR y SSG entregan el contenido ya visible en el HTML inicial.\n\nLos buscadores no penalizan por usar un framework concreto, y las páginas CSR pueden tener `<title>`, `<meta>` y URL propias (aunque haya que cuidarlas). El problema es dónde aparece el contenido, no la tecnología.", "ref": "Apartado de la teoría: §2.6."}, {"n": 12, "q": "¿Cuál de estos factores NO aparece en el bloque entre los aspectos de SEO que sí controlamos?", "opts": ["Escribir bien `<title>` y `<meta name=\"description\">` en cada página.", "Aumentar el número de servidores de aplicaciones.", "Conseguir tiempos de carga bajos.", "Mantener URLs legibles y estables, redirigiendo con 301 si cambian."], "correct": 1, "exp": "El número de servidores de aplicaciones afecta a cuántas peticiones se pueden atender, pero no aparece entre los factores de SEO del bloque.\n\nLos otros tres sí están en la lista de «lo que sí controlamos»: etiquetas `<title>` y `<meta name=\"description\">` bien escritas, URLs legibles y estables (redirigiendo con 301 si cambian) y tiempos de carga bajos, porque Google penaliza las páginas lentas.", "ref": "Apartado de la teoría: §2.7."}, {"n": 13, "q": "Una página bien posicionada cambia de URL de forma definitiva. ¿Qué respuesta conviene dar en la URL antigua para no perder el posicionamiento?", "opts": ["Una redirección `301`.", "Una redirección `302`.", "Un error `404`.", "Un error `503`."], "correct": 0, "exp": "Un 301 indica un traslado definitivo: los buscadores actualizan su índice con la URL nueva y conservan el posicionamiento. Es lo que recomienda el bloque cuando cambia una URL (y se vio en el bloque 2.1).\n\nUn 302 es temporal, así que el buscador seguiría considerando la URL antigua como la buena. Un 404 dice que la página no existe y se pierde lo ganado. Un 503 indica que el servicio no está disponible, que no es la situación.", "ref": "Apartado de la teoría: §2.7."}, {"n": 14, "q": "¿Qué es una CDN?", "opts": ["Una red de servidores repartidos por el mundo con copias cacheadas del contenido.", "Un servidor central muy potente que sustituye a todos los servidores de la aplicación web.", "Una base de datos distribuida que replica los datos de los usuarios en varios países.", "Un algoritmo de compresión que reduce el tamaño de las imágenes antes de enviarlas."], "correct": 0, "exp": "Una CDN es una red de servidores distribuidos geográficamente que guardan copias cacheadas del contenido cerca de cada usuario. Así, un usuario en Tokio no tiene que ir hasta un servidor en Madrid: le sirve un nodo cercano.\n\nNo sustituye a los servidores de la aplicación (sigue haciendo falta el origen), no replica bases de datos y no es un algoritmo de compresión.", "ref": "Apartado de la teoría: §2.8."}, {"n": 15, "q": "¿Cuál de estos servicios NO es una CDN?", "opts": ["Cloudflare.", "Gunicorn.", "Akamai.", "Amazon CloudFront."], "correct": 1, "exp": "Gunicorn es un servidor de aplicaciones para Python (Django, Flask), no una CDN.\n\nCloudflare, Akamai y Amazon CloudFront son los ejemplos de CDN que da el bloque (junto con Fastly): redes de servidores repartidos por el mundo que sirven copias cacheadas del contenido cerca de cada usuario.", "ref": "Apartado de la teoría: §2.8 y §3.3."}, {"n": 16, "q": "¿Qué contenido aprovecha peor una CDN?", "opts": ["El carrito personalizado de cada usuario.", "Las imágenes del catálogo de productos.", "El HTML de un blog generado con SSG.", "Las hojas de estilo CSS de la web."], "correct": 0, "exp": "El contenido dinámico y personalizado, como el carrito de cada usuario, es distinto para cada persona y cambia constantemente, así que normalmente no se cachea en la CDN.\n\nLas hojas de estilo, las imágenes y el HTML generado con SSG son iguales para todos los usuarios y no cambian con cada petición: es lo que mejor aprovecha una CDN.", "ref": "Apartado de la teoría: §2.8."}, {"n": 17, "q": "Despliegas un `estilos.css` nuevo con el mismo nombre, pero muchos usuarios siguen viendo los estilos antiguos. ¿Cuál es la causa más probable?", "opts": ["La CDN o el navegador siguen sirviendo la copia antigua que tenían en caché.", "El servidor web no ha comprimido el fichero nuevo.", "Los ficheros CSS no se pueden cachear, así que el navegador usa sus estilos por defecto.", "El DNS todavía apunta al servidor anterior."], "correct": 0, "exp": "Es el problema de invalidar la caché: si el fichero nuevo tiene el mismo nombre (la misma URL), la CDN o el navegador pueden seguir sirviendo la copia antigua que guardaron, y los usuarios no ven el cambio.\n\nLa compresión no cambia el contenido, solo cómo viaja. Los CSS sí se pueden cachear (es lo habitual). Y un cambio de DNS no tiene que ver con desplegar un fichero nuevo en el mismo servidor.", "ref": "Apartado de la teoría: §2.9."}, {"n": 18, "q": "¿En qué consiste el *cache busting*?", "opts": ["En enviar `Cache-Control: no-store` en todas las respuestas del servidor web.", "En desactivar la caché del navegador para todos los ficheros de la web.", "En reiniciar la CDN después de cada despliegue para vaciar todas sus copias.", "En incluir un hash o una versión en el nombre de cada fichero que cambia."], "correct": 3, "exp": "El *cache busting* consiste en incluir un hash o una versión en el nombre del fichero (`estilos.a3f9c1.css`). Al cambiar el contenido cambia el nombre, la URL es distinta y la caché antigua deja de usarse automáticamente.\n\nDesactivar la caché o enviar `no-store` en todo funcionaría, pero renunciando a sus ventajas: la web sería más lenta. Vaciar la CDN en cada despliegue no resuelve la caché de cada navegador. El *cache busting* permite cachear durante mucho tiempo y aun así publicar cambios al instante.", "ref": "Apartado de la teoría: §2.9."}, {"n": 19, "q": "¿Cuál es la función principal de un servidor web?", "opts": ["Recibir peticiones HTTP y responder, sobre todo con contenido estático.", "Almacenar los datos de la aplicación de forma persistente y segura.", "Compilar el código de la aplicación antes de cada petición.", "Ejecutar la lógica de negocio de la aplicación y generar el contenido dinámico."], "correct": 0, "exp": "Un servidor web es un programa cuya función principal es recibir peticiones HTTP y responder, típicamente sirviendo contenido estático con muchísima eficiencia. También puede hacer de proxy inverso.\n\nEjecutar la lógica de negocio es el papel del servidor de aplicaciones. Guardar los datos es cosa de la base de datos. Y compilar en cada petición no lo hace ninguno de los dos.", "ref": "Apartado de la teoría: §3.1."}, {"n": 20, "q": "¿Cuál de estos programas es un servidor web?", "opts": ["Gunicorn.", "Tomcat.", "PHP-FPM.", "Nginx."], "correct": 3, "exp": "Nginx es, junto con Apache HTTP Server, el ejemplo de servidor web que da el bloque.\n\nTomcat (Java), PHP-FPM (PHP) y Gunicorn (Python) son servidores de aplicaciones: ejecutan la lógica de la aplicación en su lenguaje.", "ref": "Apartado de la teoría: §3.1 y §3.3."}, {"n": 21, "q": "¿Cuál de estos programas es un servidor de aplicaciones?", "opts": ["Apache HTTP Server.", "Nginx.", "Gunicorn.", "Cloudflare."], "correct": 2, "exp": "Gunicorn es un servidor de aplicaciones para Python: ejecuta aplicaciones Django o Flask.\n\nApache HTTP Server y Nginx son servidores web. Cloudflare es una CDN.", "ref": "Apartado de la teoría: §3.1, §3.3 y §2.8."}, {"n": 22, "q": "Para la compresión, ¿con qué cabecera indica el navegador lo que acepta y con cuál indica el servidor lo que ha aplicado?", "opts": ["`Accept-Encoding` (navegador) y `Content-Encoding` (servidor).", "`Accept` (navegador) y `Content-Type` (servidor).", "`Content-Encoding` (navegador) y `Accept-Encoding` (servidor).", "`Accept-Language` (navegador) y `Content-Language` (servidor)."], "correct": 0, "exp": "El navegador indica qué compresiones entiende con `Accept-Encoding` (por ejemplo `gzip, br`), y el servidor indica cuál ha aplicado al cuerpo con `Content-Encoding` (por ejemplo `br`).\n\nInvertir las dos cabeceras es el error típico. `Accept`/`Content-Type` negocian el tipo de contenido (HTML, JSON…), no la compresión, y `Accept-Language`/`Content-Language` negocian el idioma.", "ref": "Apartado de la teoría: §3.2."}, {"n": 23, "q": "Sobre la compresión con gzip o brotli, ¿qué afirmación es correcta?", "opts": ["Hay que modificar el código de la aplicación para que comprima cada respuesta.", "Solo tiene sentido para imágenes y vídeos, que son los ficheros más grandes.", "Es configuración del servidor web y reduce lo transferido sin tocar la aplicación.", "Cifra el contenido, así que puede sustituir a HTTPS en las conexiones internas."], "correct": 2, "exp": "La compresión con gzip o brotli es configuración del servidor web: reduce mucho el tamaño transferido sin tocar una línea de la aplicación.\n\nNo hay que modificar el código. Se aprovecha sobre todo con texto (HTML, CSS, JS, JSON); las imágenes y los vídeos ya suelen venir comprimidos en su propio formato. Y comprimir no es cifrar: no sustituye a HTTPS.", "ref": "Apartado de la teoría: §3.2."}, {"n": 24, "q": "¿Qué afirmación sobre un servidor de aplicaciones es correcta?", "opts": ["Un servidor web puro también sabe ejecutar código PHP o Java por sí mismo.", "Su función principal es servir ficheros estáticos con la máxima eficiencia.", "Sustituye a la base de datos, porque guarda el estado de la aplicación.", "Entiende el lenguaje o framework de la aplicación y ejecuta su lógica."], "correct": 3, "exp": "El servidor de aplicaciones está diseñado para ejecutar la lógica de la aplicación y generar contenido dinámico. Entiende el lenguaje o el framework de la aplicación.\n\nUn servidor web puro no sabe ejecutar ese código por sí mismo: necesita reenviarlo a un servidor de aplicaciones. Servir estáticos con máxima eficiencia es lo propio del servidor web. Y el servidor de aplicaciones no sustituye a la base de datos.", "ref": "Apartado de la teoría: §3.3."}, {"n": 25, "q": "¿Qué servidor de aplicaciones suele usar una aplicación Spring Boot?", "opts": ["Gunicorn.", "Tomcat.", "Puma.", "PHP-FPM."], "correct": 1, "exp": "Spring Boot usa Tomcat como servidor de aplicaciones, y a menudo lo lleva embebido dentro del propio `.jar`: basta con ejecutar el `.jar` para tener la aplicación escuchando.\n\nGunicorn es para Python, PHP-FPM para PHP y Puma para Ruby on Rails.", "ref": "Apartado de la teoría: §3.4."}, {"n": 26, "q": "¿Qué servidor de aplicaciones es típico para una aplicación Django o Flask?", "opts": ["PHP-FPM o Tomcat.", "Tomcat.", "Gunicorn o uWSGI.", "Puma o Unicorn."], "correct": 2, "exp": "Para Django o Flask, el servidor de aplicaciones típico es Gunicorn o uWSGI.\n\nTomcat es para Java (Spring), PHP-FPM para PHP (Laravel, Symfony) y Puma o Unicorn para Ruby on Rails.", "ref": "Apartado de la teoría: §3.4."}, {"n": 27, "q": "¿Y para una aplicación Laravel o Symfony?", "opts": ["PHP-FPM.", "Unicorn.", "Tomcat.", "uWSGI."], "correct": 0, "exp": "Laravel y Symfony son frameworks de PHP, y su servidor de aplicaciones típico es PHP-FPM.\n\nUnicorn es para Ruby on Rails, Tomcat para Java y uWSGI para Python.", "ref": "Apartado de la teoría: §3.4."}, {"n": 28, "q": "¿Qué ejecuta una aplicación hecha con Express o NestJS?", "opts": ["Tomcat, embebido en un `.jar`.", "El propio proceso Node.js.", "Apache HTTP Server con PHP-FPM.", "Gunicorn."], "correct": 1, "exp": "En Node.js no hay un servidor de aplicaciones aparte: las aplicaciones Express o NestJS las ejecuta el propio proceso Node.js, que escucha directamente en un puerto.\n\nTomcat (embebido o no en un `.jar`) es para Java y Gunicorn para Python. Apache con PHP-FPM ejecuta aplicaciones PHP, no aplicaciones Node.js.", "ref": "Apartado de la teoría: §3.4."}, {"n": 29, "q": "¿Qué son Vue, Angular y React?", "opts": ["Frameworks de backend que sustituyen a Spring, Django o Laravel.", "Servidores de aplicaciones para JavaScript.", "Frameworks de frontend, cuyo código se ejecuta en el navegador.", "Servidores web alternativos a Nginx y Apache."], "correct": 2, "exp": "Vue, Angular y React son frameworks de frontend: su código se ejecuta en el navegador, no en un servidor de aplicaciones.\n\nNo sustituyen a Spring, Django o Laravel, sino que conviven con ellos: lo habitual es un backend que expone una API y un frontend que la consume desde el navegador. Tampoco son servidores, ni web ni de aplicaciones.", "ref": "Apartado de la teoría: §3.5."}, {"n": 30, "q": "¿Qué genera `npm run build` en un proyecto de Vue, Angular o React con CSR?", "opts": ["Una carpeta (`dist/`) con `index.html`, `.js` y `.css` compilados.", "Un servidor Node.js listo para arrancar en producción con la aplicación.", "Una imagen Docker con el frontend y su servidor de aplicaciones.", "Un fichero `.jar` con el frontend, que después se despliega en Tomcat."], "correct": 0, "exp": "`npm run build` no genera un servidor: genera una carpeta (`dist/`, `build/`) con `index.html` y los ficheros `.js` y `.css` ya compilados. Es decir, contenido estático.\n\nNo crea ningún servidor Node.js para producción, ni una imagen Docker (eso requiere un `Dockerfile` y `docker build`), ni un `.jar`, que es un artefacto de Java.", "ref": "Apartado de la teoría: §3.6."}, {"n": 31, "q": "¿Cómo se sirve en producción una SPA hecha con CSR?", "opts": ["Con Node.js en producción, porque el código está escrito en JavaScript.", "Con Tomcat, porque necesita un servidor de aplicaciones para ejecutarse.", "Con Nginx o Apache, como contenido estático; Node.js solo hace falta en el build.", "Obligatoriamente con una plataforma serverless, porque una SPA no tiene backend propio."], "correct": 2, "exp": "Una SPA con CSR es contenido estático tras el build, así que se sirve con Nginx o Apache como cualquier otro estático. Node.js solo hizo falta en tiempo de build, en tu máquina o en el pipeline de CI/CD.\n\nQue el código esté escrito en JavaScript no obliga a usar Node.js en producción: ese JavaScript lo ejecuta el navegador. Tampoco necesita Tomcat ni una plataforma serverless.", "ref": "Apartado de la teoría: §3.6."}, {"n": 32, "q": "¿Cuándo sí necesita un frontend un servidor de aplicaciones (un proceso Node.js) en producción?", "opts": ["Siempre que esté hecho con React o Vue.", "Cuando usa CSR y llama a una API.", "Cuando usa SSR, como Next.js o Nuxt.", "Cuando lo sirve Nginx como estático."], "correct": 2, "exp": "Si el frontend usa SSR (Next.js, Nuxt), el HTML se genera en cada petición en el servidor, así que sí hace falta un servidor de aplicaciones en producción: un proceso Node.js.\n\nUsar React no implica SSR: con CSR, la aplicación se sirve como estático. Y el hecho de que la sirva Nginx precisamente indica que no hace falta servidor de aplicaciones para el frontend.", "ref": "Apartado de la teoría: §3.6."}, {"n": 33, "q": "¿Qué combinación define un origen, a efectos de CORS?", "opts": ["Dominio + ruta del recurso.", "Esquema + host + puerto.", "Dirección IP + puerto.", "Dominio + query string."], "correct": 1, "exp": "Un origen es la combinación de esquema + host + puerto. Dos URL son del mismo origen solo si coinciden las tres partes.\n\nLa ruta no forma parte del origen (cambiarla no cambia el origen), y tampoco la query string. El origen se define con el nombre del host, no con la dirección IP.", "ref": "Apartado de la teoría: §3.7."}, {"n": 34, "q": "¿Cuál de estas URL es del mismo origen que `https://miapp.com`?", "opts": ["`https://miapp.com/api/productos`", "`http://miapp.com/api/productos`", "`https://api.miapp.com`", "`https://miapp.com:8080`"], "correct": 0, "exp": "`https://miapp.com/api/productos` solo cambia la ruta respecto a `https://miapp.com`, y la ruta no forma parte del origen: esquema, host y puerto coinciden.\n\nEn las demás cambia una de las tres partes del origen: el esquema (`http`), el host (`api.miapp.com` es otro host, aunque sea un subdominio) o el puerto (`8080` en lugar del 443 implícito de HTTPS).", "ref": "Apartado de la teoría: §3.7."}, {"n": 35, "q": "¿Son del mismo origen `https://miapp.com` y `https://miapp.com:8080`?", "opts": ["Sí, porque el dominio es el mismo.", "No, porque cambia el esquema.", "Sí, porque los dos usan HTTPS.", "No, porque cambia el puerto."], "correct": 3, "exp": "No son del mismo origen porque cambia el puerto: `https://miapp.com` usa el 443 implícito y la otra, el 8080.\n\nEl dominio coincide y las dos usan HTTPS, pero un origen exige que coincidan esquema, host y puerto. El esquema no cambia en este caso: es el puerto el que los diferencia.", "ref": "Apartado de la teoría: §3.7."}, {"n": 36, "q": "¿Con qué cabecera de respuesta indica el backend qué origen externo puede leer sus respuestas?", "opts": ["`Origin`", "`Access-Control-Request-Method`", "`Allow`", "`Access-Control-Allow-Origin`"], "correct": 3, "exp": "Con `Access-Control-Allow-Origin` el backend indica qué origen externo puede leer sus respuestas (por ejemplo, `Access-Control-Allow-Origin: https://miapp.com`).\n\n`Origin` es la cabecera que envía el navegador en la petición para decir de dónde viene. `Access-Control-Request-Method` también la envía el navegador, en el preflight, para preguntar por un método. `Allow` lista los métodos permitidos de un recurso (acompaña al 405), no los orígenes.", "ref": "Apartado de la teoría: §3.7."}, {"n": 37, "q": "El JavaScript de `https://miapp.com` llama a una API de otro origen que no devuelve cabeceras CORS. ¿Qué ocurre?", "opts": ["El servidor redirige la petición con un `302` al origen correcto para que se repita.", "El servidor rechaza la petición con un `403 Forbidden` antes de procesarla.", "La petición nunca llega a salir del navegador, así que el servidor no se entera de nada.", "El navegador no deja al JavaScript leer la respuesta, aunque el servidor la haya enviado."], "correct": 3, "exp": "Sin la cabecera `Access-Control-Allow-Origin` (o con un valor que no coincide), el navegador descarta la respuesta antes de entregársela al JavaScript, aunque la petición haya llegado bien al servidor y este la haya procesado.\n\nEl servidor no la rechaza: responde con normalidad, y es el navegador quien bloquea la lectura. La petición sí sale del navegador (salvo en el caso del preflight, que se pregunta antes). Y no hay ninguna redirección.", "ref": "Apartado de la teoría: §3.7."}, {"n": 38, "q": "¿Qué petición provoca normalmente una comprobación previa (*preflight*) de CORS?", "opts": ["La carga de una imagen con `<img>` desde otro dominio.", "Un `DELETE`, o un `PUT` con JSON, hacia otro origen.", "Un clic en un enlace `<a>` que lleva a otra web.", "La carga de una hoja de estilos con `<link>`."], "correct": 1, "exp": "Para peticiones «no simples», como un `PUT`, un `DELETE` o un JSON con cabeceras propias, el navegador envía antes una petición `OPTIONS` de comprobación (*preflight*) para preguntar si está permitido.\n\nCargar una imagen o una hoja de estilos, o seguir un enlace, no lee la respuesta desde JavaScript, así que no pasa por el control de CORS ni genera preflight.", "ref": "Apartado de la teoría: §3.7."}, {"n": 39, "q": "Una petición a la API funciona con `curl` y con Postman, pero falla desde el frontend en el navegador. ¿Cuál es la explicación más probable?", "opts": ["Falta configurar CORS: lo aplica el navegador, no el servidor.", "El servidor detecta el `User-Agent` del navegador y lo bloquea.", "Hay un error de DNS que solo afecta a los navegadores.", "`curl` y Postman usan un puerto distinto al del navegador."], "correct": 0, "exp": "Es uno de los errores más comunes al separar frontend y backend: la petición funciona con `curl` o Postman, pero falla solo desde el navegador, porque CORS lo aplica el navegador y no el servidor. `curl` y Postman no son navegadores y no aplican la política del mismo origen.\n\nEl puerto, el `User-Agent` o el DNS no explican que falle solo en el navegador con la misma URL. La solución es que el backend devuelva las cabeceras `Access-Control-Allow-*` adecuadas.", "ref": "Apartado de la teoría: §3.7."}, {"n": 40, "q": "¿Qué modelo de concurrencia describe el bloque para Nginx?", "opts": ["Un *worker* por petición, creado y destruido en cada una.", "Un proceso o un hilo distinto para cada conexión abierta.", "Un único hilo con un *event loop* que también ejecuta la lógica de negocio.", "Eventos asíncronos: pocos procesos para miles de conexiones."], "correct": 3, "exp": "Nginx usa un modelo de eventos asíncronos: pocos procesos atienden miles de conexiones sin bloquearse. Por eso es tan eficiente sirviendo estáticos y haciendo de proxy.\n\nUn proceso o hilo por conexión es el modelo clásico de Apache (`prefork`). Un único hilo con *event loop* es Node.js, y Nginx no ejecuta lógica de negocio. Crear un *worker* por petición no es el modelo de ninguno de los servidores del bloque.", "ref": "Apartado de la teoría: §3.8."}, {"n": 41, "q": "¿Qué modelo de concurrencia corresponde a Apache en su modo clásico (`prefork`)?", "opts": ["Eventos asíncronos con muy pocos procesos.", "Un proceso o hilo por conexión.", "Un único hilo con un *event loop*.", "Funciones que se ejecutan bajo demanda."], "correct": 1, "exp": "En su modo clásico (`prefork`), Apache usa un proceso o hilo por conexión: sencillo de entender, pero más pesado con mucha concurrencia. Las versiones modernas tienen también un modo `event`.\n\nLos eventos asíncronos con pocos procesos son el modelo de Nginx, y el hilo único con *event loop*, el de Node.js. Las funciones bajo demanda corresponden a serverless.", "ref": "Apartado de la teoría: §3.8."}, {"n": 42, "q": "¿Qué afirmación sobre el modelo de Node.js es correcta?", "opts": ["Un único hilo con *event loop*: bien con E/S, mal con cálculos pesados.", "Crea un proceso nuevo para cada conexión, como hace Apache en modo `prefork`.", "Usa muchos hilos en paralelo, así que los cálculos pesados no le afectan.", "No puede atender más de una petición a la vez, aunque sean operaciones de red."], "correct": 0, "exp": "Node.js atiende con un único hilo y un *event loop*. Es muy bueno con operaciones de E/S (red, disco), porque mientras espera puede atender otras peticiones, pero malo si una petición hace cálculos pesados que bloquean el hilo.\n\nNo usa muchos hilos para la lógica, así que los cálculos pesados sí le afectan, ni crea un proceso por conexión. Y sí atiende muchas peticiones a la vez cuando son de E/S: esa es su fortaleza.", "ref": "Apartado de la teoría: §3.8."}, {"n": 43, "q": "En Gunicorn o Tomcat, ¿de qué depende cuántas peticiones simultáneas se atienden?", "opts": ["Del número de núcleos de la máquina del cliente.", "De cuántos *workers* (procesos o hilos) se configuren.", "De la versión de HTTP que use el navegador.", "Del tamaño de la base de datos que consulta la aplicación."], "correct": 1, "exp": "Gunicorn y Tomcat trabajan con varios *workers* (procesos o hilos) en paralelo, cada uno con una petición a la vez. La concurrencia depende de cuántos *workers* se configuren.\n\nLos núcleos del cliente, el tamaño de la base de datos o la versión de HTTP del navegador no determinan cuántas peticiones simultáneas atiende el servidor.", "ref": "Apartado de la teoría: §3.8."}, {"n": 44, "q": "En una aplicación Node.js, una petición hace un cálculo que tarda varios segundos. ¿Qué ocurre con las demás peticiones que llegan a esa instancia?", "opts": ["Se redirigen solas a otra instancia, porque Node.js detecta el bloqueo.", "Nada: Node.js abre automáticamente un hilo nuevo para cada cálculo.", "Esperan, porque el cálculo bloquea el único hilo que las atiende.", "Reciben un `405 Method Not Allowed` hasta que termina el cálculo."], "correct": 2, "exp": "Node.js atiende todas las peticiones con un único hilo. Si una petición hace un cálculo pesado, ocupa ese hilo y las demás peticiones de esa instancia tienen que esperar a que termine.\n\nNode.js no abre hilos automáticamente para el código de la aplicación, ni redirige las peticiones a otra instancia. Tampoco responde con un 405, que significa «método no permitido».", "ref": "Apartado de la teoría: §3.8."}, {"n": 45, "q": "¿Por qué se coloca tan a menudo Nginx delante de los servidores de aplicaciones?", "opts": ["Porque ejecuta la lógica de negocio más rápido que el propio servidor de aplicaciones.", "Porque aguanta mucha concurrencia y reparte lo dinámico entre backends.", "Porque los servidores de aplicaciones no saben responder directamente a peticiones HTTP.", "Porque sustituye a la base de datos y guarda en caché todas las consultas."], "correct": 1, "exp": "Nginx aguanta mucha concurrencia sirviendo lo estático y repartiendo lo dinámico entre los backends, mientras los *workers* del servidor de aplicaciones se dedican solo a ejecutar lógica.\n\nNginx no ejecuta la lógica de negocio. Los servidores de aplicaciones sí saben responder HTTP (Node.js o Gunicorn escuchan en un puerto), aunque no son tan eficientes con mucha concurrencia. Y Nginx no sustituye a la base de datos.", "ref": "Apartado de la teoría: §3.8 y §3.9."}, {"n": 46, "q": "En el patrón habitual de producción, ¿qué hace un proxy inverso?", "opts": ["Guarda en caché las respuestas DNS para que los clientes resuelvan los nombres más rápido.", "Permite que los equipos de una red interna salgan a Internet a través de él, ocultando su IP.", "Cifra la base de datos para que los servidores de aplicaciones no puedan leerla directamente.", "Recibe las peticiones de los clientes y reenvía las dinámicas a los servidores de aplicaciones."], "correct": 3, "exp": "En el patrón habitual, un servidor web (Nginx o Apache) por delante recibe las peticiones de los clientes, sirve directamente lo estático y reenvía las peticiones dinámicas a uno o varios servidores de aplicaciones de detrás. Eso es hacer de proxy inverso.\n\nPermitir que una red interna salga a Internet a través de un servidor es lo que hace un proxy «directo» (*forward proxy*), no uno inverso. Cachear DNS o cifrar la base de datos no son funciones de un proxy inverso.", "ref": "Apartado de la teoría: §3.9."}, {"n": 47, "q": "Nginx hace de proxy inverso y devuelve 502 Bad Gateway. ¿Qué indica?", "opts": ["Que la aplicación de detrás no está arrancada o responde mal.", "Que el cliente no tiene permisos para acceder al recurso que ha pedido.", "Que el recurso solicitado no existe en el servidor.", "Que la aplicación de detrás ha tardado demasiado en responder y Nginx ha dejado de esperar."], "correct": 0, "exp": "Un 502 Bad Gateway indica que la aplicación de detrás ha devuelto una respuesta no válida o no está arrancada: el proxy no ha podido obtener una respuesta correcta de ella.\n\nSi la aplicación tarda demasiado, el código es 504 Gateway Timeout. La falta de permisos es un 403 y el recurso inexistente, un 404.", "ref": "Apartado de la teoría: §3.9."}, {"n": 48, "q": "¿Cómo reparte las peticiones la estrategia de balanceo *round robin*?", "opts": ["Al backend con menos conexiones activas en ese momento.", "Por turnos: una petición a cada backend, uno tras otro.", "Según la IP del cliente, siempre al mismo backend.", "Al backend que haya respondido más rápido la última vez."], "correct": 1, "exp": "*Round robin* es la estrategia más sencilla: una petición a cada backend, por turnos, uno tras otro.\n\nEnviar al backend con menos conexiones activas es *least connections*, y enviar siempre al mismo según la IP del cliente es *IP hash*. Elegir según el tiempo de respuesta no es ninguna de las estrategias del bloque.", "ref": "Apartado de la teoría: §3.10."}, {"n": 49, "q": "¿Cómo reparte las peticiones la estrategia *least connections*?", "opts": ["Por turnos, uno tras otro.", "Siempre al backend más potente, hasta que se satura.", "Según un hash de la IP del cliente que hace la petición.", "Al backend con menos conexiones activas."], "correct": 3, "exp": "*Least connections* envía cada petición al backend con menos conexiones activas en ese momento.\n\nPor turnos es *round robin*, y según un hash de la IP del cliente es *IP hash*. Mandarlo todo al más potente hasta saturarlo no es ninguna estrategia de balanceo; repartir más peticiones a los más potentes es *weighted round robin*.", "ref": "Apartado de la teoría: §3.10."}, {"n": 50, "q": "Una aplicación guarda la sesión de cada usuario en la memoria de la instancia que le atiende y hay varios backends. ¿Qué estrategia de las que cita el bloque hace que un cliente vaya siempre al mismo backend?", "opts": ["*IP hash*.", "*Weighted round robin*.", "*Round robin*.", "*Least connections*."], "correct": 0, "exp": "Con *IP hash*, el backend se elige según la IP del cliente, así que el mismo cliente va siempre al mismo backend. Es útil si la sesión se guarda en la memoria de cada instancia.\n\n*Round robin*, *weighted round robin* y *least connections* pueden mandar dos peticiones seguidas del mismo cliente a backends distintos, con lo que el usuario perdería la sesión. (La solución más robusta es no guardar la sesión en la memoria de la instancia, sino en un almacenamiento compartido.)", "ref": "Apartado de la teoría: §3.10."}, {"n": 51, "q": "¿Qué es el *weighted round robin*?", "opts": ["Un reparto según la IP del cliente, ponderado por su país de origen.", "Por turnos, pero los backends más potentes reciben más peticiones.", "Un reparto aleatorio entre los backends que superan el health check.", "Un reparto al backend que tenga menos conexiones activas en ese momento."], "correct": 1, "exp": "*Weighted round robin* reparte por turnos, pero dando un peso a cada backend: los más potentes reciben más peticiones.\n\nEl reparto según la IP del cliente es *IP hash*, y el que busca el backend con menos conexiones activas es *least connections*. El reparto aleatorio no aparece en el bloque.", "ref": "Apartado de la teoría: §3.10."}, {"n": 52, "q": "¿Qué es el escalado vertical?", "opts": ["Añadir más instancias idénticas de la aplicación en paralelo, detrás de un balanceador.", "Dar más CPU o RAM a la misma máquina; tiene un límite físico y suele obligar a parar.", "Mover el contenido estático a una CDN para descargar de trabajo al servidor.", "Dividir la aplicación en microservicios que se despliegan por separado."], "correct": 1, "exp": "El escalado vertical consiste en dar más recursos (CPU, RAM) a la misma máquina. Tiene un límite físico y suele obligar a parar el servicio para ampliar.\n\nAñadir más instancias en paralelo es escalado horizontal. Usar una CDN o dividir en microservicios son otras decisiones, no lo que el bloque llama escalado vertical.", "ref": "Apartado de la teoría: §3.11."}, {"n": 53, "q": "¿Qué afirmación sobre el escalado horizontal es correcta?", "opts": ["Añade instancias en paralelo y es lo habitual en la nube.", "Consiste en ampliar la RAM y la CPU del servidor cuando se queda corto.", "Tiene un límite físico más rígido que el escalado vertical.", "Solo es posible si la aplicación está escrita en Java y se despliega en Tomcat."], "correct": 0, "exp": "El escalado horizontal añade más instancias en paralelo. Es el enfoque habitual en la nube: no tiene un límite tan rígido y encaja con el balanceo de carga.\n\nAmpliar la RAM es escalado vertical, que es el que tiene el límite físico más rígido. Y el escalado horizontal no depende del lenguaje de la aplicación.", "ref": "Apartado de la teoría: §3.11."}, {"n": 54, "q": "¿Por qué Docker facilita especialmente el escalado horizontal?", "opts": ["Porque aumenta automáticamente la CPU y la RAM de la máquina cuando hace falta.", "Porque levantar una instancia más es, en esencia, arrancar otro contenedor de la misma imagen.", "Porque elimina la necesidad de tener un balanceador de carga delante de las instancias.", "Porque todos los contenedores comparten la misma memoria y, por tanto, la misma sesión."], "correct": 1, "exp": "Docker facilita el escalado horizontal porque levantar una instancia más es, en esencia, arrancar otro contenedor de la misma imagen.\n\nDocker no aumenta los recursos de la máquina y no sustituye al balanceador: sigue haciendo falta repartir las peticiones. Los contenedores tampoco comparten memoria entre sí: cada uno tiene su propio estado.", "ref": "Apartado de la teoría: §3.11."}, {"n": 55, "q": "¿Qué es Kubernetes?", "opts": ["Un servidor web alternativo a Nginx y a Apache.", "Un servidor de aplicaciones para Java, como Tomcat.", "Un orquestador que automatiza la gestión de contenedores.", "Una CDN especializada en contenido estático."], "correct": 2, "exp": "Kubernetes es el orquestador de contenedores más conocido. Automatiza lo que no escala a mano: decide cuántas instancias levantar, las reinicia si fallan, reparte el tráfico y facilita los despliegues graduales de forma declarativa.\n\nNo es un servidor web, ni un servidor de aplicaciones, ni una CDN. No se usará en este módulo, pero es la evolución natural cuando gestionar varios backends a mano se queda corto.", "ref": "Apartado de la teoría: §3.12."}, {"n": 56, "q": "¿Qué es un *health check*?", "opts": ["Un registro con todas las peticiones que ha atendido cada backend.", "Un antivirus que analiza los contenedores antes de arrancarlos.", "Una revisión del código antes de aceptar un cambio en el repositorio del proyecto.", "Una petición de prueba periódica para ver si un backend responde."], "correct": 3, "exp": "Un *health check* es una petición de prueba que el servidor web o el balanceador hace periódicamente a cada backend (por ejemplo, a una ruta `/health`) para comprobar que responde bien antes de enviarle tráfico.\n\nNo es un antivirus, ni una revisión de código, ni un registro de peticiones (eso serían los logs).", "ref": "Apartado de la teoría: §3.13."}, {"n": 57, "q": "Un backend deja de superar el *health check*. ¿Qué hace el servidor web o el balanceador?", "opts": ["Reinicia todos los backends para evitar inconsistencias entre ellos.", "Lo retira temporalmente de la rotación hasta que vuelva a estar sano.", "Devuelve un `503` a todos los usuarios hasta que el backend se recupere.", "Borra el contenedor y su imagen para que no se vuelva a usar."], "correct": 1, "exp": "Si un backend deja de responder bien al *health check*, se retira temporalmente de la rotación hasta que vuelva a estar sano. Así los usuarios no reciben errores mientras otros backends sí funcionan.\n\nNo se reinician todos los backends ni se devuelve un 503 a todo el mundo: precisamente se trata de seguir atendiendo con los sanos. Tampoco se borra nada: cuando el backend se recupera, vuelve a recibir tráfico.", "ref": "Apartado de la teoría: §3.13."}, {"n": 58, "q": "¿Qué ventaja NO cita el bloque de separar el servidor web del servidor de aplicaciones?", "opts": ["Poder cachear el contenido estático.", "Aplicar HTTPS en un único punto.", "Balancear la carga entre varios servidores de aplicaciones.", "No tener que escribir lógica de negocio en la aplicación."], "correct": 3, "exp": "Separar el servidor web del servidor de aplicaciones no evita tener que escribir la lógica de negocio: esa lógica la sigue ejecutando el servidor de aplicaciones.\n\nLas otras tres son las ventajas que cita el bloque: cachear el contenido estático, aplicar HTTPS en un único punto y balancear la carga entre varios servidores de aplicaciones.", "ref": "Apartado de la teoría: §3.14."}, {"n": 59, "q": "Según el bloque, ¿qué es desplegar una aplicación?", "opts": ["Escribir y ejecutar las pruebas automáticas del código antes de publicarlo.", "Subir el código al repositorio Git del proyecto.", "Ponerla al alcance de sus usuarios reales, fuera de tu máquina.", "Compilar la aplicación en la máquina de desarrollo para generar el ejecutable."], "correct": 2, "exp": "Desplegar es poner una aplicación a disposición de sus usuarios reales, ejecutándose en algún sitio accesible desde fuera de tu máquina de desarrollo.\n\nEjecutar las pruebas, subir el código a Git o compilar en local son pasos previos (o parte de un pipeline), pero no ponen la aplicación al alcance de los usuarios.", "ref": "Apartado de la teoría: §4.1."}, {"n": 60, "q": "¿Qué pieza de un despliegue apunta el dominio a la IP del servidor?", "opts": ["El artefacto.", "El hosting.", "El certificado HTTPS.", "El DNS."], "correct": 3, "exp": "El DNS apunta el dominio (`miapp.com`) a la IP del servidor donde vive la aplicación, como se vio en el bloque 2.1.\n\nEl hosting es dónde se ejecuta físicamente la aplicación, el certificado HTTPS sirve para cifrar la comunicación y el artefacto es el paquete versionado que se despliega.", "ref": "Apartado de la teoría: §4.2."}, {"n": 61, "q": "¿Qué tipo de hosting te da una máquina virtual para ti solo, con control total del sistema operativo?", "opts": ["VPS.", "Hosting compartido.", "Servidor dedicado.", "PaaS."], "correct": 0, "exp": "Un VPS (servidor privado virtual) es una máquina virtual para ti solo, con control total del sistema operativo.\n\nEn el hosting compartido varias webs comparten un servidor gestionado por el proveedor, con poco control. Un servidor dedicado es una máquina física entera. En PaaS solo subes tu código o tu contenedor y no gestionas el sistema operativo.", "ref": "Apartado de la teoría: §4.3."}, {"n": 62, "q": "En el cloud, ¿qué caracteriza a un servicio PaaS frente a uno IaaS?", "opts": ["En PaaS alquilas máquinas virtuales y gestionas tú todo el sistema operativo.", "En PaaS te dan una máquina física entera para ti solo.", "En PaaS subes tu código o tu contenedor y el proveedor gestiona el resto.", "En PaaS varias webs comparten un mismo servidor gestionado por el proveedor."], "correct": 2, "exp": "En PaaS subes tu código o tu contenedor y el proveedor gestiona el resto (sistema operativo, servidores, escalado…). En IaaS, en cambio, alquilas máquinas virtuales y las gestionas tú.\n\nAlquilar máquinas virtuales y gestionar el sistema operativo es IaaS. Una máquina física entera es un servidor dedicado, y varias webs en un servidor gestionado por el proveedor es hosting compartido.", "ref": "Apartado de la teoría: §4.3."}, {"n": 63, "q": "¿Para qué sirve el entorno de staging (preproducción)?", "opts": ["Es el lugar donde se guardan las copias de seguridad de la base de datos.", "Es tu máquina, donde programas y pruebas en local.", "Es el entorno real, con los usuarios de verdad.", "Es una réplica de producción para probar antes de publicar."], "correct": 3, "exp": "Staging (preproducción) es una réplica de producción donde se prueba antes de publicar.\n\nTu máquina es el entorno de desarrollo y el entorno con usuarios reales es producción. Las copias de seguridad no son un entorno de despliegue.", "ref": "Apartado de la teoría: §4.4."}, {"n": 64, "q": "¿Cuál es la idea clave del bloque sobre los entornos de despliegue?", "opts": ["Cada entorno debe reconstruir su propio artefacto a partir del código fuente.", "El mismo artefacto versionado se promociona de un entorno a otro sin reconstruirlo.", "Producción debe usar siempre la versión `latest` para tener las últimas correcciones.", "Staging trabaja con el código fuente y solo producción usa artefactos."], "correct": 1, "exp": "La idea clave es que el mismo artefacto versionado (la misma imagen Docker, el mismo `.jar`, el mismo `.tar.gz`) se promociona de un entorno a otro sin reconstruirlo. Así lo probado en staging es exactamente lo que llega a producción.\n\nSi cada entorno reconstruye su artefacto, pueden colarse dependencias o versiones distintas sin darse cuenta. Usar `latest` impide saber qué hay desplegado. Y staging debe probar el artefacto, no el código fuente.", "ref": "Apartado de la teoría: §4.4."}, {"n": 65, "q": "¿Qué es un artefacto?", "opts": ["El código fuente de la aplicación, tal cual está en el repositorio Git.", "El `Dockerfile` con las instrucciones para construir la imagen de la aplicación.", "El resultado empaquetado de construir la aplicación.", "La base de datos de producción con todos sus datos."], "correct": 2, "exp": "Un artefacto es el resultado empaquetado de construir la aplicación: lo que de verdad se copia, instala o ejecuta en el servidor, no el código fuente suelto.\n\nEl código fuente y el `Dockerfile` son lo que se usa para construir el artefacto, no el artefacto en sí. La base de datos de producción no es un artefacto.", "ref": "Apartado de la teoría: §4.5."}, {"n": 66, "q": "Según el bloque, ¿cuál es el artefacto típico de una aplicación PHP?", "opts": ["Un `.jar` con el código PHP compilado a *bytecode*.", "Un `.tar.gz` con el código y la carpeta `vendor/`.", "Una *wheel* `.whl` generada por Composer.", "Un `.exe` generado por el intérprete de PHP."], "correct": 1, "exp": "PHP no se compila, pero el artefacto también existe: un `.tar.gz` (o `.zip`) con el código de la aplicación más sus dependencias ya resueltas (la carpeta `vendor/` de Composer), listo para descomprimir en el servidor.\n\nEl `.jar` es el artefacto de Java y la *wheel* `.whl`, el de Python (Composer no las genera). PHP no se compila a un `.jar` ni genera ejecutables `.exe`.", "ref": "Apartado de la teoría: §4.6."}, {"n": 67, "q": "¿Por qué el bloque desaconseja hacer `git pull` en producción y reinstalar dependencias en cada servidor?", "opts": ["Porque las licencias de las dependencias prohíben instalarlas en servidores.", "Porque Git no puede instalarse en los servidores de producción por motivos de seguridad.", "Porque descargar el código con Git es siempre más lento que compilarlo.", "Porque una reinstalación podría traer otras versiones de las dependencias."], "correct": 3, "exp": "Reinstalar dependencias en cada servidor puede traer una versión distinta de alguna de ellas. La idea es generar una vez un paquete inmutable, probarlo y desplegar exactamente ese paquete.\n\nGit sí puede instalarse en un servidor, no es una cuestión de velocidad de descarga frente a compilación, y las licencias no tienen que ver con esta recomendación.", "ref": "Apartado de la teoría: §4.6."}, {"n": 68, "q": "¿Qué permiten los repositorios de artefactos como JFrog Artifactory o Sonatype Nexus?", "opts": ["Ejecutar los artefactos sin necesidad de servidor.", "Convertir el código fuente en artefacto automáticamente en cada servidor de destino.", "Subir el artefacto una vez y descargar siempre esa versión exacta.", "Sustituir al servidor web cuando se despliega contenido estático."], "correct": 2, "exp": "Los repositorios de artefactos permiten subir una vez el artefacto, con su número de versión, y descargar siempre esa misma versión exacta desde cualquier servidor. Son la «fuente de verdad» de lo que hay desplegado.\n\nNo ejecutan los artefactos, no los construyen a partir del código (eso es el build) y no sustituyen al servidor web.", "ref": "Apartado de la teoría: §4.7."}, {"n": 69, "q": "Según SemVer, la versión `2.4.1` corrige un error sin añadir nada nuevo. ¿Qué versión toca?", "opts": ["`2.4.2`", "`2.5.0`", "`3.0.0`", "`2.4.1-latest`"], "correct": 0, "exp": "En SemVer (`MAJOR.MINOR.PATCH`), corregir errores incrementa el `PATCH`: de `2.4.1` se pasa a `2.4.2`.\n\n`3.0.0` sería para un cambio incompatible y `2.5.0` para funcionalidad nueva compatible. `2.4.1-latest` no es una versión nueva: mezcla la versión con la idea de `latest`, que el bloque desaconseja.", "ref": "Apartado de la teoría: §4.8."}, {"n": 70, "q": "Según SemVer, la versión `2.4.1` introduce un cambio incompatible con la anterior. ¿Qué versión toca?", "opts": ["`2.4.2`", "`2.5.0`", "`3.0.0`", "`2.4.1.1`"], "correct": 2, "exp": "Un cambio incompatible con la versión anterior incrementa el `MAJOR` y pone a cero los demás: de `2.4.1` se pasa a `3.0.0`.\n\n`2.4.2` es para correcciones y `2.5.0` para funcionalidad nueva compatible. `2.4.1.1` no sigue el formato de tres números de SemVer.", "ref": "Apartado de la teoría: §4.8."}, {"n": 71, "q": "¿Qué problema tiene desplegar siempre la etiqueta `latest`?", "opts": ["Que las imágenes con la etiqueta `latest` son más lentas de descargar del registry.", "Que Docker no permite arrancar contenedores a partir de `latest`.", "Que no se sabe qué versión exacta hay en producción, lo que dificulta el rollback.", "Que borra automáticamente las imágenes anteriores que había en el servidor."], "correct": 2, "exp": "Desplegar siempre `latest` sin fijar la versión impide saber qué hay exactamente en producción. Sin una versión identificada, tampoco se puede repetir el mismo despliegue ni volver atrás con seguridad.\n\n`latest` es una etiqueta como cualquier otra: no hace la descarga más lenta, Docker sí permite usarla y no borra imágenes. El problema es de trazabilidad, no técnico.", "ref": "Apartado de la teoría: §4.8."}, {"n": 72, "q": "¿Dónde deben guardarse las contraseñas, tokens y claves de API de la aplicación?", "opts": ["Dentro de la imagen Docker, para que el artefacto esté completo.", "Fuera del artefacto: variables de entorno o un gestor de secretos.", "En el código fuente, en un fichero de constantes que no se publica.", "En el nombre o la etiqueta del artefacto, para identificarlos fácilmente al desplegar."], "correct": 1, "exp": "Contraseñas, tokens y claves deben estar fuera del artefacto: en variables de entorno, en ficheros de configuración montados aparte o en un gestor de secretos (HashiCorp Vault, AWS Secrets Manager…). Así el mismo artefacto sirve para todos los entornos.\n\nNunca deben quedar escritos en el código ni «horneados» dentro de la imagen o el artefacto. Y la etiqueta del artefacto sirve para identificar la versión, no para guardar secretos.", "ref": "Apartado de la teoría: §4.9."}, {"n": 73, "q": "Se ejecutan `docker run -e DB_HOST=db-staging … miapp:1.4.0` en staging y `docker run -e DB_HOST=db-prod … miapp:1.4.0` en producción. ¿Qué es correcto?", "opts": ["Son dos artefactos distintos, uno para cada entorno.", "Staging reconstruye la imagen antes de arrancarla.", "Es el mismo artefacto, con distinta configuración en cada entorno.", "Docker copia el valor de `DB_HOST` dentro de la imagen al arrancar el contenedor."], "correct": 2, "exp": "Es el ejemplo del bloque: la misma imagen `miapp:1.4.0` en los dos entornos, y solo cambia la configuración, pasada con variables de entorno (`-e`).\n\nLa etiqueta es la misma, así que es el mismo artefacto. `docker run` no reconstruye la imagen ni modifica su contenido: la variable existe solo en el contenedor que se arranca.", "ref": "Apartado de la teoría: §4.9."}, {"n": 74, "q": "¿Qué afirmación sobre una imagen Docker es correcta, según el bloque?", "opts": ["Es en sí misma un artefacto versionado, identificado por su tag.", "No es un artefacto, porque no contiene código compilado.", "Solo cuenta como artefacto si la aplicación está escrita en Java.", "Solo cuenta como artefacto si se sube a GitHub."], "correct": 0, "exp": "La imagen Docker es, en sí misma, un artefacto versionado, identificado por su tag. Empaqueta la aplicación junto con todo su entorno de ejecución.\n\nUn artefacto no tiene por qué contener código compilado (en PHP o Python tampoco lo hay). No depende del lenguaje ni de dónde se guarde: el registry de Docker es su repositorio de artefactos, no GitHub.", "ref": "Apartado de la teoría: §4.6 y §4.10."}, {"n": 75, "q": "¿Cuál es el orden del flujo de despliegue simple (sin CI/CD) que describe el bloque?", "opts": ["`docker push` → `docker build` → `docker run` → `docker pull`.", "`docker pull` → `docker build` → `docker push` → `docker run`.", "`docker run` → `docker build` → `docker push` → `docker pull`.", "`docker build` → `docker push` → `docker pull` → `docker run`."], "correct": 3, "exp": "El flujo es: construir el artefacto etiquetado con una versión (`docker build -t usuario/miapp:1.4.0 .`), subirlo al registry (`docker push`), descargar esa versión exacta en el servidor (`docker pull`) y ejecutarla (`docker run`).\n\nNo se puede subir (`push`) ni ejecutar lo que aún no se ha construido, ni descargar (`pull`) algo que todavía no está en el registry.", "ref": "Apartado de la teoría: §4.11."}, {"n": 76, "q": "¿En qué consiste un despliegue *rolling* (progresivo)?", "opts": ["En levantar en paralelo un entorno completo con la versión nueva y pasarle todo el tráfico.", "En enviar primero solo un pequeño porcentaje del tráfico a la versión nueva.", "En apagar todos los backends, actualizarlos y volver a encenderlos.", "En sustituir los backends de uno en uno, mientras los demás atienden."], "correct": 3, "exp": "En un despliegue *rolling* se sustituyen los backends antiguos por los nuevos de uno en uno, mientras los demás siguen atendiendo tráfico. Así no se corta el servicio.\n\nLevantar un entorno completo en paralelo y cambiar todo el tráfico es *blue-green*. Enviar primero un pequeño porcentaje es *canary*. Apagarlo todo y volver a encenderlo es justo lo que se quiere evitar con usuarios reales.", "ref": "Apartado de la teoría: §5.3."}, {"n": 77, "q": "¿Qué caracteriza a un despliegue *blue-green*?", "opts": ["Los backends se actualizan de uno en uno, sin levantar ningún entorno paralelo.", "Un entorno nuevo completo en paralelo recibe todo el tráfico de golpe.", "La versión nueva recibe primero solo un pequeño porcentaje del tráfico.", "Las funcionalidades nuevas se activan con un interruptor sin volver a desplegar."], "correct": 1, "exp": "En *blue-green* se levanta en paralelo un entorno completo con la versión nueva (*green*). Cuando está verificado, el servidor web le pasa todo el tráfico y el antiguo (*blue*) queda de respaldo para un rollback inmediato.\n\nActualizar de uno en uno es *rolling*, dar un pequeño porcentaje del tráfico es *canary* y activar funcionalidades con un interruptor es una *feature flag*.", "ref": "Apartado de la teoría: §5.3."}, {"n": 78, "q": "¿Qué es un despliegue *canary*?", "opts": ["Sustituir los backends antiguos por los nuevos de uno en uno.", "Desplegar automáticamente cada cambio que supera el pipeline.", "Mantener dos entornos completos y alternar entre ellos en cada versión.", "Dar a la versión nueva un pequeño porcentaje del tráfico al principio."], "correct": 3, "exp": "En un despliegue *canary* la versión nueva recibe primero solo un pequeño porcentaje del tráfico; si va bien, se amplía poco a poco.\n\nSustituir de uno en uno es *rolling* y alternar entre dos entornos completos es *blue-green*. Desplegar automáticamente cada cambio que supera el pipeline es el despliegue continuo, que se verá en la UD5.", "ref": "Apartado de la teoría: §5.3."}, {"n": 79, "q": "¿Qué es una *feature flag*?", "opts": ["La etiqueta de versión de una imagen Docker.", "Una cabecera HTTP que indica la versión de la API.", "Una estrategia de balanceo que envía a cada usuario a la versión que prefiere usar.", "Una condición en el código que activa o desactiva una funcionalidad."], "correct": 3, "exp": "Una *feature flag* es una condición en el código que activa o desactiva una funcionalidad sin volver a desplegar. Permite desplegar código ya apagado y lanzarlo después; si falla, basta con apagar el flag.\n\nNo es una etiqueta de imagen, ni una cabecera HTTP, ni una estrategia de balanceo. Separa «desplegar» de «lanzar».", "ref": "Apartado de la teoría: §5.4."}, {"n": 80, "q": "Una versión nueva añade una migración que renombra una columna y falla en producción. ¿Qué es cierto al hacer rollback?", "opts": ["Basta con desplegar el artefacto anterior: la base de datos vuelve sola a su estado previo.", "Volver al artefacto anterior no deshace el cambio de esquema: las migraciones deben ser compatibles hacia atrás.", "Docker deshace los cambios del esquema al eliminar el contenedor de la versión nueva.", "La base de datos se restaura automáticamente desde la copia de seguridad del día anterior."], "correct": 1, "exp": "Si la versión nueva cambió el esquema de la base de datos, volver a desplegar el artefacto anterior no deshace ese cambio: el código antiguo se encontraría con la columna renombrada. Por eso las migraciones se diseñan, siempre que se puede, para ser compatibles hacia atrás (por ejemplo, añadir una columna opcional en lugar de renombrarla).\n\nLa base de datos no vuelve sola a su estado previo, ni se restaura automáticamente desde una copia, ni Docker deshace cambios de esquema al eliminar un contenedor: los datos viven fuera del artefacto.", "ref": "Apartado de la teoría: §5.5."}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+const explanationBox = document.getElementById("explanation");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function renderExplanation(item) {
+  if (!item.exp) return "";
+  const paras = item.exp.split("\n\n").map(p =>
+    `<p>${renderInline(p)}</p>`);
+  if (item.ref) paras.push(`<p class="ref">${renderInline(item.ref)}</p>`);
+  return paras.join("");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct, exp: q.exp, ref: q.ref };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  explanationBox.innerHTML = "";
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  explanationBox.innerHTML = renderExplanation(item);
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+      <div class="explanation">${renderExplanation(item)}</div>
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
