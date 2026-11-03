@@ -8,13 +8,15 @@ permalink: /digitalizacion/pildoras/
 
 ## Normas
 
-1. Después de escuchar cada píldora, y cuando el alumno lo considere, puede solicitar hacer un control tipo test de 10 preguntas sobre esa píldora durante la hora de Digitalización (apto con más de 5 aciertos).
+1. Después de escuchar cada píldora, y cuando el alumno lo considere, puede solicitar hacer un control tipo test de 10 preguntas sobre esa píldora durante la hora de Digitalización (apto con 5 o más aciertos).
 2. Durante la escucha de la píldora, el alumno puede ir tomando apuntes en un folio en blanco. Durante la realización del control puede hacer uso de este folio. Se recomienda que los estudiantes se organicen para poder cubrir el máximo de píldoras y compartir estos folios de apuntes entre ellos.
 3. No hay orden: el alumno elige con qué píldora empezar y cuál quiere que se le evalúe, según sus preferencias. Fecha límite para hacer el control: **5 de febrero**.
 4. Las notas de los controles aparecerán en **"Qualificacions"** de Aules.
 5. Se debe superar al menos el **50% de las píldoras (36 aptos)** para poder evaluar esta sección. Se recomienda al estudiante progresar a un ritmo de 3 píldoras por semana.
 6. Estas píldoras suponen el **60% de la nota final**.
 7. El otro 40% de la nota será la media de controles y prácticas.
+
+Puedes consultar tu progreso en la [tabla de resultados]({{ '/digitalizacion/pildoras/resultados/' | relative_url }}) (cada alumno aparece con sus iniciales).
 
 ## Listado de píldoras
 

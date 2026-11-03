@@ -5,6 +5,10 @@
     python 04_examenes.py --all --versiones 10 --preguntas 10 --seed 1
 
 Salida (data/examenes/NN/): pildora_NN_examen.md (+ .pdf si hay marp), pildora_NN_soluciones.md y versiones.json
+El examen es un cuadernillo reutilizable: se contesta en la hoja de respuestas (05_hoja_respuestas.py).
+
+    python 04_examenes.py --all --rehacer    # rehace md/pdf desde versiones.json, sin re-sortear preguntas
+    python 04_examenes.py --claves           # data/examenes/claves.pdf: todas las claves en un PDF
 """
 
 import argparse
@@ -97,17 +101,72 @@ def pagina(n: int, titulo: str, v: int, preguntas: list[dict], primera: bool) ->
   <div class="version">Versión {v:02d}</div>
 </div>
 <div class="exam-subtitle">{inline(titulo)}</div>
-<div class="exam-fields">
-  <span>Nombre y apellidos:</span>
-  <span>Fecha:</span>
-</div>
-<div class="exam-instructions">{len(preguntas)} preguntas, una sola opción correcta. Apto con más de 5 aciertos. Rodea la opción elegida.</div>
+<div class="exam-instructions"><strong>Cuadernillo reutilizable: no escribas en esta hoja.</strong> Contesta en tu hoja de respuestas indicando <strong>píldora {n}</strong> y <strong>versión {v:02d}</strong>. {len(preguntas)} preguntas, una sola opción correcta. Apto con 5 o más aciertos.</div>
 
 <div class="exam-questions">
 {qs}
 </div>
 
 """
+
+
+def escribir_md_y_pdf(n: int, titulo: str, versiones: list[list[dict]], carpeta, pdf: bool) -> None:
+    cabecera = f"---\nmarp: true\ntheme: a4-print\npaginate: false\nbackgroundColor: white\n---\n\n{CSS}\n\n"
+    md = cabecera + "".join(pagina(n, titulo, v, preguntas, primera=(v == 1)) for v, preguntas in enumerate(versiones, 1))
+    examen = carpeta / f"pildora_{n:02d}_examen.md"
+    examen.write_text(md)
+    if pdf:
+        generar_pdf(examen, examen.with_suffix(".pdf"))
+
+
+def generar_pdf(origen, destino) -> None:
+    if not shutil.which("marp"):
+        print("  (marp no instalado: se omite el PDF)")
+        return
+    r = subprocess.run(
+        ["marp", "--pdf", str(origen), "-o", str(destino), f"--theme-set={THEMES}"], capture_output=True, text=True
+    )
+    print("  PDF OK" if r.returncode == 0 else f"  Error en marp: {r.stderr.strip()[:300]}")
+
+
+def claves_pdf(pildoras: list[dict]) -> None:
+    """Todas las claves de corrección en un solo PDF, varias píldoras por página."""
+    bloques = []
+    for p in pildoras:
+        ruta = EXAMENES / f"{p['n']:02d}" / "versiones.json"
+        if not ruta.exists():
+            continue
+        versiones = json.loads(ruta.read_text())
+        k = len(versiones[0]["preguntas"])
+        cab = "".join(f"<th>{i}</th>" for i in range(1, k + 1))
+        filas = "".join(
+            f"<tr><th>V{e['version']:02d}</th>" + "".join(f"<td>{LETRAS[q['correcta']]}</td>" for q in e["preguntas"]) + "</tr>"
+            for e in versiones
+        )
+        bloques.append(
+            f'<div class="clave"><h2>Píldora {p["n"]}</h2><table><tr><th></th>{cab}</tr>{filas}</table></div>'
+        )
+    if not bloques:
+        raise SystemExit("No hay exámenes generados: ejecuta antes 04_examenes.py.")
+    css = """<style>
+section { place-content: flex-start !important; }
+h1 { font-size: 18px; margin: 0 0 8px; }
+.claves { columns: 2; column-gap: 8mm; }
+.clave { break-inside: avoid; margin-bottom: 10px; }
+.clave h2 { font-size: 12px; margin: 0 0 2px; }
+.clave table { border-collapse: collapse; font-size: 10px; width: 100%; }
+.clave th, .clave td { border: 1px solid #999; padding: 1px 3px; text-align: center; }
+.clave th { background: #eef0f4; }
+</style>"""
+    cabecera = f"---\nmarp: true\ntheme: a4-print\npaginate: false\nbackgroundColor: white\n---\n\n{css}\n\n"
+    por_pagina = 8
+    paginas = [bloques[i : i + por_pagina] for i in range(0, len(bloques), por_pagina)]
+    md = cabecera + "\n---\n\n".join(
+        f'# Claves de corrección — píldoras\n\n<div class="claves">\n' + "\n".join(b) + "\n</div>\n" for b in paginas
+    )
+    destino = EXAMENES / "claves.md"
+    destino.write_text(md)
+    generar_pdf(destino, EXAMENES / "claves.pdf")
 
 
 def main():
@@ -117,11 +176,26 @@ def main():
     ap.add_argument("--preguntas", type=int, default=10, help="Preguntas por versión")
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--no-pdf", action="store_true")
+    ap.add_argument("--rehacer", action="store_true", help="Rehace md/pdf desde versiones.json sin re-sortear")
+    ap.add_argument("--claves", action="store_true", help="Genera data/examenes/claves.pdf con todas las claves")
     args = ap.parse_args()
+
+    if args.claves:
+        claves_pdf(seleccionar(args))
+        return
 
     rng = random.Random(args.seed)
     for p in seleccionar(args):
         n = p["n"]
+        if args.rehacer:
+            ruta = EXAMENES / f"{n:02d}" / "versiones.json"
+            if not ruta.exists():
+                print(f"Píldora {n}: no hay versiones.json que rehacer.")
+                continue
+            versiones = [e["preguntas"] for e in json.loads(ruta.read_text())]
+            print(f"Píldora {n}: rehaciendo {len(versiones)} versiones")
+            escribir_md_y_pdf(n, p["titulo"], versiones, ruta.parent, not args.no_pdf)
+            continue
         banco_json = BANCOS / f"{n:02d}.json"
         carpeta = EXAMENES / f"{n:02d}"
         if (carpeta / "versiones.json").exists() and not args.force:
@@ -139,12 +213,8 @@ def main():
         versiones = [montar_version(e, rng) for e in elegidas]
         carpeta.mkdir(parents=True, exist_ok=True)
 
-        cabecera = f"---\nmarp: true\ntheme: a4-print\npaginate: false\nbackgroundColor: white\n---\n\n{CSS}\n\n"
-        md = cabecera + "".join(
-            pagina(n, p["titulo"], v, preguntas, primera=(v == 1)) for v, preguntas in enumerate(versiones, 1)
-        )
         examen = carpeta / f"pildora_{n:02d}_examen.md"
-        examen.write_text(md)
+        escribir_md_y_pdf(n, p["titulo"], versiones, carpeta, False)
 
         cols = " | ".join(str(i) for i in range(1, args.preguntas + 1))
         filas = "\n".join(
@@ -169,15 +239,7 @@ def main():
             f"cada pregunta sale entre {min(uso.values())} y {max(uso.values())} veces)"
         )
         if not args.no_pdf:
-            if shutil.which("marp"):
-                r = subprocess.run(
-                    ["marp", "--pdf", str(examen), "-o", str(examen.with_suffix(".pdf")), f"--theme-set={THEMES}"],
-                    capture_output=True,
-                    text=True,
-                )
-                print("  PDF OK" if r.returncode == 0 else f"  Error en marp: {r.stderr.strip()[:300]}")
-            else:
-                print("  (marp no instalado: se omite el PDF)")
+            generar_pdf(examen, examen.with_suffix(".pdf"))
 
 
 if __name__ == "__main__":

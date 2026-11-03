@@ -4,6 +4,7 @@
 # Uso:
 #   ./get_results git2
 #   ./get_results git3
+#   ./get_results pildoras      (hojas de respuestas de las pildoras de Digitalizacion)
 #
 # Lee todas las fotos de autocorrector/sources/<bloque>/ (sin subcarpetas,
 # todas sueltas: cara 1 y cara 2 de cada examen se emparejan solas leyendo
@@ -25,7 +26,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 BLOCK="${1:-}"
 
 if [[ -z "$BLOCK" ]]; then
-  echo "Uso: $0 <git2|git3>" >&2
+  echo "Uso: $0 <git2|git3|pildoras>" >&2
   exit 1
 fi
 
@@ -38,8 +39,12 @@ case "$BLOCK" in
     SOL_FILE="$REPO_ROOT/UD1/1.1 Git/1.1.3 Git parte 3/git_3_examen_sol.md"
     EXAM_LABEL="git parte 3 (repositorios remotos)"
     ;;
+  pildoras)
+    SOL_FILE="$REPO_ROOT/digitalizacion/generador/data/examenes"
+    EXAM_LABEL="controles de las pildoras de Digitalizacion"
+    ;;
   *)
-    echo "Bloque no reconocido: '$BLOCK'. Usa 'git2' o 'git3'." >&2
+    echo "Bloque no reconocido: '$BLOCK'. Usa 'git2', 'git3' o 'pildoras'." >&2
     exit 1
     ;;
 esac
@@ -51,7 +56,7 @@ if [[ ! -d "$SOURCES_DIR" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$SOL_FILE" ]]; then
+if [[ "$BLOCK" == "pildoras" && ! -d "$SOL_FILE" ]] || [[ "$BLOCK" != "pildoras" && ! -f "$SOL_FILE" ]]; then
   echo "No se encuentra el fichero de soluciones: $SOL_FILE" >&2
   exit 1
 fi
@@ -64,6 +69,45 @@ if [[ "$PHOTO_COUNT" -eq 0 ]]; then
   exit 1
 fi
 
+if [[ "$BLOCK" == "pildoras" ]]; then
+PROMPT=$(cat <<EOF
+Vas a corregir hojas de respuestas en papel de los "$EXAM_LABEL" a partir de fotos.
+
+1. Usa Glob para listar todos los ficheros de imagen (jpg, jpeg, png, heic...) dentro de:
+   $SOURCES_DIR
+   Ignora cualquier fichero .gitkeep. Lee cada imagen con la herramienta Read.
+
+2. Cada foto es UNA CARA de una hoja de respuestas ("Cara 1/2" o "Cara 2/2", arriba a la
+   derecha). Una hoja tiene el NOMBRE del alumno arriba y 4 bloques por cara (Bloque 1-4 en
+   la cara 1 y 5-8 en la cara 2). Cada bloque es un control de una pildora distinta e
+   incluye: casillas "Pildora" (dos digitos), casillas "Version" (dos digitos), fecha y una
+   plantilla de 10 preguntas con casillas A, B, C, D.
+
+3. Para cada foto lee el nombre del alumno y, para cada bloque que tenga respuestas
+   marcadas, el numero de pildora, el numero de version y la opcion (A, B, C o D) marcada
+   en cada una de las 10 preguntas (una X o casilla rellena; si hay una casilla totalmente
+   rellena y otra con X, vale la X; si hay varias marcas validas o ninguna, cuenta como
+   fallo). IGNORA los bloques completamente vacios. Si la caja del profesor de un bloque ya
+   tiene los aciertos escritos, el bloque ya esta corregido: corrigelo igualmente pero
+   anade "(ya corregido: N)" con el numero escrito.
+
+4. Las claves estan en $SOL_FILE/NN/pildora_NN_soluciones.md (NN = numero de pildora con dos
+   digitos). Es una tabla en Markdown con una fila por version ("| 03 | B | A | ... |") y una
+   columna por pregunta (1 a 10). Lee con Read el fichero de cada pildora detectada y usa la
+   fila de la version detectada. Si el fichero no existe, indicalo en la linea del bloque.
+
+5. Compara las 10 respuestas del alumno con la clave. Cuenta aciertos. Es APTO con 5 o mas
+   aciertos; NO APTO con 4 o menos.
+
+6. Devuelve EXCLUSIVAMENTE el resultado, una linea por bloque corregido, con este formato
+   exacto (sin explicaciones, sin markdown, sin backticks):
+     Nombre · Pildora N · Version V: A/10 aciertos → APTO|NO APTO · Errores: lista de numeros de pregunta separados por comas
+   Si no hay fallos, "Errores: ninguno". Si no estas seguro de una lectura (foto borrosa,
+   marca ambigua), anade al final de la linea "· REVISAR A MANO". Ordena por nombre y despues
+   por numero de pildora.
+EOF
+)
+else
 PROMPT=$(cat <<EOF
 Vas a corregir examenes en papel de "$EXAM_LABEL" a partir de fotos.
 
@@ -108,5 +152,6 @@ Vas a corregir examenes en papel de "$EXAM_LABEL" a partir de fotos.
    version.
 EOF
 )
+fi
 
 claude -p "$PROMPT" --allowedTools "Read Glob" --permission-mode acceptEdits

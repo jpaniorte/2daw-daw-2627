@@ -67,6 +67,14 @@ Comprobación: `.venv/bin/python common.py --pildoras` (debe aparecer la nueva).
 
 ### 2.2 Generar todo
 
+Atajo para el flujo entero (PDF en `pdf/N.pdf` → audio → Drive → web → transcripción → dosier → banco → exámenes):
+
+```bash
+./pildoras.sh 28          # o sin número: todas las pendientes
+```
+
+Ver `pildoras_audio/CLAUDE.md`. Paso a paso:
+
 ```bash
 cd digitalizacion/generador
 .venv/bin/python 01_transcribir.py --pildora 11 --motor openrouter
@@ -152,6 +160,8 @@ No usa IA. Sin `--no-pdf` genera también el PDF con Marp.
 | `--preguntas N` | Preguntas por versión (def. 10) |
 | `--seed N` | Semilla (reproducible) |
 | `--no-pdf` | Solo el `.md` |
+| `--rehacer` | Vuelve a montar el `.md`/`.pdf` desde `versiones.json`, **sin re-sortear** preguntas (las versiones y las claves no cambian) |
+| `--claves` | Genera `data/examenes/claves.pdf` con las claves de todas las píldoras (varias por página) |
 
 Cada versión elige preguntas **minimizando el solapamiento** con las anteriores (cada pregunta sale 2-3 veces en 10
 versiones), baraja el orden y las opciones, y evita repartos con más de 3 respuestas de la misma letra.
@@ -161,11 +171,56 @@ Salida en `data/examenes/NN/`:
 
 | Fichero | Contenido |
 |---|---|
-| `pildora_NN_examen.pdf` / `.md` | Las 10 versiones, **una página A4 por versión**, con «Nombre» y «Fecha» (imprime la que toque) |
+| `pildora_NN_examen.pdf` / `.md` | Las 10 versiones, **una página A4 por versión**. Es un **cuadernillo reutilizable**: no lleva nombre ni fecha y se contesta en la hoja de respuestas |
 | `pildora_NN_soluciones.md` | Tabla versión × pregunta con la letra correcta |
 | `versiones.json` | Preguntas, orden y clave de cada versión (para trazabilidad o un corrector automático) |
 
-Apto con **más de 5 aciertos** sobre 10 (sin penalización por error), como dicen las normas de `pildoras.md`.
+Apto con **5 o más aciertos** sobre 10 (sin penalización por error), como dicen las normas de `pildoras.md`.
+
+### 05_hoja_respuestas.py — hoja de respuestas del alumno
+
+No usa IA ni datos generados: `python 05_hoja_respuestas.py` crea `hoja_respuestas.pdf` (se versiona, no contiene nada
+secreto). Es **un folio A4 a doble cara**: un «Nombre y apellidos» por cara y **4 bloques por cara, 8 píldoras por folio**.
+Cada bloque tiene **Píldora** (2 casillas), **Versión** (2 casillas), fecha, las 10 preguntas con casillas A-D y una
+caja para el profesor (aciertos y APTO / NO APTO).
+
+Uso en clase: se reparten los **cuadernillos** (los PDF de `04`, que se pueden reutilizar o proyectar) y cada alumno
+contesta en su hoja, apuntando en un bloque nuevo la píldora y la versión que le han dado. Sin papel gastado por control.
+
+### Corregir las hojas
+
+- **Por lotes con escáner (recomendado):** `./corregir.sh`. Escanea a doble cara con el Brother ADS-2100e (reutiliza
+  `~/workspace/autocorrector_test`, variable `AUTOCORRECTOR_DIR`), junta las soluciones de **todas las versiones de todas
+  las píldoras** en `data/soluciones_pildoras.md`, lee con Claude cada control (admite **cuadernillos** con nombre y
+  respuestas rodeadas y **hojas de respuestas**; ignora las caras en blanco y los bloques vacíos), decide APTO / NO APTO
+  (5 o más de 10; si se repite una píldora cuenta el último intento) y regenera la página
+  `digitalizacion/pildoras_resultados.md` (`/digitalizacion/pildoras/resultados/`): tabla con **Alumno** (iniciales,
+  p. ej. J.A.E.), **Total** y **P1…P74** (`APTO`, `NO APTO` o `-`).
+
+  | Opción | Qué hace |
+  |---|---|
+  | `--lote NOMBRE` | Nombre del lote (def. `pildoras_AAAAMMDD_HHMM`); si ya existe, se retoma |
+  | `--sin-escanear [CARPETA]` | Sin escáner: importa PNG/JPG/PDF de CARPETA (o usa las páginas ya guardadas del lote) |
+  | `--modelo sonnet` | Modelo de Claude para leer |
+  | `--solo-publicar` | Solo regenera la página con los resultados guardados |
+  | `--commit` | Hace commit de la página generada (el push lo haces tú) |
+
+  Los datos (escaneos, lecturas, `data/resultados.json`) están en `data/`, no se suben; la página publicada solo lleva
+  iniciales. Si una lectura sale con `¡Revisar!` (nombre dudoso, versión inexistente…), edita
+  `data/corregir/LOTE/lecturas.json` y relanza con `--lote LOTE --sin-escanear`, conservando las lecturas.
+  Pasos sueltos: `python corregir.py claves | leer LOTE | corregir LOTE | publicar | iniciales`.
+- **A mano:** `data/examenes/claves.pdf` (`python 04_examenes.py --claves --all`) trae todas las claves; o la tabla de
+  cada `pildora_NN_soluciones.md`.
+- **Con fotos** (autocorrector, usa Claude Code con visión): deja las fotos de las caras en
+  `autocorrector/sources/pildoras/` (no se suben a git) y ejecuta desde `autocorrector/`:
+
+  ```bash
+  ./get_results pildoras
+  ```
+
+  Devuelve una línea por bloque relleno: `Nombre · Píldora N · Versión V: A/10 aciertos → APTO|NO APTO · Errores: …`.
+  Ignora los bloques vacíos, cuenta como fallo una pregunta sin marca o con dos, y añade `REVISAR A MANO` si la foto
+  es dudosa. Es lectura por visión, no OCR determinista: revisa las fotos borrosas.
 
 ---
 
@@ -175,7 +230,8 @@ Apto con **más de 5 aciertos** sobre 10 (sin penalización por error), como dic
 digitalizacion/generador/
 ├── LEEME.md              este fichero
 ├── common.py             parser de pildoras.md, cliente OpenRouter, listado de modelos
-├── 01_transcribir.py     02_dosier.py     03_banco.py     04_examenes.py
+├── 01_transcribir.py     02_dosier.py     03_banco.py     04_examenes.py     05_hoja_respuestas.py
+├── hoja_respuestas.pdf   hoja de respuestas (se versiona)
 ├── requirements.txt      .env.example     .env (local, ignorado)     .venv/ (ignorado)
 └── data/                 (ignorado por git y por Jekyll)
     ├── audio/NN/             audio descargado
@@ -183,11 +239,12 @@ digitalizacion/generador/
     ├── dosieres/NN.md
     ├── bancos/NN.json
     └── examenes/NN/          pildora_NN_examen.pdf|md, pildora_NN_soluciones.md, versiones.json
+        claves.pdf              claves de todas las píldoras (--claves)
 ```
 
 ## 5. Qué se sube y qué no
 
-- **Se versiona:** los scripts, `requirements.txt`, `.env.example` y este LEEME.
+- **Se versiona:** los scripts, `hoja_respuestas.pdf` (y su `.md`), `requirements.txt`, `.env.example` y este LEEME.
 - **No se sube** (`.gitignore`): `data/`, `.env`, `.venv/`. Audios, transcripciones, dosieres, bancos y exámenes son
   material propio que no se publica.
 - **Jekyll no publica nada de la carpeta** (`digitalizacion/generador` está en `exclude` de `_config.yml`).
@@ -256,3 +313,53 @@ aplicación («¿qué pasa si…?») y exigir que la correcta no sea la más lar
 | `python: can't open file 'common.py'` | Estás en otra carpeta. Entra en `digitalizacion/generador/` y usa `.venv/bin/python` |
 | El gasto sube mucho / «respuesta vacía» en los reintentos | Modelo de razonamiento con el razonamiento activo. Ver sección 6. Para y revisa el gasto antes de relanzar |
 | `El banco solo tiene N preguntas válidas` | El validador descartó demasiadas. Regenera con `--preguntas 50 --force` o cambia de modelo |
+
+---
+
+## 9. Automatización del audio (`pildoras_audio/`)
+
+Contexto para continuar el trabajo (antes en `pildoras_audio/CLAUDE.md`). Automatiza: PDF del tema N → podcast en Gemini Notebook → m4a → mp3 → Google Drive → fila N de la web; después `pildoras.sh` encadena los pasos 01–04. El usuario es profesor de ciclo formativo (oposición de informática, 74 temas). Idioma de trabajo: español.
+
+### Rutas clave
+- Esta carpeta: código del flujo. `generador/pdf/N.pdf` entrada (N = número de tema INF, 1–74).
+- `/Users/jose/workspace/audio_seat/`: `convert.sh` (m4a→mp3, idempotente, no modificar), `Pildora_N__Titulo.m4a`, `mp3/NN - Titulo.mp3`. Ver su `CLAUDE.md`. Los m4a pesan decenas de MB: no leerlos.
+- `/Users/jose/workspace/DAW/digitalizacion/pildoras.md`: tabla HTML de la web (repo git `jpaniorte/2daw-daw-2627`, rama `main`, GitHub Pages: https://jpaniorte.github.io/2daw-daw-2627/digitalizacion/pildoras/). Fuente de los títulos oficiales por número. El repo tiene otros cambios sin commitear del usuario: al publicar, `git add` solo `digitalizacion/pildoras.md`.
+- Carpeta de Drive de destino: ID `14KQ3cH_6KbgembIoxINqVeQRMoBPd80m` (en `pildoras_audio/config.env`).
+
+### Uso
+`./pildoras.sh [N ...] [--max K] [--dry-run] [--login] [--commit] [--solo-audio] [--sin-audio]` (ver 2.2). La etapa de audio es `pildoras_audio/pildoras.py`.
+Idempotente: salta lo hecho según `state.json` (por tema: `m4a, mp3, drive_id, web`) y el enlace ya presente en `pildoras.md`. Un tema con m4a local reutiliza el audio aunque no haya PDF. Falla por tema sin parar el lote.
+Módulos: `pildoras.py` (orquestador), `notebooklm.py`, `drive_upload.py`, `update_md.py`, `common.py`.
+
+### Credenciales y cuentas (no volcar secretos en chat ni en el repo)
+- Cuenta de trabajo en Google: la cuenta personal de José que tiene el proyecto de Cloud, Drive y Gemini Notebook (el e-mail no se escribe aquí porque este fichero se versiona en un repo público). No asumir otra.
+- OAuth de escritorio: `~/.pildoras/client_secret.json` (fuera del proyecto) y token `~/.pildoras/drive_token.json`. Proyecto de Cloud en modo Pruebas con esa cuenta como tester; scope `drive.file`. Los mp3 se suben y se comparten "cualquiera con el enlace: lector". La Drive API es gratuita.
+- Sesión de Gemini Notebook: Chrome real con perfil propio `~/.pildoras/chrome-real` y depuración remota (puerto 9222). El Chromium de Playwright es rechazado por Google ("navegador no seguro"), por eso se usa Chrome + `connect_over_cdp`. Login ya hecho y verificado.
+
+### Estado (2026-11-03)
+- En la web hay **28 píldoras** con audio: 1–10, 13, 15, 21, 23, 25, 26, 27, 30, 32, 33, 34, 35, 38, 40, 46, 48, 68, 74. Publicado en el commit `0c699eb` (25, 26, 32, 33, 35 y 38 las subió este flujo).
+- Con PDF pero **sin audio**: 24, 28, 29, 31, 39. El audio de la 39 se borró a propósito (era de vídeo digital, no de SQL).
+- Faltan PDFs: 11, 12, 14, 16–20, 22, 36, 37, 41–45, 47, 49–67, 69–73.
+- Duplicados `1_resumen.pdf` y `2_resumen.pdf` (ignorados). Los PDF `27, 30, 40, 48` son resúmenes cortos, el resto son el tema completo (`...TL`).
+- **Tema 24 hecho (3 nov):** audio generado a mano con el script de exploración en el cuaderno `https://notebook.google.com/notebook/ee0dcc55-5a16-430d-84b2-b8258175d757` (23 min; las 28 actuales duran de media 19,8 min, de 11 a 28), descargado, convertido, subido a Drive y enlazado en `pildoras.md` **en local; falta commit + push** (esperar a que el usuario lo pida).
+- Con PDF y sin audio quedan: 28, 29, 31, 39. Siguiente paso: probar `./pildoras.sh 28` para validar el `generate_audio` nuevo **de punta a punta** (aún sin probar; consume una generación diaria y tarda ~8 min).
+
+### Gemini Notebook: lo ya descubierto (https://notebook.google.com/, UI en español)
+- Home: botón "Nuevo cuaderno" → navega a `/notebook/<id>`.
+- Subir fuente: botón `Añadir fuente` → `Subir archivos` abre un file chooser (`page.expect_file_chooser`); la fuente aparece como `N.pdf`.
+- Audio: tarjeta "Resumen de audio" (Studio) → diálogo `mat-dialog-container` "Personalizar resumen de audio" (formato, idioma español por defecto, duración Corto/Predeterminada, `textarea` del prompt) → botón "Generar ahora".
+- La página no llega nunca a `networkidle`: usar `wait_until="domcontentloaded"` y esperar a elementos.
+- Fin de la generación: en el panel Studio aparece un elemento con botón `Reproducir` (tarda ~7-8 min). Descarga: botón `Más` (el último de la página; el primero es el de la fuente) → `menuitem` "Descargar" → m4a (nombre sugerido = título que pone Google, p. ej. `Anatomía_y_modelos_de_ejecución_del_código.m4a`).
+- `notebooklm.py` ya implementa todo el flujo con esos localizadores (`generate_audio(n, pdf, audio_dir)` devuelve `audio_seat/Pildora_N__<titulo de Google>.m4a`) y lanza Chrome en headless por CDP. Está escrito pero **sin probar entero**; solo se validaron a mano los pasos sueltos.
+- Cada ejecución crea un cuaderno nuevo en la cuenta del usuario (quedan en su lista; no los borramos).
+- Scripts de exploración en el scratchpad de la sesión, no en el repo. Para explorar sin ventana: Chrome `--headless=new --remote-debugging-port=9223 --user-data-dir=~/.pildoras/chrome-real`. Cerrar antes cualquier Chrome que use ese perfil.
+
+### Prompt de NotebookLM (constante `PROMPT` en `notebooklm.py`)
+Profesor de CFGS, serie "píldoras", ameno, 10–15 min, ejemplos fáciles, basado en `{N}.pdf`.
+
+### Cosas a recordar
+- **Repo público (GitHub Pages).** Los PDF de `pdf/` son de una academia externa con derechos de terceros: están en el `.gitignore` de DAW (como `pildoras.pdf`) y la carpeta entera está en `exclude` de `_config.yml`. No quitar esas reglas ni hacer `git add -f`. Al publicar, `git add` solo `digitalizacion/pildoras.md` (y esta carpeta, si el usuario quiere versionar el código, sin `pdf/`, `.venv/`, `logs/`).
+- Las pruebas reales crean cuadernos y consumen audios diarios del usuario; no borrar sus cuadernos sin permiso.
+- Publicar la web = commit + push a `main` de DAW; solo cuando el usuario lo pide.
+- Alternativas si Gemini Notebook por navegador resulta frágil: ElevenLabs (~100 $ el lote) o LLM + OpenAI TTS (~5–10 €); el resto del flujo no cambia.
+- Si el nombre del m4a no sigue `Pildora_N_Titulo.m4a`, `convert.sh` lo ignora con un aviso.
