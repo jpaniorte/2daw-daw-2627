@@ -57,3 +57,11 @@ __pycache__/
 digitalizacion/generador/data/
 digitalizacion/generador/.env
 digitalizacion/generador/.venv/
+
+# Automatización de las píldoras (digitalizacion/generador/pildoras_audio): los PDF del
+# temario son de una academia externa (derechos de terceros) y no se suben;
+# tampoco el entorno virtual, los logs ni las cachés.
+digitalizacion/generador/pdf/
+digitalizacion/generador/pildoras_audio/.venv/
+digitalizacion/generador/pildoras_audio/logs/
+digitalizacion/generador/pildoras_audio/__pycache__/
