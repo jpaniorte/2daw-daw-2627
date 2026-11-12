@@ -9,6 +9,7 @@ kramdown:
 exclude:
   - digitalizacion/generador/pildoras_audio
   - UD0
+  - obsidian
   - autocorrector
   - themes
   - build.py
