@@ -64,5 +64,35 @@
     "mp3": "/Users/jose/workspace/audio_seat/mp3/39 - Funcionamiento interno y evolucion de SQ.mp3",
     "drive_id": "1wIzUFTqDdQUDF3FzH_nQ7qdUM1x7weJE",
     "web": true
+  },
+  "11": {
+    "m4a": "/Users/jose/workspace/audio_seat/Pildora_11__Por_qué_un_emoji_ocupa_dos_caracteres.m4a",
+    "mp3": "/Users/jose/workspace/audio_seat/mp3/11 - Por que un emoji ocupa dos caracteres.mp3",
+    "drive_id": "1YOHJZ3JaxI66eUR_rR5erm61AOFhx_nO",
+    "web": true
+  },
+  "12": {
+    "m4a": "/Users/jose/workspace/audio_seat/Pildora_12__Estructuras_de_datos_y_gestión_de_memoria.m4a",
+    "mp3": "/Users/jose/workspace/audio_seat/mp3/12 - Estructuras de datos y gestion de memori.mp3",
+    "drive_id": "1TyZDooAkdmZLpC5y-NzWMIZD921C9wTU",
+    "web": true
+  },
+  "14": {
+    "m4a": "/Users/jose/workspace/audio_seat/Pildora_14__Así_se_guardan_realmente_tus_archivos.m4a",
+    "mp3": "/Users/jose/workspace/audio_seat/mp3/14 - Asi se guardan realmente tus archivos.mp3",
+    "drive_id": "1vfxEnlI5jLi4xT_xjRCl6jTjk9ddIX8x",
+    "web": true
+  },
+  "16": {
+    "m4a": "/Users/jose/workspace/audio_seat/Pildora_16__Así_funcionan_los_procesos_e_hilos.m4a",
+    "mp3": "/Users/jose/workspace/audio_seat/mp3/16 - Asi funcionan los procesos e hilos.mp3",
+    "drive_id": "17Sd8bsU_Oo0lRH5VSnBB8VFBZ2Svv_nD",
+    "web": true
+  },
+  "17": {
+    "m4a": "/Users/jose/workspace/audio_seat/Pildora_17__Así_funciona_la_memoria_virtual.m4a",
+    "mp3": "/Users/jose/workspace/audio_seat/mp3/17 - Asi funciona la memoria virtual.mp3",
+    "drive_id": "1PRB7ym7IGwUBMT0TSJXlkmRuIR0OWf_q",
+    "web": true
   }
 }

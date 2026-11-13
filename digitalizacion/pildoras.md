@@ -56,27 +56,27 @@ Puedes consultar tu progreso en la [tabla de resultados]({{ '/digitalizacion/pil
 <td>10</td><td>Representación interna de los datos</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1-3sA_ki4z25sSQKeUqLU79O9jhkREOEn/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="10" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
-<td>11</td><td>Organización lógica de los datos. Estructuras estáticas</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>11</td><td>Organización lógica de los datos. Estructuras estáticas</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1YOHJZ3JaxI66eUR_rR5erm61AOFhx_nO/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="11" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
-<td>12</td><td>Organización lógica de los datos. Estructuras dinámicas</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>12</td><td>Organización lógica de los datos. Estructuras dinámicas</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1TyZDooAkdmZLpC5y-NzWMIZD921C9wTU/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="12" type="button">Marcar como completada</button></td>
 </tr>
 <tr class="bloque-shade">
 <td rowspan="2" class="bloque">Ficheros</td>
 <td>13</td><td>Ficheros. Tipos. Características. Organizaciones</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1jYYshWW6Ufc1KgCjtAYmdZ0PfP0ndROA/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="13" type="button">Marcar como completada</button></td>
 </tr>
 <tr class="bloque-shade">
-<td>14</td><td>Utilización de ficheros según su organización</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>14</td><td>Utilización de ficheros según su organización</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1vfxEnlI5jLi4xT_xjRCl6jTjk9ddIX8x/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="14" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
 <td rowspan="6" class="bloque">Sistemas operativos</td>
 <td>15</td><td>Sistemas operativos. Componentes. Estructura. Funciones. Tipos</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1GKBan8w43vPsFgtF0-CwecYQY4-Cnn-M/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="15" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
-<td>16</td><td>Sistemas operativos: Gestión de procesos</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>16</td><td>Sistemas operativos: Gestión de procesos</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/17Sd8bsU_Oo0lRH5VSnBB8VFBZ2Svv_nD/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="16" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
-<td>17</td><td>Sistemas operativos: Gestión de memoria</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
+<td>17</td><td>Sistemas operativos: Gestión de memoria</td><td class="pildora-reproductor"><a class="pildora-play-link" href="https://drive.google.com/file/d/1PRB7ym7IGwUBMT0TSJXlkmRuIR0OWf_q/view" target="_blank" rel="noopener">&#9654; Reproducir audio</a></td><td class="pildora-completada"><button class="pildora-complete-btn" data-pildora="17" type="button">Marcar como completada</button></td>
 </tr>
 <tr>
 <td>18</td><td>Sistemas operativos: Gestión de entradas/salidas</td><td class="pildora-reproductor">Próximamente</td><td class="pildora-completada"></td>
