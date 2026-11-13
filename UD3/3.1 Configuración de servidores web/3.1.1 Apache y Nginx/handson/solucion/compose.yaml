@@ -1,0 +1,9 @@
+services:
+  web:
+    build: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./html:/usr/share/nginx/html:ro
+    restart: unless-stopped

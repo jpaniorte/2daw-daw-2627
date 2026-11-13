@@ -128,6 +128,11 @@ nav:
       - id: u3
         title: "UD3 · Administración de servidores Web"
         blocks:
+          - id: u3b0
+            title: "3.0 Puesta en marcha"
+            pages:
+              - { title: "Dosier 1: servidor en Azure", url: "/puesta-en-marcha/azure/" }
+              - { title: "Dosier 2: dominio .me", url: "/puesta-en-marcha/dominio/" }
           - id: u3b1
             title: "3.1 Configuración de servidores web"
             subs:

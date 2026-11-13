@@ -1,18 +1,63 @@
----
-layout: default
-title: "Proyecto Intermodular — VM Ubuntu Server"
-permalink: /proyectos/vm-ubuntu/
----
+# Azure account
 
-# VM Ubuntu Server
-
-Con la cuenta de [Azure for Students]({{ '/proyectos/maquina-remota/' | relative_url }}) activa y el crédito disponible, toca crear la máquina virtual que será vuestro servidor: una **Ubuntu Server** a la que os conectaréis por **SSH**.
-
----
+Para desplegar el proyecto en un servidor real necesitas una máquina accesible desde internet. La vamos a montar en **Microsoft Azure**, aprovechando que como alumnos tenéis acceso gratuito a **Azure for Students**: 100 $ de crédito durante 12 meses, **sin necesidad de tarjeta de crédito**.
 
 ## Antes de empezar
 
-- Haber completado la [Fase 1: Azure account]({{ '/proyectos/maquina-remota/' | relative_url }}) (crédito de 100$ activo).
+- Debéis usar vuestra cuenta de alumno **`vuestro.usuario@alu.edu.gva.es`**, con acceso a su bandeja de entrada (Microsoft envía un código de verificación ahí).
+- **No hace falta tarjeta de crédito en ningún paso.** Si en algún momento el asistente os la pide, parad y avisad al profesor — no es el proceso normal de Azure for Students y puede ser un indicio de que os habéis metido por la oferta equivocada (la de "Azure gratis" para el público general sí la pide; la de estudiantes no).
+- Si ya tenéis una cuenta personal de Microsoft (Outlook, Xbox, etc.) en el navegador, abrid una **ventana de incógnito/privada** para hacer todo el proceso, así evitáis que Azure intente usar esa cuenta personal en vez de la del instituto.
+
+## Fase 1
+
+### 1. Abrir la oferta de Azure for Students
+
+Entrad en:
+
+```
+https://azure.microsoft.com/es-es/free/students/
+```
+
+Pulsad el botón **"Empezar gratis"** (o "Activate now" / "Comenzar ahora", el texto exacto puede variar).
+
+### 2. Iniciar sesión con vuestra cuenta del instituto
+
+Cuando os pida iniciar sesión, usad vuestro correo completo:
+
+```
+vuestro.usuario@alu.edu.gva.es
+```
+
+con la misma contraseña que usáis para Aules / el correo del centro.
+
+### 3. Verificación de estudiante
+
+Azure os pedirá confirmar que sois estudiantes. Normalmente esto se hace enviando un **código de verificación al propio correo `@alu.edu.gva.es`**:
+
+1. Revisad la bandeja de entrada de ese correo (y la carpeta de spam/no deseado si no llega en un par de minutos).
+2. Copiad el código y pegadlo en el formulario de Azure.
+
+### 4. Rellenar vuestros datos
+
+El formulario pedirá nombre, apellidos, país (España) y, en algunos casos, un número de teléfono para un segundo código por SMS. Rellenadlo con vuestros datos reales.
+
+### 5. Aceptar las condiciones de la oferta
+
+Revisad y aceptad las condiciones del programa "Azure for Students". En ningún punto de este formulario se pide tarjeta de crédito.
+
+### 6. Comprobar el crédito activado
+
+Al terminar, Azure os llevará al portal (`portal.azure.com`) dentro de la sección **"Education"**. Buscad en el menú lateral u "Inicio" → **Education** y comprobad que veis la pantalla del objetivo de arriba, con:
+
+- Créditos disponibles: **100 US$ de 100 US$**
+- Días hasta que expire el crédito: **365**
+
+## Fase 2
+
+Crearemos una máquina virtual con Ubuntu Server dentro de Azure y os conectaréis a ella por SSH.
+
+## Antes de empezar
+
 - Tener un par de claves SSH en vuestro equipo. Si no las tenéis, generadlas en una terminal:
 
 ```
@@ -20,8 +65,6 @@ ssh-keygen -t ed25519 -C "vuestro.usuario@alu.edu.gva.es"
 ```
 
 Aceptad la ubicación por defecto (`~/.ssh/id_ed25519`) y, si queréis, protegedla con una contraseña (*passphrase*). Esto crea dos ficheros: `id_ed25519` (clave **privada**, no se comparte nunca) e `id_ed25519.pub` (clave **pública**, la que subiremos a Azure).
-
----
 
 ## Paso 1: Crear la máquina virtual
 
@@ -42,7 +85,7 @@ Aceptad la ubicación por defecto (`~/.ssh/id_ed25519`) y, si queréis, proteged
    - **Grupo de recursos**: Azure os propone uno nuevo automáticamente (p. ej. `vm-proyecto_group`, a partir del nombre que le deis a la VM). No hace falta tocarlo — es solo la "carpeta" lógica donde se agrupan todos los recursos de este proyecto.
    - **Nombre de máquina virtual**: por ejemplo `vm-proyecto`.
    - **Región**: Azure os propone una por defecto según disponibilidad (en la captura sale *South Africa North*, nada que ver con España — es normal, simplemente es donde había hueco para el tamaño gratuito en ese momento). Podéis dejarla o cambiarla por una más cercana; si al cambiarla el tamaño gratuito deja de estar disponible, volved a la que os proponía por defecto.
-   - **Imagen**: ya viene seleccionada una Ubuntu Server LTS (en la captura, *Ubuntu Server 22.04 LTS*; puede que a vosotros os proponga otra versión LTS más reciente, como 24.04 — cualquiera de las dos es válida).
+   - **Imagen**: Ubuntu Server 24.04 LTS x64.
    - Veréis un aviso: **"No se le cobrará por hasta 750 horas de uso para máquinas virtuales B1s o B2ats al mes"** — confirma que esta vía os deja ya en el tramo gratuito.
    - **Tamaño**: ya viene fijado a la opción gratuita (en la captura, `Standard_B2ats_v2`, marcada como "servicios gratuitos"). No hace falta cambiarlo.
    - En **"Cuenta de administrador"**:
@@ -57,8 +100,6 @@ Aceptad la ubicación por defecto (`~/.ssh/id_ed25519`) y, si queréis, proteged
    - En **"Reglas de puerto de entrada"**: dejad **"Permitir los puertos seleccionados"** con **HTTP (80), HTTPS (443) y SSH (22)** — nos vendrán bien los tres más adelante para desplegar la aplicación del proyecto, no solo para conectar por SSH.
 5. No hace falta pasar por "Siguiente: Etiquetas". Pulsad directamente **"Revisar y crear"** y, tras la validación, **"Crear"**. Esperad a que el despliegue termine (un par de minutos).
 6. Una vez desplegada, entrad en el recurso de la VM y copiad su **dirección IP pública** (aparece en la vista general).
-
----
 
 ## Paso 2: Conectar por SSH
 
@@ -80,21 +121,3 @@ Una vez dentro, actualizad el sistema:
 sudo apt update && sudo apt upgrade -y
 ```
 
----
-
-## Comprobación final
-
-Si veis un prompt parecido a `azureuser@vm-proyecto:~$`, la conexión funciona correctamente. Guardad en un lugar accesible:
-
-- La **IP pública** de la VM.
-- El **usuario** (`azureuser` o el que hayáis elegido).
-
-Los necesitaréis en los siguientes pasos del despliegue del proyecto.
-
----
-
-## Si algo falla
-
-- **"Permission denied (publickey)"**: comprobad que estáis usando la misma clave privada que corresponde a la pública que subisteis a Azure (`ssh -i ~/.ssh/id_ed25519 azureuser@<IP>` para indicarla explícitamente).
-- **La conexión se queda colgada o da timeout**: revisad en Azure que la regla de red permite el puerto 22 de entrada y que la VM está en estado "en ejecución".
-- **Os pide contraseña en vez de usar la clave**: puede que hayáis creado la VM con autenticación por contraseña en vez de por clave pública; revisad la configuración o recread la VM con la opción correcta.

@@ -1,0 +1,225 @@
+{
+  "main": {
+    "id": "7b7cf64cd9273f9c",
+    "type": "split",
+    "children": [
+      {
+        "id": "3abd8c8d5c3c9eaf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "981dcaaf950fe016",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "3_1_1_practicas"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "f504ea12cf2df375",
+    "type": "split",
+    "children": [
+      {
+        "id": "e4084b13e4617068",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f89b97bffd4034d6",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de archivos"
+            }
+          },
+          {
+            "id": "9537bf642e4a60ff",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Buscar"
+            }
+          },
+          {
+            "id": "88a26022baa979d0",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "03548b5c9e79fdee",
+    "type": "split",
+    "children": [
+      {
+        "id": "0173ea1f1586b8e5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "17e2fc586f05a602",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Enlaces entrantes"
+            }
+          },
+          {
+            "id": "c0cb276be8a755db",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Enlaces salientes"
+            }
+          },
+          {
+            "id": "89b50a044208f65c",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "bbe57e2353fc6bec",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas las propiedades"
+            }
+          },
+          {
+            "id": "5be1801be66094b7",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Esquema"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false
+    }
+  },
+  "active": "981dcaaf950fe016",
+  "lastOpenFiles": [
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_handson.md",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/taller/html/img/foto.jpg",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/njs/hola.js",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/conf.d/default.conf",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/njs",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/nginx.conf",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/Dockerfile",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/conf.d",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/compose.yaml",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/README.md",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/Dockerfile",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/taller/html/img/foto.jpg",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_presentacion.md",
+    "UD3/3.0 Puesta en marcha/maquina-remota.md",
+    "UD3/3.0 Puesta en marcha/dosier_vm-ubuntu.md",
+    "proyectos/vm-ubuntu.md",
+    "_site/UD3/3.0 Puesta en marcha/maquina-remota.md",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
+    "UD3/3.0 Puesta en marcha/dosier_namecheap_dominio.md",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_teoria.md",
+    "UD3/3.0 Puesta en marcha/dosier_azure_vm.md",
+    "_site/UD3/3.0 Puesta en marcha/vm-ubuntu.md",
+    "_site/UD3/3.0 Puesta en marcha/Sin título.md",
+    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_teoria.md",
+    "_site/proyectos/maquina-remota.md",
+    "ra.md",
+    "UD2/2.1 Fundamentos web/web_1_teoria.md",
+    "digitalizacion/pildoras.md",
+    "digitalizacion/pildoras_resultados.md"
+  ]
+}
