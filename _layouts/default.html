@@ -207,6 +207,72 @@
         try { localStorage.setItem('daw-nav-collapsed', collapsed ? '1' : '0'); } catch (e) {}
       });
     })();
+
+    // Despliega en el menú lo que toca esta semana según el calendario (la
+    // portada): la fila de la semana de hoy da el código ("3.1.1", "2.1"…) y
+    // se abre el nodo del menú cuyo título empieza por él. Solo si la página
+    // no ha abierto ya su propia rama. El calendario sigue siendo la única
+    // fuente: fuera de la portada se descarga una vez por sesión.
+    (function () {
+      var tree = document.querySelector('.sidebar .tree');
+      if (!tree || tree.querySelector('details.unit[open]')) return;
+
+      function startOfWeek(d) {
+        var day = d.getDay();
+        var r = new Date(d);
+        r.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+        r.setHours(0, 0, 0, 0);
+        return r;
+      }
+      function endOfWeek(d) {
+        var day = d.getDay();
+        var r = new Date(d);
+        r.setDate(d.getDate() + (day === 0 ? 0 : 7 - day));
+        r.setHours(23, 59, 59, 999);
+        return r;
+      }
+      function weeksFrom(doc) {
+        var weeks = [];
+        doc.querySelectorAll('.cal-table tbody tr[data-start]').forEach(function (tr) {
+          var cell = tr.cells[2];
+          var m = cell && cell.textContent.trim().match(/^\d+(\.\d+)+/);
+          if (m) weeks.push({ start: tr.getAttribute('data-start'), end: tr.getAttribute('data-end'), code: m[0] });
+        });
+        return weeks;
+      }
+      function openCurrent(weeks) {
+        var today = new Date();
+        var code = null;
+        weeks.forEach(function (w) {
+          if (today >= startOfWeek(new Date(w.start + 'T00:00:00')) && today <= endOfWeek(new Date(w.end + 'T00:00:00'))) code = w.code;
+        });
+        if (!code) return;
+        tree.querySelectorAll('.node-label').forEach(function (label) {
+          if (label.textContent.trim().indexOf(code + ' ') !== 0) return;
+          for (var n = label.parentElement; n && n !== tree; n = n.parentElement) {
+            if (n.tagName === 'DETAILS') n.open = true;
+          }
+        });
+      }
+
+      if (document.getElementById('cal-table')) {
+        openCurrent(weeksFrom(document));
+        return;
+      }
+      var KEY = 'daw-cal-weeks';
+      try {
+        var cached = sessionStorage.getItem(KEY);
+        if (cached) { openCurrent(JSON.parse(cached)); return; }
+      } catch (e) {}
+      fetch('{{ "/" | relative_url }}')
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var weeks = weeksFrom(new DOMParser().parseFromString(html, 'text/html'));
+          try { sessionStorage.setItem(KEY, JSON.stringify(weeks)); } catch (e) {}
+          openCurrent(weeks);
+        })
+        .catch(function () {});
+    })();
   </script>
 </body>
 </html>

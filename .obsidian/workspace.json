@@ -4,21 +4,41 @@
     "type": "split",
     "children": [
       {
-        "id": "3abd8c8d5c3c9eaf",
+        "id": "5aa3166f68890e4e",
         "type": "tabs",
         "children": [
           {
-            "id": "981dcaaf950fe016",
+            "id": "fb6d3f84f691825b",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
+                "file": "programacion/tablas/up2_ra1_contenidos.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "3_1_1_practicas"
+              "title": "up2_ra1_contenidos"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b5872c9a16e44d71",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3a15a995475ee8a7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "programacion/tablas/up2_ra1.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "up2_ra1"
             }
           }
         ]
@@ -188,8 +208,33 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "981dcaaf950fe016",
+  "active": "fb6d3f84f691825b",
   "lastOpenFiles": [
+    "Clippings/Correo PEREZ ANIORTE, JOSE.md",
+    "programacion/tablas/up2_ra1_dosier.md",
+    "Clippings",
+    "programacion/tablas/up2_ra1_test_sol.md",
+    "programacion/tablas/up2_ra1_test.md",
+    "programacion/resumen.md",
+    "programacion/tablas/up2_ra1_contenidos.md",
+    "programacion/README.md",
+    "programacion/tablas/up2_ra1.md",
+    "programacion/tablas/up1_ra6.md",
+    "programacion/tablas/up5_ra5.md",
+    "programacion/tablas/up4_ra4.md",
+    "programacion/tablas/up3_ra2.md",
+    "programacion/tablas/formato_pizarra.png",
+    "UD0/0presentacion.md",
+    "ra.md",
+    "programacion/tablas/README.md",
+    "programacion/02_up1_ra6.md",
+    "programacion/tablas/up6_ra3.md",
+    "programacion/tablas",
+    "programacion/03_up2_ra1.md",
+    "programacion/04_metodologia_scrum.md",
+    "programacion/05_pendiente.md",
+    "programacion/01_estructura_up.md",
+    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
     "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_handson.md",
     "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/taller/html/img/foto.jpg",
     "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/njs/hola.js",
@@ -200,26 +245,9 @@
     "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/conf.d",
     "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx",
     "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/compose.yaml",
-    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion",
     "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/README.md",
-    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/solucion/nginx/Dockerfile",
     "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson/taller/html/img/foto.jpg",
     "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_presentacion.md",
-    "UD3/3.0 Puesta en marcha/maquina-remota.md",
-    "UD3/3.0 Puesta en marcha/dosier_vm-ubuntu.md",
-    "proyectos/vm-ubuntu.md",
-    "_site/UD3/3.0 Puesta en marcha/maquina-remota.md",
-    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_practicas.md",
-    "UD3/3.0 Puesta en marcha/dosier_namecheap_dominio.md",
-    "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_teoria.md",
-    "UD3/3.0 Puesta en marcha/dosier_azure_vm.md",
-    "_site/UD3/3.0 Puesta en marcha/vm-ubuntu.md",
-    "_site/UD3/3.0 Puesta en marcha/Sin título.md",
-    "_site/UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/3_1_1_teoria.md",
-    "_site/proyectos/maquina-remota.md",
-    "ra.md",
-    "UD2/2.1 Fundamentos web/web_1_teoria.md",
-    "digitalizacion/pildoras.md",
-    "digitalizacion/pildoras_resultados.md"
+    "UD3/3.0 Puesta en marcha/maquina-remota.md"
   ]
 }

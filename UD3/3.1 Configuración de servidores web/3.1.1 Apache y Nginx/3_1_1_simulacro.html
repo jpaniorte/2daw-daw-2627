@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — servidores web, bloque 3.1.1: instalación y configuración básica de Nginx</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+  .explanation {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--brand);
+    background: #eff4ff;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .explanation:empty { display: none; }
+  .explanation p { margin: 0 0 8px; }
+  .explanation p:last-child { margin-bottom: 0; }
+  .explanation .ref { color: var(--muted); font-size: 0.85rem; }
+  .review-item .explanation { margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — servidores web, bloque 3.1.1: instalación y configuración básica de Nginx</h1>
+    <p>20 preguntas al azar del banco de 80 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 80 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="explanation" id="explanation"></div>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "¿Qué problema se propuso resolver Nginx cuando nació, en 2004?", "opts": ["Ejecutar páginas PHP sin necesidad de un servidor de aplicaciones.", "El problema C10k: atender 10 000 conexiones simultáneas en una sola máquina.", "Sustituir el protocolo HTTP por otro más rápido para servir ficheros.", "Ofrecer una alternativa libre a Apache, que entonces era de pago."], "correct": 1, "exp": "Igor Sysoev creó Nginx para atender muchísimas conexiones a la vez con pocos recursos: el llamado problema C10k.\n\nNginx no ejecuta PHP por sí mismo (necesita PHP-FPM), no sustituye a HTTP y Apache siempre ha sido software libre.", "ref": "Apartado de la teoría: §1."}, {"n": 2, "q": "¿Quién mantiene Apache HTTP Server?", "opts": ["F5, que también vende la versión comercial NGINX Plus.", "El W3C, que es quien define los estándares de la web.", "Microsoft, junto con su servidor IIS.", "La Apache Software Foundation."], "correct": 3, "exp": "Apache lo mantiene la Apache Software Foundation y se distribuye con la licencia Apache 2.0.\n\nF5 es quien mantiene Nginx (y vende NGINX Plus). El W3C define estándares, no mantiene servidores.", "ref": "Apartado de la teoría: §1."}, {"n": 3, "q": "¿Con qué licencia se distribuye Nginx?", "opts": ["BSD de 2 cláusulas.", "Apache 2.0.", "GPL versión 3.", "Propietaria: solo es gratuita para uso educativo."], "correct": 0, "exp": "Nginx es software libre con licencia BSD de 2 cláusulas. Apache 2.0 es la licencia de Apache HTTP Server.\n\nExiste una versión comercial (NGINX Plus), pero la versión libre se puede usar para cualquier fin.", "ref": "Apartado de la teoría: §1."}, {"n": 4, "q": "Apache HTTP Server nació en 1995. ¿A partir de qué?", "opts": ["Del código fuente de Nginx.", "Del servidor IIS de Microsoft.", "Del servidor NCSA httpd.", "Del navegador Netscape Navigator."], "correct": 2, "exp": "Apache nació en 1995 a partir del servidor NCSA httpd, cuando hacía falta un servidor web libre y ampliable.\n\nNginx es de 2004, nueve años después, así que no puede ser su origen.", "ref": "Apartado de la teoría: §1."}, {"n": 5, "q": "¿Por qué el curso usa Nginx para las prácticas?", "opts": ["Porque Apache no puede servir HTTPS ni ampliarse con módulos.", "Porque los resultados de aprendizaje del módulo obligan a usar Nginx.", "Es el servidor web más usado y el que suele ir delante de las aplicaciones como proxy inverso.", "Porque Apache no tiene imagen oficial de Docker."], "correct": 2, "exp": "Nginx es el más usado, su imagen oficial está al día y es el que montaremos como proxy inverso delante de las aplicaciones.\n\nApache también sirve HTTPS y tiene módulos e imagen oficial. Los RA hablan de «servidores web» sin nombrar ninguno.", "ref": "Apartado de la teoría: §1."}, {"n": 6, "q": "¿Qué comando de Apache (Debian) equivale a activar un módulo dinámico en Nginx con `load_module`?", "opts": ["`a2enmod`", "`a2ensite`", "`apachectl -t`", "`apt install apache2`"], "correct": 0, "exp": "`a2enmod` activa un módulo de Apache sin recompilar el servidor: la misma idea que `load_module` en Nginx.\n\n`a2ensite` activa un sitio, `apachectl -t` comprueba la sintaxis y `apt install` instala el servidor.", "ref": "Apartado de la teoría: §4.1."}, {"n": 7, "q": "Según el bloque, ¿qué inconveniente tiene instalar Nginx con `sudo apt install nginx`?", "opts": ["No se puede gestionar con systemd: hay que arrancarlo a mano cada vez.", "Solo funciona si después se mete dentro de un contenedor.", "Obliga a escribir un `Dockerfile` con la configuración.", "Se mezcla con el sistema, es difícil de repetir igual en otra máquina y la versión es la de la distribución."], "correct": 3, "exp": "El paquete del sistema es la forma clásica y lo gestiona systemd, pero lo instalado se mezcla con el sistema, cuesta repetirlo igual en otra máquina y la versión la decide la distribución.\n\nEl `Dockerfile` es propio de la imagen propia, no del paquete.", "ref": "Apartado de la teoría: §2.1."}, {"n": 8, "q": "¿Qué es una imagen propia de Nginx?", "opts": ["La imagen oficial `nginx:1.30` descargada con `docker pull`.", "Una imagen construida con un `Dockerfile` `FROM nginx:1.30` que copia tu configuración dentro.", "Un contenedor en el que se ha entrado con `docker exec` para editar la configuración.", "El paquete `nginx` de Debian instalado directamente en la VM."], "correct": 1, "exp": "La imagen propia parte de la oficial (`FROM nginx:1.30`) y añade tu configuración con `COPY`: es reproducible y versionable.\n\nEditar dentro de un contenedor no crea ninguna imagen, y el cambio se pierde al recrearlo.", "ref": "Apartado de la teoría: §2.1."}, {"n": 9, "q": "¿Por qué la imagen oficial arranca Nginx con `nginx -g 'daemon off;'`?", "opts": ["Para desactivar los *workers* y atender las peticiones con un solo proceso.", "Para que no escriba logs y el contenedor ocupe menos.", "Para que arranque sin leer los sitios de `conf.d/`.", "Para que se quede en primer plano como proceso principal: si termina, el contenedor se para."], "correct": 3, "exp": "En un contenedor no hay systemd: el contenedor vive mientras vive su proceso principal (PID 1). Por eso Nginx tiene que quedarse en primer plano en lugar de pasar a segundo plano como un demonio.\n\nLos *workers*, los logs y `conf.d/` funcionan igual.", "ref": "Apartado de la teoría: §2.2."}, {"n": 10, "q": "En un contenedor, ¿qué equivale a `systemctl reload nginx`?", "opts": ["`docker restart web`", "`docker exec web nginx -s reload`", "`docker start web`", "`docker compose up -d --build`"], "correct": 1, "exp": "`nginx -s reload` hace que el proceso maestro vuelva a leer la configuración sin parar el servidor.\n\n`docker restart` equivale a `systemctl restart` (para y arranca), `docker start` a `systemctl start` y `--build` reconstruye la imagen.", "ref": "Apartado de la teoría: §2.2."}, {"n": 11, "q": "En un contenedor, ¿qué equivale a `systemctl enable nginx` (arrancar el servicio al encender la máquina)?", "opts": ["`docker start web`", "`docker exec web nginx -s reload`", "La política `--restart unless-stopped` (o `restart:` en Compose).", "La opción `-d` de `docker run`."], "correct": 2, "exp": "Con `--restart unless-stopped`, Docker vuelve a arrancar el contenedor al reiniciar la máquina (salvo que lo hayas parado tú).\n\n`-d` solo lo ejecuta en segundo plano; `docker start` lo arranca una vez.", "ref": "Apartado de la teoría: §2.2."}, {"n": 12, "q": "¿Qué pasa con las conexiones en curso al hacer `nginx -s reload`?", "opts": ["Terminan con normalidad: los *workers* antiguos acaban lo que tienen y los nuevos atienden lo que llega.", "Se cortan todas, igual que en un reinicio.", "Se quedan en espera hasta que el contenedor se reinicia.", "Reciben un `503 Service Unavailable` mientras se recarga."], "correct": 0, "exp": "Al recargar, el maestro arranca *workers* nuevos con la configuración nueva y deja que los antiguos terminen sus conexiones. Nadie nota el cambio.\n\nEs el reinicio (`docker restart`) el que corta las conexiones.", "ref": "Apartado de la teoría: §2.3."}, {"n": 13, "q": "Cambias la configuración, tiene un error de sintaxis y haces `nginx -s reload`. ¿Qué ocurre?", "opts": ["Nginx rechaza la configuración nueva y sigue funcionando con la anterior.", "Nginx se para y la web se cae inmediatamente.", "Nginx carga la parte correcta e ignora la línea con el error.", "Docker reconstruye la imagen con la última configuración válida."], "correct": 0, "exp": "El `reload` comprueba la configuración nueva y, si tiene errores, la rechaza: la web sigue funcionando con la anterior.\n\nEl peligro llega en el siguiente reinicio, que sí arranca con la configuración rota (§5.3). Nginx nunca carga una configuración a medias.", "ref": "Apartado de la teoría: §2.3."}, {"n": 14, "q": "¿Cuándo hay que reiniciar o recrear el contenedor en lugar de recargar?", "opts": ["Siempre que cambias un fichero de `conf.d/`.", "Cada vez que modificas el `index.html` de la web.", "Cuando cambias algo que no es configuración de Nginx: la imagen, los volúmenes o los puertos publicados.", "Nunca: `nginx -s reload` sirve para cualquier cambio."], "correct": 2, "exp": "La imagen, los volúmenes y los puertos los gestiona Docker, no Nginx, así que un `reload` no los cambia.\n\nLos cambios en `conf.d/` se aplican con `reload`, y los de la web montada ni siquiera necesitan recargar.", "ref": "Apartado de la teoría: §2.3."}, {"n": 15, "q": "En `docker run -d -p 8080:80 nginx:1.30`, ¿qué significa `-p 8080:80`?", "opts": ["El puerto 80 de la máquina se redirige al puerto 8080 del contenedor.", "El puerto 8080 de la máquina se redirige al puerto 80 del contenedor.", "Nginx escucha a la vez en el 8080 y en el 80 dentro del contenedor.", "Se abren los puertos 8080 y 80 en el cortafuegos de la máquina."], "correct": 1, "exp": "El formato es `-p puerto_host:puerto_contenedor`. Dentro del contenedor Nginx sigue escuchando en el 80; desde fuera se llega por el 8080.", "ref": "Apartado de la teoría: §2.4."}, {"n": 16, "q": "Cambias en Nginx `listen 80;` por `listen 8080;` pero el contenedor sigue publicado con `-p 80:80`. ¿Qué pasa?", "opts": ["Funciona igual, porque Docker detecta el puerto nuevo de Nginx.", "Responde en el 8080 de la máquina sin cambiar nada más.", "Docker cambia la publicación a `-p 80:8080` al recargar.", "Deja de responder: Docker envía las peticiones al 80 del contenedor, donde ya no escucha nadie."], "correct": 3, "exp": "El lado derecho de `-p` tiene que coincidir con el `listen` de Nginx. Docker no lee la configuración de Nginx: sigue enviando las peticiones al 80.\n\nEs uno de los errores típicos de la tabla de capas.", "ref": "Apartado de la teoría: §2.4."}, {"n": 17, "q": "En la VM, `curl localhost` devuelve 200, pero desde tu navegador la web da *timeout*. ¿Qué capa es la sospechosa?", "opts": ["El `listen` de Nginx, que está mal puesto.", "El NSG de Azure, que no deja pasar el puerto.", "Falta el `index.html` en la carpeta publicada.", "La directiva `server_tokens`, que bloquea a los navegadores."], "correct": 1, "exp": "Si desde dentro de la VM funciona, Nginx y la publicación de Docker están bien. Un *timeout* desde fuera es el síntoma típico de un puerto cerrado en el NSG.\n\nUn `index.html` ausente daría 403 o 404, no un *timeout*.", "ref": "Apartado de la teoría: §2.4."}, {"n": 18, "q": "¿Qué relación hay entre los puertos publicados por Docker y el cortafuegos `ufw` de la VM?", "opts": ["`ufw` bloquea siempre los puertos publicados por Docker.", "Docker desactiva `ufw` al instalarse.", "`ufw` solo filtra el puerto 22 de SSH.", "Los puertos publicados por Docker se saltan las reglas de `ufw`."], "correct": 3, "exp": "Docker añade sus propias reglas de red, que pasan por delante de las de `ufw`. Por eso, en Azure, quien filtra de verdad lo que llega a los contenedores es el NSG.", "ref": "Apartado de la teoría: §2.4."}, {"n": 19, "q": "En tu VM solo están abiertos el 22, el 80 y el 443, y publicas un contenedor en el 8080. ¿Cómo lo pruebas?", "opts": ["Desde la propia VM con `curl localhost:8080`, o con un túnel SSH.", "Abriendo `http://tunombre.me:8080` en el navegador.", "Cambiando el `listen` de Nginx a `8080`.", "No se puede probar hasta que se abra el 8080 en el NSG."], "correct": 0, "exp": "El 8080 no está abierto en el NSG, así que no se ve desde Internet. Sí se puede probar desde la VM o con `ssh -L 8080:localhost:8080 daw` y luego `http://localhost:8080` en tu navegador.", "ref": "Apartado de la teoría: §2.4."}, {"n": 20, "q": "Dentro del contenedor, ¿por qué el proceso maestro de Nginx corre como `root`?", "opts": ["Para poder ejecutar los ficheros PHP de la web.", "Porque los *workers* necesitan escribir en la carpeta de la web.", "Para poder abrir el puerto 80.", "Porque Docker obliga a que todos los procesos sean de `root`."], "correct": 2, "exp": "El maestro necesita privilegios para abrir el puerto 80, pero las peticiones las atienden los *workers*, que corren como el usuario sin privilegios `nginx`.", "ref": "Apartado de la teoría: §3.1."}, {"n": 21, "q": "En la imagen oficial, ¿dónde está la configuración del sitio por defecto?", "opts": ["`/etc/nginx/sites-enabled/default`", "`/usr/share/nginx/html/default.conf`", "`/etc/nginx/conf.d/default.conf`", "`/var/www/html/nginx.conf`"], "correct": 2, "exp": "La imagen oficial guarda los sitios en `/etc/nginx/conf.d/`. `sites-enabled/` es la organización del paquete de Debian, y `/usr/share/nginx/html` es la web, no la configuración.", "ref": "Apartado de la teoría: §3.2."}, {"n": 22, "q": "¿Cómo llega `conf.d/default.conf` a la configuración de Nginx?", "opts": ["`nginx.conf` lo incluye con `include /etc/nginx/conf.d/*.conf;` dentro de `http`.", "Nginx lee todos los ficheros de `/etc/nginx` en orden alfabético.", "Se carga con `load_module` al principio de `nginx.conf`.", "Docker lo copia dentro de `nginx.conf` al arrancar el contenedor."], "correct": 0, "exp": "`nginx.conf` es la configuración global y, al final del bloque `http`, incluye todos los `.conf` de `conf.d/`: ahí entran los sitios.\n\n`load_module` es para módulos, no para ficheros de configuración.", "ref": "Apartado de la teoría: §3.2."}, {"n": 23, "q": "¿Para qué sirve el fichero `/etc/nginx/mime.types`?", "opts": ["Lista los módulos dinámicos que se pueden cargar.", "Define los usuarios que pueden acceder a la web.", "Contiene las páginas de error de cada código de estado.", "Asocia la extensión de cada fichero con su `Content-Type`."], "correct": 3, "exp": "Gracias a `mime.types`, Nginx envía `foto.jpg` con `Content-Type: image/jpeg` y `index.html` con `text/html`, y el navegador sabe cómo mostrarlos.", "ref": "Apartado de la teoría: §3.2."}, {"n": 24, "q": "¿Qué hace `worker_processes auto;`?", "opts": ["Ajusta los *workers* según el número de visitas de cada momento.", "Arranca un *worker* por cada núcleo de CPU.", "Arranca un único *worker* que atiende todas las conexiones.", "Arranca tantos *workers* como indique `worker_connections`."], "correct": 1, "exp": "Con `auto`, Nginx arranca tantos *workers* como núcleos tiene la máquina. Cada uno atiende muchas conexiones a la vez (`worker_connections`).", "ref": "Apartado de la teoría: §3.2."}, {"n": 25, "q": "En el bloque `events`, ¿qué indica `worker_connections 1024;`?", "opts": ["El número máximo de peticiones por segundo del servidor.", "El número máximo de ficheros que se pueden publicar.", "El tamaño máximo del log de acceso, en líneas.", "El número máximo de conexiones simultáneas de cada *worker*."], "correct": 3, "exp": "Cada *worker* puede mantener hasta 1024 conexiones abiertas a la vez. Con 4 núcleos (4 *workers*), el servidor admite unas 4096.", "ref": "Apartado de la teoría: §3.2."}, {"n": 26, "q": "En la configuración de Nginx, ¿cómo terminan las directivas?", "opts": ["Con un salto de línea.", "Con `;`", "Con `}`", "Con `.`"], "correct": 1, "exp": "Cada directiva termina en `;`, y los bloques se delimitan con `{ }`. Olvidar un `;` es el error más típico en Nginx.", "ref": "Apartado de la teoría: §3.3."}, {"n": 27, "q": "¿Cuál es el anidamiento correcto de los bloques de Nginx?", "opts": ["`main` → `server` → `http` → `location`", "`http` → `events` → `server` → `location`", "`main` → `http` → `server` → `location`", "`server` → `http` → `location` → `main`"], "correct": 2, "exp": "En el nivel superior (`main`) están `events` y `http`. Dentro de `http` van los sitios (`server`) y dentro de cada sitio, los `location`.", "ref": "Apartado de la teoría: §3.3."}, {"n": 28, "q": "¿En qué contexto se puede escribir `load_module`?", "opts": ["Solo en `main`, fuera de cualquier bloque.", "Dentro de `http { }`.", "Dentro del `server { }` que vaya a usar el módulo.", "Dentro del `location` que vaya a usar el módulo."], "correct": 0, "exp": "Cada directiva solo vale en ciertos contextos: `load_module` va al principio de `nginx.conf`, en `main`. Dentro de un bloque da `\"load_module\" directive is not allowed here`.", "ref": "Apartado de la teoría: §3.3."}, {"n": 29, "q": "Escribes `root /usr/share/nginx/html;` en el `server` y no en sus `location`. ¿Qué pasa?", "opts": ["Los `location` heredan el `root` del `server`.", "Los `location` no publican nada hasta que tengan su propio `root`.", "Nginx da un error, porque `root` solo se puede poner en un `location`.", "El `root` solo se aplica a `location /`."], "correct": 0, "exp": "Una directiva puesta en un bloque exterior se hereda en los interiores. Por eso es habitual escribir `root` una sola vez en el `server`.", "ref": "Apartado de la teoría: §3.3."}, {"n": 30, "q": "¿Qué directiva indica el fichero que se sirve al pedir una carpeta?", "opts": ["`root`", "`listen`", "`index`", "`server_name`"], "correct": 2, "exp": "`index index.html;` hace que al pedir `/` (o cualquier carpeta) se sirva su `index.html`. `root` es la carpeta publicada, `listen` el puerto y `server_name` el nombre del sitio.", "ref": "Apartado de la teoría: §3.4."}, {"n": 31, "q": "¿En qué se diferencian `location /hola { … }` y `location = /hola { … }`?", "opts": ["La primera solo vale para `/hola` exacta; la segunda, para toda URL que empiece por `/hola`.", "La primera vale para toda URL que empiece por `/hola`; la segunda, solo para `/hola` exacta.", "Son equivalentes: el `=` solo mejora la legibilidad.", "La segunda redirige a `/hola` cualquier URL que no exista."], "correct": 1, "exp": "Sin `=`, el `location` es un prefijo: también vale para `/hola/mundo` o `/holamundo`. Con `=`, la URL tiene que coincidir exactamente. Lo usamos en `location = /hola` del ejemplo de njs.", "ref": "Apartado de la teoría: §3.4."}, {"n": 32, "q": "¿Qué hace la directiva `server_name`?", "opts": ["Cambia el nombre del contenedor de Docker.", "Fija el valor de la cabecera `Server` de las respuestas.", "Registra el dominio en el servidor DNS.", "Indica el nombre del sitio; con varios sitios, decide cuál responde."], "correct": 3, "exp": "`server_name` compara el nombre pedido (la cabecera `Host`) para elegir el sitio. Lo usaremos a fondo con los hosts virtuales en 3.1.2.\n\nEl dominio se registra fuera de Nginx, y la cabecera `Server` se controla con `server_tokens`.", "ref": "Apartado de la teoría: §3.4."}, {"n": 33, "q": "¿Qué muestra `nginx -T`?", "opts": ["Solo si la sintaxis es correcta, sin mostrar la configuración.", "Toda la configuración efectiva, con los `include` ya resueltos.", "La versión de Nginx y sus módulos estáticos.", "Las últimas líneas del log de errores."], "correct": 1, "exp": "`nginx -T` (mayúscula) comprueba la configuración y la imprime entera, incluidos los ficheros incluidos. `nginx -t` (minúscula) solo comprueba; `nginx -V` muestra la versión y los módulos estáticos.", "ref": "Apartado de la teoría: §4.1."}, {"n": 34, "q": "En la imagen oficial, ¿dónde está la web por defecto (`index.html` y `50x.html`)?", "opts": ["`/etc/nginx/html`", "`/var/www/html`", "`/etc/nginx/conf.d`", "`/usr/share/nginx/html`"], "correct": 3, "exp": "Es la carpeta del `root` de `default.conf`. `/var/www/html` es la habitual en los paquetes de Debian, y `/etc/nginx/conf.d` es configuración.", "ref": "Apartado de la teoría: §3.2."}, {"n": 35, "q": "¿En qué se diferencian los módulos estáticos y los dinámicos de Nginx?", "opts": ["Los estáticos están dentro del ejecutable, elegidos al compilar; los dinámicos son ficheros `.so` que se cargan con `load_module`.", "Los dinámicos están dentro del ejecutable; los estáticos son ficheros `.so` que se cargan con `load_module`.", "Los estáticos sirven ficheros y los dinámicos ejecutan código en cada petición.", "Los estáticos son los oficiales y los dinámicos, siempre de terceros."], "correct": 0, "exp": "Los estáticos siempre están: basta con usar sus directivas. Los dinámicos están en ficheros `.so` aparte y hay que cargarlos.\n\nNo tiene que ver con contenido estático o dinámico, y hay módulos dinámicos oficiales (`njs`, `image_filter`…).", "ref": "Apartado de la teoría: §4.1."}, {"n": 36, "q": "¿Qué comando muestra los módulos dinámicos disponibles en la imagen oficial?", "opts": ["`docker exec web nginx -V`", "`docker exec web nginx -t`", "`docker exec web ls /etc/nginx/modules`", "`docker images nginx`"], "correct": 2, "exp": "Los `.so` están en `/etc/nginx/modules`. `nginx -V` muestra los estáticos y `nginx -t` solo comprueba la sintaxis.", "ref": "Apartado de la teoría: §4.1."}, {"n": 37, "q": "¿Cómo se ven los módulos estáticos de Nginx?", "opts": ["Con `ls /etc/nginx/modules`.", "Con `nginx -T | grep load_module`.", "Con `nginx -V`, en las líneas `--with-…_module`.", "Con `cat /etc/nginx/mime.types`."], "correct": 2, "exp": "`nginx -V` muestra las opciones con las que se compiló el ejecutable, y ahí aparecen los módulos estáticos. `ls /etc/nginx/modules` lista los dinámicos y `grep load_module`, los dinámicos cargados.", "ref": "Apartado de la teoría: §4.1."}, {"n": 38, "q": "¿Cuál de estos módulos no viene en la imagen oficial `nginx:1.30`?", "opts": ["brotli", "njs", "image_filter", "acme"], "correct": 0, "exp": "La imagen oficial trae `njs`, `image_filter`, `acme`, `geoip` y `xslt`. Brotli es un módulo de terceros muy usado, pero hay que compilarlo.", "ref": "Apartado de la teoría: §4.2."}, {"n": 39, "q": "¿Para qué sirve el módulo `image_filter`?", "opts": ["Para comprimir las imágenes con Brotli antes de enviarlas.", "Para convertir páginas HTML en imágenes JPEG.", "Para impedir que se descarguen las imágenes de la web.", "Para redimensionar, recortar y girar imágenes al vuelo."], "correct": 3, "exp": "`image_filter` trabaja con JPEG, GIF, PNG y WebP. En el bloque lo usamos para generar miniaturas con `resize`, sin crear ficheros nuevos.", "ref": "Apartado de la teoría: §4.2."}, {"n": 40, "q": "¿Para qué sirve el módulo `acme`?", "opts": ["Para saber el país del cliente a partir de su IP.", "Para pedir y renovar certificados de Let's Encrypt desde el propio Nginx, sin certbot.", "Para bloquear inyecciones SQL y XSS como un cortafuegos.", "Para programar respuestas en JavaScript dentro de Nginx."], "correct": 1, "exp": "`acme` implementa el protocolo con el que Let's Encrypt emite certificados. Lo veremos en 3.2.1.\n\nLas otras opciones describen `geoip`, ModSecurity y `njs`.", "ref": "Apartado de la teoría: §4.2."}, {"n": 41, "q": "¿Qué es ModSecurity?", "opts": ["Un módulo para mostrar listados de directorios más bonitos.", "Un módulo de compresión que reduce más que gzip.", "Un servidor de *streaming* de vídeo en directo.", "Un cortafuegos de aplicaciones web (WAF) que bloquea inyecciones SQL, XSS… con las reglas OWASP CRS."], "correct": 3, "exp": "ModSecurity es un módulo de terceros que analiza las peticiones y bloquea los ataques conocidos. Las otras opciones son fancyindex, brotli y rtmp.", "ref": "Apartado de la teoría: §4.2."}, {"n": 42, "q": "¿Para qué se usa el módulo de terceros `headers-more`?", "opts": ["Para arrancar más *workers* cuando aumentan las visitas.", "Para añadir, cambiar o quitar cualquier cabecera, incluida `Server` entera.", "Para aumentar el tamaño máximo de las cabeceras de petición.", "Para guardar todas las cabeceras en el log de acceso."], "correct": 1, "exp": "Con `server_tokens off` se quita la versión, pero la cabecera sigue diciendo `Server: nginx`. Para quitarla del todo hace falta `headers-more`.", "ref": "Apartado de la teoría: §4.2."}, {"n": 43, "q": "¿Qué hace falta para usar un módulo de terceros con la imagen oficial de Nginx?", "opts": ["Basta con instalar dentro el paquete `libnginx-mod-…` de Debian.", "Basta con descargar cualquier `.so` del módulo y copiarlo en `modules/`.", "Compilarlo contra el código fuente de exactamente la misma versión de Nginx y copiar el `.so`.", "Basta con activarlo con `nginx -s reload`."], "correct": 2, "exp": "Los paquetes de Debian funcionan con el Nginx de Debian, pero en la imagen oficial hay que compilar el módulo para la misma versión, normalmente en un *multi-stage build*. Un `.so` de otra versión no carga.", "ref": "Apartado de la teoría: §4.2."}, {"n": 44, "q": "Al arrancar Nginx aparece `module \"…headers_more_filter_module.so\" version 1026003 instead of 1030006`. ¿Qué significa?", "opts": ["El `.so` está compilado para otra versión de Nginx (1.26.3) distinta de la que lo carga (1.30.6).", "Falta la directiva `load_module` en `nginx.conf`.", "El `load_module` está dentro del bloque `http`.", "Hay que bajar la imagen a la versión 1.26 para poder usar módulos."], "correct": 0, "exp": "Es el error del ejemplo del bloque: el módulo del paquete de Debian (Nginx 1.26.3) no carga en la imagen oficial (1.30.6). Hay que compilarlo para 1.30.6.", "ref": "Apartado de la teoría: §4.2."}, {"n": 45, "q": "`nginx -t` dice `unknown directive \"image_filter\"`. ¿Qué pasa?", "opts": ["Se usa una directiva de un módulo que no está cargado.", "`image_filter` solo se puede escribir dentro de `http`.", "La imagen oficial no trae el módulo `image_filter`.", "Falta el `;` al final de la línea de `image_filter`."], "correct": 0, "exp": "El `.so` está en la imagen, pero hasta que no se carga con `load_module` Nginx no conoce sus directivas. Es el primer error del paso 6 del taller.", "ref": "Apartado de la teoría: §4.3."}, {"n": 46, "q": "`nginx -t` dice `\"load_module\" directive is not allowed here`. ¿Qué pasa?", "opts": ["El fichero `.so` del módulo no existe.", "El módulo ya estaba cargado y se ha repetido.", "`load_module` está dentro de un bloque (por ejemplo, `http`) en lugar de en `main`.", "El módulo está compilado para otra versión de Nginx."], "correct": 2, "exp": "`not allowed here` significa que la directiva está en un contexto que no le corresponde. `load_module` va al principio de `nginx.conf`, fuera de cualquier bloque.", "ref": "Apartado de la teoría: §4.3."}, {"n": 47, "q": "¿Por qué, para usar `image_filter` con la imagen oficial, hay que llevar un `nginx.conf` propio?", "opts": ["Porque la imagen oficial no trae el fichero `.so` de `image_filter`.", "Porque `load_module` va en `nginx.conf`, que es un fichero de la imagen: hay que copiar el nuestro con un `Dockerfile` o montarlo.", "Porque los módulos dinámicos no funcionan con los sitios montados en `conf.d/`.", "Porque los módulos solo se pueden activar al compilar Nginx."], "correct": 1, "exp": "El módulo ya viene en la imagen; lo que falta es cargarlo. Como `load_module` va en `nginx.conf`, ese fichero tiene que ser el nuestro.", "ref": "Apartado de la teoría: §4.3."}, {"n": 48, "q": "En `image_filter resize $arg_w -;`, ¿qué es `$arg_w`?", "opts": ["El ancho original de la imagen guardada en disco.", "Una variable de entorno `W` del contenedor.", "El tamaño máximo de imagen fijado con `image_filter_buffer`.", "El valor del parámetro `w` de la URL (`?w=200`)."], "correct": 3, "exp": "Nginx tiene una variable `$arg_…` para cada parámetro de la URL. El `-` indica que el alto se calcula para mantener la proporción.", "ref": "Apartado de la teoría: §4.4."}, {"n": 49, "q": "En `location /miniatura/ { alias /usr/share/nginx/html/img/; … }`, ¿qué hace `alias`?", "opts": ["Crea una copia de `img/` llamada `miniatura/` al arrancar.", "Sustituye el prefijo de la URL por esa carpeta: `/miniatura/foto.jpg` → `img/foto.jpg`.", "Redirige el navegador a `/img/` con un `302`.", "Pone otro nombre al contenedor dentro de la red de Docker."], "correct": 1, "exp": "Con `alias`, la parte de la URL que coincide con el `location` se cambia por la carpeta indicada. No hay ninguna copia ni redirección: el navegador sigue viendo `/miniatura/…`.", "ref": "Apartado de la teoría: §4.4."}, {"n": 50, "q": "¿Qué es njs?", "opts": ["Una versión de Node.js que se instala dentro del contenedor de Nginx.", "Un módulo que ejecuta en el servidor el JavaScript de la página para mejorar el SEO.", "Un módulo que sirve los ficheros `.js` comprimidos.", "Un módulo para ejecutar JavaScript dentro de Nginx, para pequeñas lógicas, sin `npm` ni paquetes de Node.js."], "correct": 3, "exp": "Con njs se puede montar una respuesta (`r.return(200, …)`), validar una cabecera o decidir a qué backend mandar una petición. No es Node.js.", "ref": "Apartado de la teoría: §4.4."}, {"n": 51, "q": "¿Dónde conviene poner los sitios (`conf.d/`), que cambias a menudo?", "opts": ["Montados desde la máquina (*bind mount*), recargando después de editarlos.", "Dentro de la imagen con `COPY`, reconstruyéndola en cada cambio.", "Dentro del contenedor, editándolos con `docker exec`.", "En `/usr/share/nginx/html`, junto con la web."], "correct": 0, "exp": "Lo que cambia a menudo va montado: se edita fuera del contenedor y se recarga. Lo que forma parte del servidor (módulos, ajustes globales) va dentro de la imagen.", "ref": "Apartado de la teoría: §5.1."}, {"n": 52, "q": "Editas la configuración dentro del contenedor con `docker exec web vi /etc/nginx/conf.d/default.conf`. ¿Qué problema tiene?", "opts": ["El cambio se guarda en la imagen y afecta a todos los contenedores.", "El cambio se copia automáticamente a la carpeta de la máquina.", "El cambio se pierde al recrear el contenedor.", "No se puede: los contenedores no permiten editar ficheros."], "correct": 2, "exp": "Lo que cambias dentro de un contenedor vive solo en ese contenedor. Sirve para probar, pero al recrearlo (`docker compose up` después de un cambio, por ejemplo) se pierde.", "ref": "Apartado de la teoría: §5.1."}, {"n": 53, "q": "¿Por qué es más seguro montar la carpeta `conf.d/` que un solo fichero `default.conf`?", "opts": ["Porque Docker no permite montar un solo fichero.", "Porque un fichero suelto se monta siempre en solo escritura.", "Muchos editores guardan creando un fichero nuevo, y el contenedor sigue viendo el antiguo.", "Porque Nginx solo lee configuración de carpetas montadas."], "correct": 2, "exp": "Al montar un fichero suelto, el contenedor queda unido a ese fichero concreto. Si el editor lo sustituye por uno nuevo al guardar, el contenedor no ve el cambio. Montando la carpeta, sí.", "ref": "Apartado de la teoría: §5.1."}, {"n": 54, "q": "Has cambiado `nginx.conf`, que va dentro de la imagen con un `Dockerfile`. ¿Cómo se aplica?", "opts": ["`docker compose up -d --build`", "`docker compose exec web nginx -s reload`", "Editando también el `index.html`.", "`docker compose restart web`"], "correct": 0, "exp": "El fichero está en la imagen, así que hay que reconstruirla. Ni `reload` ni `restart` cambian la imagen: seguirían usando el `nginx.conf` antiguo.", "ref": "Apartado de la teoría: §5.1."}, {"n": 55, "q": "¿Cuál es el ciclo de trabajo para cambiar la configuración?", "opts": ["Editar → reiniciar → comprobar (`nginx -t`) → probar con `curl`.", "Editar → recargar → comprobar (`nginx -t`) → mirar los logs.", "Editar → reconstruir la imagen → reiniciar → `nginx -T`.", "Editar → comprobar (`nginx -t`) → recargar → probar con `curl` → mirar los logs."], "correct": 3, "exp": "Se comprueba antes de recargar, no después. Reiniciar o reconstruir no hace falta para cambiar un sitio, y reiniciar con un error deja la web caída.", "ref": "Apartado de la teoría: §5.3."}, {"n": 56, "q": "`nginx -t` dice `unexpected \"}\" in /etc/nginx/conf.d/default.conf:7`. ¿Qué es lo más probable?", "opts": ["Que sobre la llave de la línea 7.", "Que falte el `;` al final de la línea anterior.", "Que falte un `load_module` en `nginx.conf`.", "Que el fichero tenga más de 7 líneas."], "correct": 1, "exp": "Sin el `;`, Nginx sigue leyendo la directiva y tropieza con la llave de la línea 7. Cuando el error señala una línea que parece correcta, mira la anterior.", "ref": "Apartado de la teoría: §5.2."}, {"n": 57, "q": "Un `reload` falló por un error y nadie lo corrigió. Horas después se reinicia la VM. ¿Qué pasa?", "opts": ["Nginx arranca con la última configuración que funcionaba.", "Docker restaura la configuración de la imagen original.", "Nginx arranca e ignora el fichero que tiene el error.", "Nginx arranca con la configuración rota, el proceso principal falla y la web se cae."], "correct": 3, "exp": "La configuración rota sigue en disco. El `reload` la rechazó, pero el siguiente arranque la usa, Nginx no arranca y el contenedor se para. Por eso hay que hacer `nginx -t` siempre.", "ref": "Apartado de la teoría: §5.3."}, {"n": 58, "q": "Tienes `restart: unless-stopped` y la configuración rota. ¿Qué muestra `docker ps` después de un reinicio?", "opts": ["`Up`, porque Docker arranca el contenedor aunque Nginx falle.", "`Restarting`, porque Docker intenta arrancarlo una y otra vez.", "`Exited (0)`, y no lo vuelve a intentar.", "`Paused`, hasta que corrijas la configuración."], "correct": 1, "exp": "Nginx falla al arrancar, el contenedor termina y Docker lo vuelve a arrancar, en bucle. Lo vimos en el paso 5 del taller: al corregir el fichero vuelve solo a `Up`.", "ref": "Apartado de la teoría: §5.3."}, {"n": 59, "q": "En la imagen oficial, ¿qué es `/var/log/nginx/access.log`?", "opts": ["Un fichero normal que crece dentro del contenedor.", "Un enlace a `/dev/stderr`.", "Un enlace a `/dev/stdout`.", "No existe: la imagen oficial no tiene log de acceso."], "correct": 2, "exp": "La imagen enlaza el log de acceso con la salida estándar y el de errores con la salida de error. Así Docker los recoge y se ven con `docker logs`.", "ref": "Apartado de la teoría: §6.1."}, {"n": 60, "q": "¿En qué se diferencian el log de acceso y el de errores?", "opts": ["El de acceso tiene una línea por petición atendida; el de errores, avisos y fallos (configuración, ficheros que no se pueden leer…).", "El de acceso solo guarda las peticiones con éxito; el de errores, las que dan 4xx o 5xx.", "El de acceso es para el dominio público y el de errores, para `localhost`.", "Guardan lo mismo, pero el de errores usa un formato más detallado."], "correct": 0, "exp": "Toda petición, vaya bien o mal, deja una línea en el log de acceso. El de errores es el primer sitio donde mirar cuando algo falla. Un 404, por ejemplo, aparece en los dos.", "ref": "Apartado de la teoría: §6.1."}, {"n": 61, "q": "¿Cómo se ve el log de Nginx en directo?", "opts": ["`docker logs -f web`", "`docker logs --tail web`", "`docker inspect web`", "`docker exec web cat /var/log/nginx/access.log`"], "correct": 0, "exp": "`-f` (*follow*) sigue mostrando las líneas nuevas hasta pulsar Ctrl+C. `--tail` necesita un número, `inspect` muestra la configuración del contenedor y `access.log` es un enlace a la salida estándar, no un fichero con contenido.", "ref": "Apartado de la teoría: §6.2."}, {"n": 62, "q": "¿Qué muestra `docker logs web 2>/dev/null`?", "opts": ["Solo el log de errores (stderr).", "Nada: `/dev/null` descarta toda la salida.", "Solo el log de acceso (stdout), además de los mensajes de arranque de la imagen.", "Todo, y además borra el log después de mostrarlo."], "correct": 2, "exp": "`2>/dev/null` descarta la salida de error, donde va el log de errores. Para ver solo los errores: `docker logs web 2>&1 >/dev/null`.", "ref": "Apartado de la teoría: §6.2."}, {"n": 63, "q": "¿Por qué la imagen oficial envía los logs a la salida estándar y a la de error?", "opts": ["Para que ocupen menos espacio en el disco del contenedor.", "Para que Docker los recoja y se puedan ver con `docker logs`.", "Porque Nginx no sabe escribir en ficheros.", "Para que se vean en el navegador al abrir la web."], "correct": 1, "exp": "Si Nginx escribiera ficheros dentro del contenedor, `docker logs` no mostraría nada y los logs se perderían al borrarlo. Si hace falta conservarlos, se monta un volumen en `/var/log/nginx`.", "ref": "Apartado de la teoría: §6.2."}, {"n": 64, "q": "En la línea `81.45.12.200 - - [12/Nov/2026:10:15:32 +0100] \"GET /index.html HTTP/1.1\" 200 10958 …`, ¿qué es `10958`?", "opts": ["El puerto de origen del cliente.", "Los milisegundos que tardó la respuesta.", "El número de petición desde que arrancó Nginx.", "Los bytes del cuerpo de la respuesta."], "correct": 3, "exp": "Después del código de estado (`200`) va `$body_bytes_sent`: el tamaño del cuerpo enviado, en bytes.", "ref": "Apartado de la teoría: §6.3."}, {"n": 65, "q": "En esa misma línea, ¿qué es `81.45.12.200`?", "opts": ["La IP pública del servidor.", "La IP del cliente (`$remote_addr`).", "La IP del proxy que hay delante de Nginx.", "La IP del servidor DNS que resolvió el dominio."], "correct": 1, "exp": "El primer campo es quien hace la petición. Si hubiera un proxy delante, aquí saldría la IP del proxy y la del cliente iría en `$http_x_forwarded_for`.", "ref": "Apartado de la teoría: §6.3."}, {"n": 66, "q": "¿Qué guarda el campo `$http_user_agent` del log de acceso?", "opts": ["El usuario que ha iniciado sesión en la aplicación.", "El sistema operativo del servidor.", "La página desde la que venía el enlace.", "Qué programa hace la petición: un navegador, `curl`, un bot…"], "correct": 3, "exp": "Es el valor de la cabecera `User-Agent` de la petición. La página de la que venía el enlace es `$http_referer`.", "ref": "Apartado de la teoría: §6.3."}, {"n": 67, "q": "¿Qué guarda el campo `$http_referer`?", "opts": ["La página desde la que venía el enlace (cabecera `Referer`).", "La IP real del cliente cuando hay un proxy delante.", "El usuario autenticado con HTTP.", "Los tipos de contenido que acepta el cliente."], "correct": 0, "exp": "Si llegas a la web desde un resultado de Google, el log muestra `\"https://www.google.com/\"`. La IP real tras un proxy es `$http_x_forwarded_for`.", "ref": "Apartado de la teoría: §6.3."}, {"n": 68, "q": "¿Cuándo aparece algo distinto de `-` en el campo `$remote_user`?", "opts": ["Cuando el usuario ha iniciado sesión en la aplicación con una cookie.", "Siempre que la petición la hace un navegador.", "Cuando hay autenticación en el servidor web.", "Cuando el cliente se conecta como `root`."], "correct": 2, "exp": "`$remote_user` es el usuario de la autenticación HTTP, que configuraremos en 3.2.1. Las sesiones de una aplicación con cookies no aparecen ahí.", "ref": "Apartado de la teoría: §6.3."}, {"n": 69, "q": "¿Qué guarda el campo `$http_x_forwarded_for`?", "opts": ["La IP del servidor al que se reenvía la petición.", "La URL a la que se redirige al cliente.", "La IP real del cliente cuando hay un proxy delante.", "El puerto publicado por Docker."], "correct": 2, "exp": "Cuando hay un proxy delante, Nginx ve la IP del proxy en `$remote_addr`; el proxy añade la del cliente en la cabecera `X-Forwarded-For` (3.2.2). Sin proxy vale `-`.", "ref": "Apartado de la teoría: §6.3."}, {"n": 70, "q": "Tu log muestra peticiones a `/wp-login.php`, `/.env` y `/phpmyadmin/` con 404 que nadie de tu equipo ha hecho. ¿Qué son?", "opts": ["Bots que recorren Internet buscando fallos conocidos; que den 404 es buena señal.", "Pruebas que hace Nginx al arrancar para comprobar la configuración.", "Indicios de que alguien ha instalado un WordPress en tu servidor.", "Errores de tu configuración, que deberían dar 200."], "correct": 0, "exp": "En cuanto un servidor tiene el 80 abierto, llegan bots buscando WordPress, ficheros `.env` o paneles olvidados. La lección: no dejar en la web nada que no deba verse y revisar los logs.", "ref": "Apartado de la teoría: §6.4."}, {"n": 71, "q": "En la imagen oficial, ¿con qué usuario corren los *workers* de Nginx?", "opts": ["`root`", "`www-data`", "El usuario de la máquina que lanzó el contenedor.", "`nginx` (UID 101)."], "correct": 3, "exp": "El maestro corre como `root`, pero las peticiones las atienden los *workers*, como el usuario sin privilegios `nginx`. `www-data` es el del paquete de Debian/Ubuntu.", "ref": "Apartado de la teoría: §7."}, {"n": 72, "q": "En el Nginx del paquete de Debian/Ubuntu, ¿con qué usuario corren los *workers*?", "opts": ["`nginx`", "`www-data`", "`root`", "`apache`"], "correct": 1, "exp": "Debian y Ubuntu usan `www-data` para los servidores web. La imagen oficial de Docker usa `nginx`.", "ref": "Apartado de la teoría: §7."}, {"n": 73, "q": "¿Qué permisos son los habituales en los ficheros y las carpetas de la web?", "opts": ["`600` en los ficheros y `700` en las carpetas.", "`777` en los ficheros y en las carpetas.", "`755` en los ficheros y `644` en las carpetas.", "`644` en los ficheros y `755` en las carpetas."], "correct": 3, "exp": "El usuario de Nginx tiene que poder leer los ficheros (`r`) y atravesar las carpetas (`x`). Con `600`/`700` no puede, y `777` deja que cualquiera los modifique.", "ref": "Apartado de la teoría: §7."}, {"n": 74, "q": "Una página da 403 y el log de errores dice `open() \"…/privado.html\" failed (13: Permission denied)`. ¿Qué pasa?", "opts": ["El fichero no existe en la carpeta publicada.", "El usuario de los *workers* no puede leer el fichero: hay que darle permiso de lectura (`644`).", "Falta cargar el módulo que sirve ficheros HTML.", "Hay que activar `autoindex` en esa carpeta."], "correct": 1, "exp": "`Permission denied` indica un problema de permisos. Si el fichero no existiera, sería un 404 con `No such file or directory`.", "ref": "Apartado de la teoría: §7."}, {"n": 75, "q": "Una URL da 403 y el log dice `directory index of \"…/docs/\" is forbidden`. ¿Qué pasa?", "opts": ["El usuario `nginx` no puede leer los ficheros de la carpeta.", "La carpeta `docs/` no existe.", "Se ha pedido una carpeta sin `index.html` y `autoindex` está desactivado.", "`server_tokens off` impide mostrar carpetas."], "correct": 2, "exp": "Nginx no lista carpetas por defecto. Si no hay fichero índice, responde 403. Si la carpeta no existiera, sería un 404.", "ref": "Apartado de la teoría: §7."}, {"n": 76, "q": "Una web funciona en tu portátil con Docker Desktop, pero en la VM Linux da 403. ¿Cuál es la causa probable?", "opts": ["En Linux, los ficheros montados conservan sus permisos, y en Docker Desktop se traducen: un `600` no se nota en el portátil.", "Docker Desktop usa una versión de Nginx distinta de la imagen oficial.", "La VM Linux no permite montar carpetas en los contenedores.", "Azure bloquea por defecto los ficheros `.html`."], "correct": 0, "exp": "Con *bind mounts* en Linux, el contenedor ve el propietario y los permisos reales. En Docker Desktop (Windows y macOS) se traducen y todo se puede leer. Se corrige en la VM con `chmod 644` y `chmod 755`.", "ref": "Apartado de la teoría: §7."}, {"n": 77, "q": "¿Qué consigue `server_tokens off;`?", "opts": ["Que la cabecera `Server` diga `nginx`, sin la versión.", "Que la cabecera `Server` desaparezca de las respuestas.", "Que no se escriba el log de acceso.", "Que Nginx deje de aceptar HTTP/1.1."], "correct": 0, "exp": "Por defecto Nginx envía `Server: nginx/1.30.6`. Con `server_tokens off` envía `Server: nginx`. Para quitar la cabecera entera hace falta `headers-more`.", "ref": "Apartado de la teoría: §8.1."}, {"n": 78, "q": "¿Por qué ocultar la versión de Nginx no es suficiente?", "opts": ["Porque Nginx sigue escribiendo la versión en cada línea del log.", "Porque `server_tokens off` no funciona en Docker.", "Porque no sustituye a actualizar: solo pone las cosas algo más difíciles a un atacante.", "Porque los navegadores necesitan la versión para mostrar la web."], "correct": 2, "exp": "Un servidor desactualizado sigue siendo vulnerable aunque no diga su versión. Con Docker, actualizar es cambiar la etiqueta de la imagen o reconstruir con `docker compose build --pull`.", "ref": "Apartado de la teoría: §8.1."}, {"n": 79, "q": "¿Qué hace `autoindex on;`?", "opts": ["Crea un `index.html` automático con una plantilla.", "Si una carpeta no tiene `index.html`, muestra la lista de sus ficheros.", "Sirve el primer fichero de la carpeta por orden alfabético.", "Avisa a los buscadores para que indexen la web."], "correct": 1, "exp": "Con `autoindex on`, cualquiera ve todos los ficheros de la carpeta, incluidos los que no querías enseñar. Actívalo solo en carpetas pensadas para descargas.", "ref": "Apartado de la teoría: §8.2."}, {"n": 80, "q": "¿Cómo viene configurado por defecto el listado de directorios?", "opts": ["Activado en los dos servidores.", "Desactivado en los dos servidores.", "En Nginx, activado; en Apache de Debian, desactivado.", "En Nginx, desactivado (`autoindex off`); en Apache de Debian, activado (`Options Indexes`)."], "correct": 3, "exp": "Por eso en Nginx una carpeta sin índice da 403, y en Apache de Debian hay que acordarse de quitar `Indexes`.", "ref": "Apartado de la teoría: §8.2."}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+const explanationBox = document.getElementById("explanation");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function renderExplanation(item) {
+  if (!item.exp) return "";
+  const paras = item.exp.split("\n\n").map(p =>
+    `<p>${renderInline(p)}</p>`);
+  if (item.ref) paras.push(`<p class="ref">${renderInline(item.ref)}</p>`);
+  return paras.join("");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct, exp: q.exp, ref: q.ref };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  explanationBox.innerHTML = "";
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  explanationBox.innerHTML = renderExplanation(item);
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+      <div class="explanation">${renderExplanation(item)}</div>
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
