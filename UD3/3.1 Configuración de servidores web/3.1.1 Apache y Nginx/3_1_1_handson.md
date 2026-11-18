@@ -10,55 +10,55 @@ permalink: /servidores-web/semana-1/taller/
 
 > Guion para el docente: lo que se hace en directo, compartiendo pantalla, después de la presentación. El alumnado **solo mira** (y pregunta); luego repetirá todo esto, y más, en la práctica.
 
-**Duración:** 15–20 min · **Dónde:** en tu VM de Azure (`ssh daw`), con tu dominio (en este guion, `tunombre.me`).
+**Duración:** 15–20 min · **Dónde:** en tu ordenador, con Docker Desktop. Todo se sirve en **`http://localhost:8080`**.
 
 | # | Paso | Tiempo | Qué se ve |
 |---|------|--------|-----------|
-| 1 | Primer Nginx | 2 min | Un comando y ya hay web en `http://tunombre.me` |
+| 1 | Primer Nginx | 2 min | Un comando y ya hay web en `http://localhost:8080` |
 | 2 | Dentro del contenedor | 3 min | Dónde está la configuración y quién ejecuta qué |
 | 3 | Logs en directo | 2 min | Cada recarga del navegador es una línea |
 | 4 | Mi web y mi configuración | 3 min | *Bind mounts*, `nginx -t` y `reload` |
 | 5 | Romperlo a propósito | 3 min | `reload` aguanta; `restart` tumba la web |
 | 6 | Módulos: miniaturas al vuelo | 4 min | `unknown directive`, `load_module` y la foto en el navegador |
-| 7 | 403 y la cabecera `Server` | 2 min | Permisos, log de errores y `server_tokens off` |
+| 7 | 403 y la cabecera `Server` | 2 min | Log de errores y `server_tokens off` |
 
 ---
 
-## Antes de clase (10 min, una sola vez)
+## Antes de clase (5 min, una sola vez)
 
-- [ ] La VM encendida y `ssh daw` funcionando. **Nada escuchando en el puerto 80** (`docker ps`; si queda el `prueba` del dosier 1: `docker rm -f prueba`).
-- [ ] `dig +short tunombre.me` devuelve la IP de la VM.
-- [ ] Imagen ya descargada, para no esperar en clase: `ssh daw 'docker pull nginx:1.30'`.
-- [ ] **Copiar la carpeta del taller a la VM.** Está en el repositorio, junto a este guion, en `handson/taller/`: la web (`html/index.html`), una foto de prueba de 1600 × 1000 (`html/img/foto.jpg`) y las carpetas `nginx/conf.d/` y `nginx/njs/` **vacías**, porque esos ficheros se crean en directo en los pasos 4 y 6. Desde **tu ordenador**, en la carpeta de este guion:
+- [ ] Docker Desktop arrancado (`docker version` responde) y **nada escuchando en el puerto 8080** (`docker ps`).
+- [ ] Imagen ya descargada, para no esperar en clase: `docker pull nginx:1.30`.
+- [ ] **Copiar la carpeta del taller a `~/taller`.** Está en el repositorio, junto a este guion, en `handson/taller/`: la web (`html/index.html`), una foto de prueba de 1600 × 1000 (`html/img/foto.jpg`) y las carpetas `nginx/conf.d/` y `nginx/njs/` **vacías**, porque esos ficheros se crean en directo en los pasos 4 y 6. Desde la carpeta de este guion:
   ```bash
-  cd "UD3/3.1 Configuración de servidores web/3.1.1 Apache y Nginx/handson"
-  ssh daw 'rm -rf ~/taller'          # por si quedó de otra vez
-  scp -r taller daw:~/
-  ssh daw 'ls -R ~/taller'
+  rm -rf ~/taller                    # por si quedó de otra vez
+  cp -R handson/taller ~/taller
+  ls -R ~/taller
   ```
-  > Si `~/taller` ya existe, `scp -r` crearía `~/taller/taller`: por eso se borra antes.
+  > Si `~/taller` ya existe, `cp -R` crearía `~/taller/taller`: por eso se borra antes.
   >
-  > Si prefieres una foto tuya, sustitúyela: `scp mifoto.jpg daw:~/taller/html/img/foto.jpg`.
+  > Sin el repositorio a mano, todo esto (`taller/` y `solucion/`) está también en **`3_1_1_handson.zip`**: `unzip 3_1_1_handson.zip && cp -R 3_1_1_handson/taller ~/taller`.
+  >
+  > Si prefieres una foto tuya, sustitúyela: `cp mifoto.jpg ~/taller/html/img/foto.jpg`.
   >
   > La imagen del `index.html` aparecerá rota hasta el paso 6 (todavía no hay `/miniatura/`). Es una buena pregunta para la clase: «¿por qué no se ve?».
-- [ ] **Plan B en directo:** en `handson/solucion/` están `compose.yaml` y `nginx/` tal como quedan al final del paso 6 (cambia `tunombre.me` por tu dominio en `nginx/conf.d/default.conf`). Si una edición se tuerce: `scp -r solucion/compose.yaml solucion/nginx daw:~/taller/` y `ssh daw 'cd ~/taller && docker compose up -d --build'`.
-- [ ] **Pantalla:** letra grande en el terminal. Dos terminales abiertos con `ssh daw` (uno para comandos y otro para `docker logs -f`) y el navegador con `http://tunombre.me` (en una ventana privada, para que no use caché).
+- [ ] **Plan B en directo:** en `handson/solucion/` están `compose.yaml` y `nginx/` tal como quedan al final del paso 6. Si una edición se tuerce: `cp -R handson/solucion/compose.yaml handson/solucion/nginx ~/taller/` y `cd ~/taller && docker compose up -d --build`.
+- [ ] **Pantalla:** letra grande en el terminal. Dos terminales abiertos (uno para comandos y otro para `docker logs -f`), el editor con `~/taller` abierto y el navegador con `http://localhost:8080` (en una ventana privada, para que no use caché).
 
-> **Plan B** si la VM falla: Docker Desktop en tu portátil, con `localhost` en lugar de `tunombre.me`. Todo funciona igual **salvo el 403 por permisos del paso 7**, que con Docker Desktop no aparece (se puede enseñar creando el fichero dentro del contenedor: `docker exec web sh -c 'echo x > /usr/share/nginx/html/s.html; chmod 600 /usr/share/nginx/html/s.html'`).
+> **zsh** (el terminal por defecto del Mac): las URLs con `?` van **entre comillas** en `curl`, o zsh responde `no matches found`.
 
 ---
 
 ## Paso 1 — Primer Nginx (2 min)
 
 ```bash
-docker run -d --name web -p 80:80 nginx:1.30
-curl -I http://localhost
+docker run -d --name web -p 8080:80 nginx:1.30
+curl -I http://localhost:8080
 ```
 
-Abre `http://tunombre.me` en el navegador: **Welcome to nginx!**
+Abre `http://localhost:8080` en el navegador: **Welcome to nginx!**
 
 🗣️ **Qué contar:**
-- Un comando y hay un servidor web en Internet. `-p 80:80` = puerto 80 de la VM → puerto 80 del contenedor; el NSG de Azure ya tenía el 80 abierto (dosier 1).
+- Un comando y hay un servidor web funcionando. `-p 8080:80` = puerto 8080 de mi ordenador → puerto 80 del contenedor. Dentro, Nginx escucha en el 80 de siempre.
 - Señala en `curl -I` la cabecera **`Server: nginx/1.30.6`**: la volveremos a mirar en el paso 7.
 
 ## Paso 2 — Dentro del contenedor (3 min)
@@ -69,12 +69,12 @@ docker top web
 
 ```
 UID    PID   ...  CMD
-root   2459  ...  nginx: master process nginx -g daemon off;
-101    2502  ...  nginx: worker process
-101    2503  ...  nginx: worker process
+root   676   ...  nginx: master process nginx -g daemon off;
+statd  723   ...  nginx: worker process
+statd  724   ...  nginx: worker process
 ```
 
-🗣️ El **maestro** corre como `root` y es el **proceso principal** del contenedor (`daemon off`). Los **workers** corren con el UID 101, que dentro del contenedor es el usuario `nginx` (en la VM puede salir otro nombre para ese UID). Hay un *worker* por núcleo (`worker_processes auto`).
+🗣️ El **maestro** corre como `root` y es el **proceso principal** del contenedor (`daemon off`). Los **workers** corren con el UID 101, que dentro del contenedor es el usuario `nginx`. Fuera sale otro nombre (`statd` en Docker Desktop) porque `docker top` traduce el UID con los usuarios de la máquina donde corre Docker, no con los del contenedor. Hay un *worker* por núcleo (`worker_processes auto`).
 
 ```bash
 docker exec web ls /etc/nginx /etc/nginx/conf.d
@@ -97,12 +97,12 @@ En el **segundo terminal**:
 docker logs -f web
 ```
 
-Recarga varias veces `http://tunombre.me` en el navegador y pide una página que no existe (`http://tunombre.me/noexiste`).
+Recarga varias veces `http://localhost:8080` en el navegador y pide una página que no existe (`http://localhost:8080/noexiste`).
 
 🗣️ **Qué contar:**
-- Cada recarga es **una línea**. Señala la IP (la del centro), la petición, el **200** y el **404** y el *user-agent* del navegador.
+- Cada recarga es **una línea**. Señala la IP del cliente, la petición, el **200** y el **404** y el *user-agent* del navegador.
+- La IP no es `127.0.0.1` sino la de la pasarela de Docker (`192.168.65.1` en Docker Desktop): para Nginx, la petición llega desde fuera del contenedor.
 - El 404 aparece **dos veces**: una línea en el log de acceso y otra en el de errores (`open() … failed (2: No such file or directory)`).
-- Si aparece alguna línea que no es vuestra (`/wp-login.php`, `/.env`…), **aprovéchala**: son bots que ya han encontrado la VM.
 
 Deja este terminal así durante todo el taller.
 
@@ -121,7 +121,6 @@ ls -R
 Salida esperada:
 
 ```
-.:
 html  nginx
 
 ./html:
@@ -138,20 +137,20 @@ conf.d  njs
 ./nginx/njs:
 ```
 
-🗣️ **Qué contar:** de momento solo tenemos **la web** (`html/`), que copié antes de clase. Las carpetas `nginx/conf.d/` y `nginx/njs/` están **vacías**. Ahora vamos a escribir, aquí en el disco de la VM (no dentro del contenedor), los dos ficheros que faltan para que Nginx sirva esta web:
+🗣️ **Qué contar:** de momento solo tenemos **la web** (`html/`), que copié antes de clase. Las carpetas `nginx/conf.d/` y `nginx/njs/` están **vacías**. Ahora vamos a escribir, aquí en el disco de mi ordenador (no dentro del contenedor), los dos ficheros que faltan para que Nginx sirva esta web:
 
-1. **`nginx/conf.d/default.conf`**: la configuración del sitio (qué dominio, qué carpeta, qué fichero por defecto).
-2. **`compose.yaml`**: cómo arrancar el contenedor y qué carpetas de la VM se montan dentro.
+1. **`nginx/conf.d/default.conf`**: la configuración del sitio (qué nombre, qué carpeta, qué fichero por defecto).
+2. **`compose.yaml`**: cómo arrancar el contenedor y qué carpetas de mi ordenador se montan dentro.
 
-Como están en la VM y no en el contenedor, **si borramos el contenedor no se pierden**.
+Como están en mi ordenador y no en el contenedor, **si borramos el contenedor no se pierden**.
 
-**El sitio**, `nginx/conf.d/default.conf` (cambia `tunombre.me` por tu dominio):
+**El sitio**, `nginx/conf.d/default.conf`:
 
 ```bash
 cat > nginx/conf.d/default.conf <<'EOF'
 server {
     listen 80;
-    server_name tunombre.me www.tunombre.me;
+    server_name localhost;
 
     root  /usr/share/nginx/html;
     index index.html;
@@ -159,7 +158,7 @@ server {
 EOF
 ```
 
-🗣️ Lo mínimo: puerto, nombre del sitio, carpeta publicada y fichero por defecto. Es lo mismo que el `default.conf` que acabamos de ver dentro del contenedor, pero ahora es **nuestro**.
+🗣️ Lo mínimo: puerto, nombre del sitio, carpeta publicada y fichero por defecto. Es lo mismo que el `default.conf` que acabamos de ver dentro del contenedor, pero ahora es **nuestro**. El `listen` es el **80**: es el puerto de dentro del contenedor; el 8080 solo existe en mi ordenador.
 
 **El `compose.yaml`:**
 
@@ -169,7 +168,7 @@ services:
   web:
     image: nginx:1.30
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./html:/usr/share/nginx/html:ro
@@ -186,11 +185,11 @@ docker compose ps
 
 (En el segundo terminal, corta el `docker logs -f web` con Ctrl+C y cambia a `cd ~/taller && docker compose logs -f`).
 
-Recarga `http://tunombre.me`: ahora sale **tu** web.
+Recarga `http://localhost:8080`: ahora sale **tu** web.
 
 🗣️ **Qué contar:**
-- La web (`html/`) y los sitios (`nginx/conf.d/`) están en la **VM** y se **montan** en el contenedor (`:ro`, solo lectura). Si borro el contenedor, no se pierde nada.
-- Edita `html/index.html` (cambia una palabra) y recarga el navegador: **no hace falta recargar Nginx** para cambiar la web.
+- La web (`html/`) y los sitios (`nginx/conf.d/`) están en **mi ordenador** y se **montan** en el contenedor (`:ro`, solo lectura). Si borro el contenedor, no se pierde nada.
+- Edita `html/index.html` en el editor (cambia una palabra) y recarga el navegador: **no hace falta recargar Nginx** para cambiar la web.
 - Cambiar la **configuración**, en cambio, sí requiere recargar. Siempre así:
 
 ```bash
@@ -207,15 +206,15 @@ docker compose exec web nginx -t
 ```
 
 ```
-nginx: [emerg] directive "index" is not terminated by ";" in /etc/nginx/conf.d/default.conf:6
+nginx: [emerg] unexpected "}" in /etc/nginx/conf.d/default.conf:7
 nginx: configuration file /etc/nginx/nginx.conf test failed
 ```
 
-🗣️ Te dice **qué**, **en qué fichero** y **en qué línea**. Ahora, «me da igual, recargo»:
+🗣️ Te dice **qué**, **en qué fichero** y **en qué línea**… aunque la línea es la **siguiente**: sin el `;`, Nginx sigue leyendo la directiva `index` y tropieza con la `}`. Cuando el error señala una línea que parece bien, mira la de **antes**. Ahora, «me da igual, recargo»:
 
 ```bash
 docker compose exec web nginx -s reload     # da el mismo error
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080
 ```
 
 🗣️ **200**: el `reload` **rechaza** la configuración rota y Nginx **sigue funcionando** con la anterior. Parece que no pasa nada… hasta que alguien reinicia:
@@ -227,7 +226,7 @@ docker compose ps
 
 ```
 NAME           ...   STATUS
-taller-web-1   ...   Restarting (1) 2 seconds ago
+taller-web-1   ...   Restarting (1) Less than a second ago
 ```
 
 Recarga el navegador: **la web está caída**. En el segundo terminal se ve el `[emerg]` repetido cada pocos segundos.
@@ -246,7 +245,7 @@ docker compose exec web ls /etc/nginx/modules
 
 🗣️ Estos `.so` son los **módulos dinámicos** que trae la imagen: `image_filter`, `js` (njs), `acme`, `geoip` y `xslt`. Están, pero **no están cargados**.
 
-**6.1 Usar una directiva sin su módulo.** Edita `nginx/conf.d/default.conf` (`nano nginx/conf.d/default.conf`) y añade este bloque dentro del `server`, antes de la `}` final:
+**6.1 Usar una directiva sin su módulo.** Edita `nginx/conf.d/default.conf` y añade este bloque dentro del `server`, antes de la `}` final:
 
 ```nginx
     location /miniatura/ {
@@ -272,10 +271,9 @@ nginx: [emerg] unknown directive "image_filter" in /etc/nginx/conf.d/default.con
 
 ```bash
 docker run --rm nginx:1.30 cat /etc/nginx/nginx.conf > nginx/nginx.conf
-nano nginx/nginx.conf
 ```
 
-Haz tres cambios en directo:
+Ábrelo en el editor y haz tres cambios en directo:
 
 - **Al principio del todo**, antes de `user nginx;`:
   ```nginx
@@ -309,7 +307,7 @@ COPY njs/ /etc/nginx/njs/
 EOF
 ```
 
-**6.4 Usar nuestra imagen.** En `compose.yaml` (`nano compose.yaml`), cambia la línea `image: nginx:1.30` por:
+**6.4 Usar nuestra imagen.** En `compose.yaml`, cambia la línea `image: nginx:1.30` por:
 
 ```yaml
     build: ./nginx
@@ -324,9 +322,11 @@ docker compose exec web nginx -t
 
 Abre en el navegador:
 
-- `http://tunombre.me/img/foto.jpg` (la original)
-- `http://tunombre.me/miniatura/foto.jpg?w=200`
-- `http://tunombre.me/miniatura/foto.jpg?w=600`
+- `http://localhost:8080/img/foto.jpg` (la original, 1600 × 1000)
+- `http://localhost:8080/miniatura/foto.jpg?w=200`
+- `http://localhost:8080/miniatura/foto.jpg?w=600`
+
+Y recarga `http://localhost:8080`: la imagen del `index.html` ya se ve.
 
 🗣️ **Una sola foto en disco y Nginx genera cada tamaño al vuelo.** `$arg_w` es el parámetro `w` de la URL.
 
@@ -341,7 +341,7 @@ Abre en el navegador:
 ```bash
 docker compose exec web nginx -t
 docker compose exec web nginx -s reload
-curl http://tunombre.me/hola
+curl http://localhost:8080/hola
 ```
 
 🗣️ JavaScript ejecutado **dentro de Nginx**. Fíjate en que aquí basta con `reload`: el módulo ya estaba cargado en nuestra imagen y solo hemos cambiado el sitio.
@@ -349,30 +349,30 @@ curl http://tunombre.me/hola
 ## Paso 7 — 403 y la cabecera `Server` (2 min)
 
 ```bash
-echo "secreto" > html/secreto.html
-chmod 600 html/secreto.html
-ls -l html/secreto.html
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost/secreto.html
+mkdir html/fotos
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/fotos/
 ```
 
-🗣️ **403**. El fichero es de `daw` con permisos `600` y el *worker* corre como `nginx`, que no puede leerlo. El segundo terminal muestra el porqué: `open() "…/secreto.html" failed (13: Permission denied)`.
+🗣️ **403**. La carpeta existe pero no tiene `index.html`, y Nginx **no lista carpetas** si no se le pide (`autoindex off`). El segundo terminal muestra el porqué: `directory index of "/usr/share/nginx/html/fotos/" is forbidden`.
+
+🗣️ La otra causa típica de un 403 son los **permisos**: en un servidor Linux, un fichero con `chmod 600` que el *worker* (`nginx`) no puede leer da `(13: Permission denied)`. Con Docker Desktop no se ve, porque los ficheros montados desde el Mac o Windows se leen siempre; lo veréis en el servidor.
 
 ```bash
-chmod 644 html/secreto.html
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost/secreto.html   # 200
-curl -I http://localhost | grep Server
+echo "<h1>Fotos</h1>" > html/fotos/index.html
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/fotos/   # 200
+curl -I http://localhost:8080 | grep Server
 ```
 
 🗣️ Ahora sale `Server: nginx`, **sin versión**: el `nginx.conf` de nuestra imagen lleva `server_tokens off;`. Compáralo con el paso 1.
 
-**Y a la práctica**: «Ahora vosotros, en vuestra VM, y con evidencias.»
+**Y a la práctica**: «Ahora vosotros, y con evidencias.»
 
 ---
 
 ## Limpieza (después de clase)
 
 ```bash
-ssh daw 'cd ~/taller && docker compose down --rmi local && rm -rf ~/taller'
+cd ~/taller && docker compose down --rmi local && cd ~ && rm -rf ~/taller
 ```
 
 Para repetir el taller con otro grupo, vuelve a copiar `handson/taller/` como en «Antes de clase».
@@ -391,10 +391,11 @@ Para repetir el taller con otro grupo, vuelve a copiar `handson/taller/` como en
 │   └── conf.d/default.conf ← paso 4 (+ /miniatura/ y /hola en el paso 6)
 └── html/
     ├── index.html          ← antes de clase (handson/taller/)
-    └── img/foto.jpg        ← antes de clase (handson/taller/)
+    ├── img/foto.jpg        ← antes de clase (handson/taller/)
+    └── fotos/index.html    ← paso 7
 ```
 
-Estos ficheros finales están también en `handson/solucion/`. Si prefieres pegarlos en vez de copiarlos con `scp`, aquí están los dos que más se editan en directo:
+Estos ficheros finales (salvo `html/fotos/`) están también en `handson/solucion/`. Si prefieres pegarlos en vez de copiarlos, aquí están los dos que más se editan en directo:
 
 `nginx/conf.d/default.conf` (final):
 
@@ -402,7 +403,7 @@ Estos ficheros finales están también en `handson/solucion/`. Si prefieres pega
 cat > nginx/conf.d/default.conf <<'EOF'
 server {
     listen 80;
-    server_name tunombre.me www.tunombre.me;
+    server_name localhost;
 
     root  /usr/share/nginx/html;
     index index.html;
@@ -462,4 +463,4 @@ EOF
 
 ### Comprobado
 
-Con `nginx:1.30` (1.30.6): miniaturas de una foto de 1200 × 800 a 300 px (1 678 bytes) y a 100 px (830 bytes), `/hola` con njs, `server_tokens off` → `Server: nginx`, 403 por carpeta sin índice, 404. Con el `;` quitado: `nginx -t` y `reload` dan `directive "index" is not terminated by ";"`, la web sigue respondiendo 200 y, tras `docker compose restart`, el contenedor queda en `Restarting (1)` hasta que se corrige y vuelve solo a `Up`.
+Con Docker Desktop (Docker 29.7) y `nginx:1.30` (1.30.6), en `localhost:8080`: `Server: nginx/1.30.6`; *workers* como `statd` en `docker top`; 404 en los dos logs con cliente `192.168.65.1`. Sin el `;` de `index`: `nginx -t` y `reload` dan `unexpected "}" … default.conf:7`, la web sigue respondiendo 200 y, tras `docker compose restart`, el contenedor queda en `Restarting (1)` hasta que se corrige y vuelve solo a `Up`. Miniaturas de la foto de 1600 × 1000 a 200 × 125 y 600 × 375; `/hola` con njs; `server_tokens off` → `Server: nginx`. 403 por carpeta sin índice (`directory index … is forbidden`); en cambio, un fichero montado con `chmod 600` devuelve 200.

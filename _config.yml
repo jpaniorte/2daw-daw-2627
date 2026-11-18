@@ -11,6 +11,8 @@ exclude:
   - UD0
   - obsidian
   - autocorrector
+  # documentación interna de la programación didáctica
+  - programacion
   - themes
   - build.py
   - ra.pdf
@@ -138,6 +140,9 @@ nav:
             subs:
               - id: u3b1s1
                 title: "3.1.1 Instalación y configuración básica de Apache y Nginx"
+                pages:
+                  - { title: "Prácticas: taller de Nginx", url: "/servidores-web/semana-1/handson/", external: true }
+                  - { title: "Prácticas: taller de Nginx (zip)", url: "/UD3/3.1%20Configuraci%C3%B3n%20de%20servidores%20web/3.1.1%20Apache%20y%20Nginx/3_1_1_handson.zip" }
               - id: u3b1s2
                 title: "3.1.2 Hosts virtuales y redirecciones"
           - id: u3b2
