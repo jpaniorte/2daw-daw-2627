@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulacro de test — servidores web, bloque 3.1.2: hosts virtuales y redirecciones</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --border: #e2e4e9;
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --good: #16a34a;
+    --good-bg: #dcfce7;
+    --bad: #dc2626;
+    --bad-bg: #fee2e2;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+  .app {
+    width: 100%;
+    max-width: 720px;
+  }
+  header.top {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header.top h1 {
+    font-size: 1.5rem;
+    margin: 0 0 4px;
+  }
+  header.top p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #start-screen p { color: var(--muted); line-height: 1.5; }
+  .btn {
+    display: inline-block;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .btn:hover { background: var(--brand-dark); }
+  .btn:disabled { background: #b9c3d6; cursor: not-allowed; }
+  .btn.secondary {
+    background: transparent;
+    color: var(--brand);
+    border: 1px solid var(--brand);
+  }
+  .btn.secondary:hover { background: #eff4ff; }
+  .btn-row { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .progress-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--brand);
+    transition: width 0.2s ease;
+  }
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+  .options { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 0.98rem;
+    line-height: 1.4;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .option:hover:not(.disabled) { border-color: var(--brand); }
+  .option.disabled { cursor: default; }
+  .option .letter {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .option.correct { border-color: var(--good); background: var(--good-bg); }
+  .option.correct .letter { background: var(--good); color: #fff; }
+  .option.incorrect { border-color: var(--bad); background: var(--bad-bg); }
+  .option.incorrect .letter { background: var(--bad); color: #fff; }
+  code {
+    background: #eef0f4;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .option.correct code, .option.incorrect code { background: rgba(255,255,255,0.6); }
+
+  .footer-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #results-screen .score-box {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  #results-screen .score-number {
+    font-size: 2.6rem;
+    font-weight: 800;
+  }
+  #results-screen .score-label {
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-item {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .review-item:first-of-type { border-top: none; margin-top: 8px; }
+  .review-q {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+  }
+  .review-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .review-badge.ok { background: var(--good-bg); color: var(--good); }
+  .review-badge.ko { background: var(--bad-bg); color: var(--bad); }
+  .review-line { font-size: 0.9rem; color: var(--muted); margin: 2px 0; }
+  .review-line .val-ok { color: var(--good); font-weight: 600; }
+  .review-line .val-ko { color: var(--bad); font-weight: 600; }
+  .explanation {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--brand);
+    background: #eff4ff;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .explanation:empty { display: none; }
+  .explanation p { margin: 0 0 8px; }
+  .explanation p:last-child { margin-bottom: 0; }
+  .explanation .ref { color: var(--muted); font-size: 0.85rem; }
+  .review-item .explanation { margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <h1>Simulacro de test — servidores web, bloque 3.1.2: hosts virtuales y redirecciones</h1>
+    <p>20 preguntas al azar del banco de 80 · Despliegue de Aplicaciones Web (0614)</p>
+  </header>
+
+  <div class="card">
+
+    <div id="start-screen" class="screen active">
+      <p>Se elegirán <strong>20 preguntas al azar</strong> de las 80 disponibles, en orden aleatorio. Tras responder cada una verás si has acertado, y al final tendrás tu nota junto con un repaso completo.</p>
+      <div class="btn-row">
+        <button class="btn" id="start-btn">Empezar simulacro</button>
+      </div>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+      <div class="progress-wrap">
+        <span id="progress-label">Pregunta 1/20</span>
+        <span id="score-label">Aciertos: 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+      <p class="question-text" id="question-text"></p>
+      <ul class="options" id="options-list"></ul>
+      <div class="explanation" id="explanation"></div>
+      <div class="footer-row">
+        <button class="btn" id="next-btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="results-screen" class="screen">
+      <div class="score-box">
+        <div class="score-number" id="score-number">0/20</div>
+        <div class="score-label" id="score-percent">0%</div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn" id="restart-btn">Repetir con otras 20 preguntas</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [{"n": 1, "q": "Tu VM tiene una sola IP y los nombres `a.com` y `b.com` apuntan a ella. Un cliente pide `http://b.com/`. ¿Qué parte de la petición permite a Nginx saber que se trata de `b.com`?", "opts": ["El nombre `b.com`, que viaja en la IP de destino del paquete TCP.", "La línea `Host: b.com`, que el navegador añade a la cabecera.", "El nombre `b.com`, escrito en la primera línea como `GET b.com/ HTTP/1.1`.", "El puerto de destino, que es distinto para cada nombre de dominio."], "correct": 1, "exp": "Las dos webs comparten IP y puerto. Lo único que las distingue es la cabecera `Host`.", "ref": "Apartado de la teoría: §1."}, {"n": 2, "q": "Un compañero propone alojar tus tres webs en la VM con un puerto cada una (8081, 8082 y 8083) en lugar de hosts por nombre. ¿Cuál es la objeción principal?", "opts": ["Nginx no permite que dos `server` escuchen en puertos distintos del 80.", "Cada puerto adicional necesita su propio certificado de Let's Encrypt.", "Docker solo publica un puerto por contenedor, y el 8080 está reservado.", "Habría que escribir el puerto, y el NSG solo abre 22, 80 y 443."], "correct": 3, "exp": "Por puerto es un tipo válido de host virtual, pero se usa en pruebas: en producción los visitantes entran por 80/443 y es el nombre el que decide la web.", "ref": "Apartado de la teoría: §1."}, {"n": 3, "q": "Sin tocar el DNS, `http://tienda.localhost/` funciona en tu ordenador. En el ordenador de un compañero, ese mismo nombre apunta a la VM de la clase. ¿Qué ocurre si lo intenta?", "opts": ["No llega a la VM: `tienda.localhost` apunta siempre a su propio equipo.", "Llega a la VM, porque el DNS del aula resuelve `.localhost` a la IP de la VM.", "Llega a la VM, siempre que ya haya un `server_name tienda.localhost` allí.", "Falla con un 404, porque el nombre no está en el `hosts` de su ordenador."], "correct": 0, "exp": "Los nombres `*.localhost` están reservados para la máquina local: en cada equipo apuntan a ese mismo equipo.", "ref": "Apartado de la teoría: §2.3."}, {"n": 4, "q": "Quieres comprobar qué `server` responderá a `shop.midominio.me` antes de crear el registro DNS. La IP de la VM es `203.0.113.5`. ¿Qué comando usas?", "opts": ["`curl -X Host:shop.midominio.me http://203.0.113.5/ -I`", "`curl http://203.0.113.5/shop.midominio.me`", "`curl -H \"Host: shop.midominio.me\" http://203.0.113.5/`", "`curl -I shop.midominio.me@203.0.113.5`"], "correct": 2, "exp": "`-H` añade la cabecera `Host` a mano, y Nginx elige el `server` como si hubieras entrado por ese nombre.", "ref": "Apartado de la teoría: §2.3."}, {"n": 5, "q": "Llega una petición con `Host: Tienda.Localhost` y hay un `server_name tienda.localhost;`. ¿Qué pasa?", "opts": ["No coincide, porque `server_name` distingue mayúsculas y minúsculas.", "Coincide, pero Nginx devuelve un 301 a la versión en minúsculas.", "Coincide: los nombres no distinguen mayúsculas.", "No coincide, salvo que el `server_name` se escriba como regex con `~*`."], "correct": 2, "exp": "Los nombres de host no distinguen mayúsculas, y Nginx lo tiene en cuenta al comparar con el `Host`.", "ref": "Apartado de la teoría: §2.2."}, {"n": 6, "q": "En el fichero aparece primero `server_name *.localhost;` y después otro `server` con `server_name tienda.localhost;`. Llega `Host: tienda.localhost`. ¿Qué `server` responde?", "opts": ["El del comodín, porque está antes y Nginx usa el primero que coincide.", "El del nombre exacto, aunque esté escrito después en el fichero.", "El del comodín, porque Nginx prefiere siempre el patrón más general.", "Los dos: Nginx reparte las peticiones entre los `server` que coinciden."], "correct": 1, "exp": "Con `server_name`, el orden en el fichero no manda: el nombre exacto gana al comodín.", "ref": "Apartado de la teoría: §2.2."}, {"n": 7, "q": "¿En qué orden compara Nginx los `server_name` cuando llega un `Host`?", "opts": ["Expresión regular, nombre exacto, comodín al principio y comodín al final.", "Comodín al principio, comodín al final, nombre exacto y expresión regular.", "Nombre exacto y, después, todos los demás por orden de aparición en el fichero.", "Exacto, comodín al principio, comodín al final y regex (la primera)."], "correct": 3, "exp": "Primero el exacto, luego los comodines (primero el del principio) y las regex al final.", "ref": "Apartado de la teoría: §2.2."}, {"n": 8, "q": "Tienes `server_name ~^(?<sub>web\\d)\\.localhost$;` en un `server` y `server_name *.localhost;` en otro. Llega `Host: web1.localhost`. ¿Cuál responde?", "opts": ["El del comodín `*.localhost`, porque las regex se miran después.", "El de la regex, porque es más específica que un comodín.", "El que esté primero en el fichero, sea comodín o regex.", "El de la regex, porque captura `sub` y eso tiene prioridad."], "correct": 0, "exp": "Comprobado: el comodín gana a la regex en `server_name`. Si quieres la regex, quita el comodín o pon el nombre exacto.", "ref": "Apartado de la teoría: §2.2."}, {"n": 9, "q": "Dos ficheros de `conf.d/` definen `server_name tienda.localhost;` en el puerto 80. Haces `nginx -t`. ¿Qué ocurre?", "opts": ["Falla con un `[emerg]` y no se puede recargar hasta quitar uno de los dos.", "Es válida y sin aviso; responde el segundo, que sustituye al primero.", "Es válida y Nginx reparte las peticiones entre los dos `server`.", "Avisa con `conflicting server name … ignored` y responde el primero."], "correct": 3, "exp": "Es un aviso (`[warn]`), no un error. El nombre duplicado se ignora y sigue valiendo el primero.", "ref": "Apartado de la teoría: §2.2."}, {"n": 10, "q": "¿Qué significa `server_name _;`?", "opts": ["Un comodín que coincide con cualquier `Host`, aunque no haya `default_server`.", "Un nombre que nunca coincide con un `Host`; se usa en `default_server`.", "Un nombre reservado que Nginx sustituye por el `Host` de cada petición.", "La forma de decir que el `server` no tiene nombre y atiende solo por IP."], "correct": 1, "exp": "`_` no es un comodín: es un nombre inválido que nunca coincide. Hace de catch-all solo porque se combina con `default_server`.", "ref": "Apartado de la teoría: §3."}, {"n": 11, "q": "Cambias un `server_name` en un fichero de `conf.d/` montado en el contenedor. ¿Cómo lo aplicas sin cortar las conexiones activas?", "opts": ["`docker compose restart web`, que reinicia el contenedor con la nueva configuración.", "`docker compose up -d --build`, que reconstruye la imagen con la configuración.", "`docker compose exec web nginx -t && docker compose exec web nginx -s reload`", "`docker compose exec web nginx -s stop && docker compose up -d`"], "correct": 2, "exp": "Con `conf.d/` montado basta comprobar y recargar. Reiniciar o reconstruir corta las conexiones sin necesidad.", "ref": "Apartado de la teoría: §9."}, {"n": 12, "q": "Entras en la VM por su IP (`http://203.0.113.5/`) y ves la web de uno de tus clientes. Hay varios `server` en el puerto 80 y ninguno con `default_server`. ¿Por qué ocurre?", "opts": ["Nginx redirige las visitas por IP al primer dominio que se registró en el servidor.", "El navegador reutiliza el último `Host` que visitaste y lo envía junto a la IP.", "El NSG de Azure añade el nombre del primer cliente a la cabecera `Host`.", "Ningún `server_name` coincide con la IP y responde el primer `server`."], "correct": 3, "exp": "Sin `default_server`, el servidor por defecto es el primero definido para ese puerto.", "ref": "Apartado de la teoría: §3."}, {"n": 13, "q": "En Apache añades `aaa-cliente.conf` a `sites-enabled/`. Estaba `000-default.conf`. ¿Qué efecto tiene en las peticiones con un `Host` desconocido?", "opts": ["Responde `aaa-cliente`: se carga primero por orden alfabético.", "Responde `000-default`: el `000` le da prioridad frente a cualquier otro fichero.", "Apache rechaza el arranque, porque hay dos `VirtualHost` que podrían ser el primero.", "No cambia nada: Apache solo carga `000-default` y los activados con `a2ensite`."], "correct": 0, "exp": "El `VirtualHost` por defecto de Apache es el primero cargado, y el orden es alfabético por nombre de fichero.", "ref": "Apartado de la teoría: §3, §8."}, {"n": 14, "q": "Quieres que los bots que entran por la IP no reciban nada: ni página ni cabeceras como `Server`. ¿Qué pones en el servidor por defecto?", "opts": ["`return 403;`", "`return 444;`", "`return 204;`", "`server_tokens off;`"], "correct": 1, "exp": "`444` cierra la conexión sin enviar respuesta. 403 y 204 envían una respuesta con cabeceras, y `server_tokens off` solo oculta la versión.", "ref": "Apartado de la teoría: §3."}, {"n": 15, "q": "Añades un segundo `server { listen 80 default_server; … }` en otro fichero de `conf.d/`. ¿Qué dice `nginx -t`?", "opts": ["Un aviso de que el segundo `default_server` se ignora, y la configuración sigue siendo válida.", "`[emerg] a duplicate default server for 0.0.0.0:80`, y la configuración no es válida.", "Nada: el último `default_server` sustituye al anterior sin avisar.", "Que `default_server` solo puede ir en el primer fichero que se carga."], "correct": 1, "exp": "Solo puede haber un `default_server` por IP y puerto: es un error, no un aviso.", "ref": "Apartado de la teoría: §3."}, {"n": 16, "q": "Un `server` por defecto responde con `return 444;`. Con `curl -H \"Host: otro.com\" http://localhost/`, ¿qué ves?", "opts": ["`HTTP/1.1 444` y una página de error de Nginx.", "`curl: (7) Failed to connect to localhost port 80`", "`HTTP/1.1 404 Not Found` con la página de error de Nginx.", "`curl: (52) Empty reply from server`"], "correct": 3, "exp": "No hay respuesta HTTP: Nginx cierra la conexión y curl lo ve como una respuesta vacía (error 52).", "ref": "Apartado de la teoría: §3."}, {"n": 17, "q": "Defines `access_log /var/log/nginx/tienda.access.log;` en el `server` de la tienda. ¿Dónde ves las peticiones de esa web?", "opts": ["En `docker logs`, que junta todos los ficheros de `/var/log/nginx/`.", "Solo dentro del fichero: `docker logs` recoge únicamente stdout y stderr.", "En `docker logs`, pero solo si lo ejecutas con `-f` para seguir el fichero.", "En ningún sitio, porque Nginx exige crear el fichero antes de escribir en él."], "correct": 1, "exp": "En la imagen oficial, `access.log` y `error.log` son enlaces a stdout/stderr. Los ficheros propios son ficheros normales.", "ref": "Apartado de la teoría: §2.4."}, {"n": 18, "q": "¿Qué ventaja tiene que cada host virtual tenga su propio `access_log`?", "opts": ["Miras solo el registro de esa web, sin la mezcla de todas las demás.", "Nginx responde más rápido porque cada `server` escribe en un fichero distinto.", "`docker logs` muestra entonces un registro ordenado por cada `server_name`.", "Los registros por sitio evitan que se duplique la cabecera `Host`."], "correct": 0, "exp": "Es una ventaja de diagnóstico, no de rendimiento. Nginx escribe los logs de forma muy barata en cualquier caso.", "ref": "Apartado de la teoría: §2.4."}, {"n": 19, "q": "Hay tres `location`: `/`, `/img/` y `~ \\.png$`. ¿Cuál atiende `/img/logo.png`?", "opts": ["`/img/`, porque es el prefijo más largo que coincide con la URL.", "`/`, porque es la primera `location` del fichero.", "`/img/` y la regex, aplicadas una detrás de otra.", "La regex `~ \\.png$`, que gana a `/img/` sin `^~`."], "correct": 3, "exp": "Primero se elige el prefijo más largo, pero si una regex coincide, la regex se queda con la petición.", "ref": "Apartado de la teoría: §4.2."}, {"n": 20, "q": "Tienes `/`, `^~ /img/` y `~ \\.png$`. ¿Cuál atiende `/img/logo.png`?", "opts": ["La regex `~ \\.png$`, porque las regex tienen prioridad sobre `^~`.", "`^~ /img/`, porque con `^~` no se evalúan las expresiones regulares.", "`/`, porque `^~` solo se aplica a las carpetas sin extensión.", "Ninguna: `^~` y `~` en el mismo fichero provocan un error de sintaxis."], "correct": 1, "exp": "Si el prefijo más largo lleva `^~`, Nginx lo usa sin mirar las expresiones regulares.", "ref": "Apartado de la teoría: §4.2."}, {"n": 21, "q": "Tienes `/`, `/img/`, `= /img/logo.png` y `~ \\.png$`. ¿Cuál atiende `/img/logo.png`?", "opts": ["`= /img/logo.png`: la exacta gana siempre y corta la búsqueda.", "`~ \\.png$`, porque las regex se evalúan después de las exactas.", "`/img/`, porque es el prefijo más largo y tiene más peso.", "Las dos más específicas, `=` y la regex, en el orden del fichero."], "correct": 0, "exp": "La exacta tiene la máxima prioridad: si coincide, no se mira nada más.", "ref": "Apartado de la teoría: §4.2."}, {"n": 22, "q": "Hay dos regex: `~ \\.png$` (primera en el fichero) y `~ ^/img/` (segunda). Ambas coinciden con `/img/logo.png`. ¿Cuál se aplica?", "opts": ["La segunda, porque su patrón empieza por `^` y es más específico.", "La primera en el fichero, `~ \\.png$`.", "La que tenga el patrón más largo de las dos.", "Las dos, la primera y después la segunda con `add_header`."], "correct": 1, "exp": "Entre regex gana la primera que coincide según el orden del fichero (los prefijos, en cambio, compiten por longitud).", "ref": "Apartado de la teoría: §4.2."}, {"n": 23, "q": "Escribes `location /hola { … }` (sin barra final). ¿Qué URLs atiende?", "opts": ["Solo `/hola` y las que están dentro de la carpeta `/hola/`.", "Solo `/hola`: un prefijo sin barra final se trata como exacta.", "Todas las que empiezan por `/hola`, incluida `/holanda`.", "Solo `/hola/…`: Nginx añade la barra final al prefijo."], "correct": 2, "exp": "Un prefijo coincide con cualquier URL que empiece por esa cadena, sea o no una carpeta.", "ref": "Apartado de la teoría: §4.3."}, {"n": 24, "q": "Tienes `location ~ /pru { … }` (sin `^`). ¿Qué URLs atiende?", "opts": ["Solo las que empiezan por `/pru`, como un prefijo normal.", "Cualquiera que contenga `/pru`, como `/a/pru` o `/otra/pruebas`.", "Solo `/pru`, porque `~` exige la URL completa.", "Ninguna: una regex de `location` debe empezar por `^`."], "correct": 1, "exp": "Sin `^` ni `$`, la regex coincide con la cadena dondequiera que aparezca. Con `/xpru`, en cambio, no hay `/pru` y no coincide.", "ref": "Apartado de la teoría: §4.2."}, {"n": 25, "q": "Con `location ~ ^/usuario/(\\d+)$ { return 200 \"Usuario $1\\n\"; }`, ¿qué ocurre al pedir `/usuario/abc`?", "opts": ["Devuelve `Usuario abc`, porque `$1` recoge lo que hay tras `/usuario/`.", "No coincide con la regex, así que la atiende otra `location` o da 404.", "Devuelve `Usuario ` con un 200 y el número vacío.", "Nginx rechaza la petición con un 400, porque `abc` no es un número."], "correct": 1, "exp": "`\\d+` exige dígitos. Si no coincide, la `location` no se aplica y se sigue con las demás.", "ref": "Apartado de la teoría: §4.2."}, {"n": 26, "q": "Con `location ~ \\.PNG$ { … }`, ¿qué pasa con `/foto.png`?", "opts": ["Coincide: las extensiones de fichero no distinguen mayúsculas en Nginx.", "Coincide, pero solo si el fichero existe en el `root`.", "No coincide: `~` distingue mayúsculas; `~*` no las distingue.", "No coincide, y `~*` tampoco la haría coincidir por la extensión."], "correct": 2, "exp": "Comprobado: `/foto.png` no coincide con `~ \\.PNG$`, pero `~* \\.JPG$` sí coincide con `/x.jpg`.", "ref": "Apartado de la teoría: §4.2."}, {"n": 27, "q": "Una página devuelve el texto con `location /sinct { return 200 \"texto\"; }`, pero el navegador lo descarga como fichero. ¿Por qué?", "opts": ["Sin otro tipo, el `Content-Type` es `application/octet-stream` y se descarga.", "`return 200` solo envía el código de estado y el navegador no recibe cuerpo.", "Los navegadores descargan siempre las respuestas que no vienen de un fichero.", "Falta `index` en la `location`, así que Nginx responde con un binario."], "correct": 0, "exp": "Comprobado en la imagen oficial: sin `default_type text/plain;` o `add_header Content-Type …`, el tipo es `application/octet-stream`.", "ref": "Apartado de la teoría: §4.1."}, {"n": 28, "q": "Con `location /tmp { return 302 /nuevo.html; }`, ¿qué hace una petición a `/tmpfoo`?", "opts": ["Responde con un 404, porque `/tmpfoo` no es la ruta `/tmp`.", "Redirige solo si existe una carpeta llamada `tmpfoo` en el `root`.", "También redirige: el prefijo `/tmp` coincide con `/tmpfoo`.", "Redirige con un 301, porque no hay barra final en la `location`."], "correct": 2, "exp": "Un prefijo sin barra coincide con `/tmp`, `/tmp/x` y `/tmpfoo`. Para limitarlo a una carpeta, `location /tmp/`.", "ref": "Apartado de la teoría: §4.3."}, {"n": 29, "q": "Con `location /hola/ { }` y una carpeta `hola` en el `root`, `curl -I http://localhost/hola` devuelve un 301 que no has escrito. ¿Quién lo genera?", "opts": ["Una regla `rewrite` heredada del bloque `http` de la imagen oficial.", "El `default_server`, que normaliza las URL de todas las webs.", "El navegador, que añade la barra antes de enviar la petición.", "Nginx: con una carpeta existente sin barra final, redirige a la barra."], "correct": 3, "exp": "Es un comportamiento propio de Nginx para las carpetas. De ahí que convenga escribir las `location` de carpeta con barra final.", "ref": "Apartado de la teoría: §4.3."}, {"n": 30, "q": "Tienes `location /api { return 200 \"a\"; }` y `location /api/ { return 200 \"b\"; }`. ¿Qué responde `/api/usuarios`?", "opts": ["`a`, porque es la primera que aparece en el fichero.", "`b`: entre dos prefijos que coinciden, se usa el más largo.", "`b`, porque la barra final convierte la `location` en exacta.", "`a` y `b`: se ejecutan las dos en orden y el cliente recibe ambas."], "correct": 1, "exp": "`/api/` es más largo que `/api` y ambos coinciden: el prefijo más largo gana, sin importar el orden.", "ref": "Apartado de la teoría: §4.2."}, {"n": 31, "q": "¿Qué respuesta da `location = /test { return 200 \"exacta\"; }` ante `/test?x=1`?", "opts": ["Un 404, porque `?x=1` hace que la URL deje de ser exacta.", "`exacta`, pero solo si añades `$is_args` a la `location`.", "`exacta`: se compara la ruta, sin la cadena de consulta.", "Un 301 hacia `/test`, que elimina la cadena de consulta."], "correct": 2, "exp": "Las `location` comparan con el URI normalizado, sin los argumentos (`?…`).", "ref": "Apartado de la teoría: §4.2."}, {"n": 32, "q": "Quieres que `/hola/index.html` lo sirva `location /hola/ { }`, pero una regex `~ \\.html$` con `add_header` lo atiende primero. ¿Qué cambio es correcto?", "opts": ["Cambiar `location /hola/` por `location ^~ /hola/`.", "Colocar la `location /hola/` antes de la regex en el fichero.", "Cambiar la regex por `~* \\.html$`, que tiene menos prioridad.", "Añadir `internal;` a la regex, para que no coincida con peticiones externas."], "correct": 0, "exp": "El orden entre prefijo y regex no importa. Con `^~`, el prefijo gana sin evaluar regex.", "ref": "Apartado de la teoría: §4.2."}, {"n": 33, "q": "¿Qué `location` usarías para atender solo la URL exacta `/estado` y nada más?", "opts": ["`location /estado/ { … }`", "`location ^~ /estado { … }`", "`location ~ /estado { … }`", "`location = /estado { … }`"], "correct": 3, "exp": "`=` exige que toda la URL sea `/estado`; los demás admiten más cosas detrás o alrededor.", "ref": "Apartado de la teoría: §4.2."}, {"n": 34, "q": "¿Para qué sirve `location ^~ /img/ { … }`?", "opts": ["Para que ninguna regex «robe» las peticiones bajo `/img/`.", "Para que la ruta `/img/` coincida sin importar mayúsculas y minúsculas.", "Para que Nginx busque `/img/` también dentro de las demás `location`.", "Para marcar `/img/` como ruta interna, inaccesible desde el exterior."], "correct": 0, "exp": "`^~` es un prefijo preferente: si es el más largo que coincide, se omiten las regex.", "ref": "Apartado de la teoría: §4.2."}, {"n": 35, "q": "Con `location /mundo/ { root /datos; }`, ¿qué fichero busca Nginx para `GET /mundo/index.html`?", "opts": ["`/datos/index.html`, porque `root` sustituye la parte `/mundo/`.", "`/mundo/datos/index.html`, porque `root` se coloca tras la ruta.", "`/datos/mundo/`, porque solo busca el índice de la carpeta.", "`/datos/mundo/index.html`, porque `root` añade la ruta de la URL."], "correct": 3, "exp": "Con `root`, la ruta completa de la URL se suma a la carpeta.", "ref": "Apartado de la teoría: §5.1."}, {"n": 36, "q": "Con `location /mundo/ { alias /datos/; }`, ¿qué fichero busca Nginx para `GET /mundo/index.html`?", "opts": ["`/datos/mundo/index.html`, porque `alias` añade la ruta de la URL.", "`/datos/index.html`, porque `alias` sustituye la parte `/mundo/`.", "`/mundo/datos/index.html`, porque `alias` va detrás de la ruta.", "`/datos/mundo/`, porque `alias` solo apunta a carpetas."], "correct": 1, "exp": "`alias` reemplaza lo que coincide con la `location` por la carpeta indicada.", "ref": "Apartado de la teoría: §5.1."}, {"n": 37, "q": "Escribes `location /malo/ { alias /sitios/docs; }` y pides `/malo/index.html`: da 404. ¿Qué verás en `error.log`?", "opts": ["`open() \"/sitios/docsindex.html\" failed (2: No such file or directory)`", "`open() \"/sitios/docs/malo/index.html\" failed (2: No such file or directory)`", "`\"/sitios/docs/\" is not a directory`, porque falta la barra del `alias`.", "`[emerg] \"alias\" directive requires a trailing slash`"], "correct": 0, "exp": "Sin la barra final, lo que sobra de la URL (`index.html`) se pega a la ruta del `alias`.", "ref": "Apartado de la teoría: §5.2."}, {"n": 38, "q": "En `/malo/` (con el `alias` sin barra final) ves un 403 y, en el log, `directory index of \"/sitios/docs\" is forbidden`, aunque `docs/index.html` existe. ¿Por qué?", "opts": ["Los permisos de `docs/` impiden al usuario `nginx` leer el `index.html`.", "`index.html` no está en la lista de la directiva `index` de esa `location`.", "El `alias` no puede apuntar a una carpeta; solo admite ficheros concretos.", "Busca `docsindex.html`, no existe y, sin `autoindex`, da 403."], "correct": 3, "exp": "El 403 de «directory index forbidden» aparece cuando se pide una carpeta sin índice y sin `autoindex`.", "ref": "Apartado de la teoría: §5.2."}, {"n": 39, "q": "Con `location /ro/ { root /usr/share/nginx/sitios/docs; }`, el log dice `open() \"…/docs/ro/index.html\" failed (2: No such file or directory)`. ¿Qué cambio resuelve el problema?", "opts": ["Añadir `index index.html;` dentro de la `location`.", "Dar permisos de lectura a la carpeta `docs` para el usuario `nginx`.", "Usar `alias /usr/share/nginx/sitios/docs/;` en lugar de `root`.", "Añadir una barra final al `root`: `/usr/share/nginx/sitios/docs/`."], "correct": 2, "exp": "Con `root`, Nginx añade `/ro/` a la ruta. Si la carpeta no se llama `ro`, hay que usar `alias`.", "ref": "Apartado de la teoría: §5.1."}, {"n": 40, "q": "¿Qué hace `try_files $uri $uri/ =404;` en una `location`?", "opts": ["Redirige con un 301 a `$uri/` y, si no existe, a `/404.html`.", "Sirve el fichero o la carpeta y, si no existe ninguno, el `error_page` 404 sin cambiar el código.", "Prueba el fichero y la carpeta a la vez y sirve el más grande.", "Prueba el fichero, luego la carpeta y, si no existe ninguno, responde 404."], "correct": 3, "exp": "Comprobado: `=404` como último argumento devuelve ese código.", "ref": "Apartado de la teoría: §5.3."}, {"n": 41, "q": "Con `location /tfs/ { try_files $uri /index.html; }`, pides `/tfs/nada`. ¿Qué respuesta recibes?", "opts": ["Un 404, porque `/tfs/nada` no existe y `try_files` no modifica el código.", "Un 302 que lleva el navegador a `/index.html`.", "Un 200 con el contenido de `/index.html`, sin cambiar la URL.", "Un 200 con el contenido de `/tfs/index.html`."], "correct": 2, "exp": "El último argumento es una alternativa interna: se sirve su contenido, sin redirigir al cliente.", "ref": "Apartado de la teoría: §5.3."}, {"n": 42, "q": "`nginx -t` dice «test is successful» pero la web da 404 en todas las rutas. En el log aparece `open() \"/usr/share/nginx/sitios/pincipal/index.html\" failed`. ¿Cuál es la causa?", "opts": ["Errata en el `root`: `nginx -t` no comprueba que existan las rutas.", "La sintaxis es correcta, pero falta recargar: `nginx -t` no aplica los cambios.", "El `server_name` no coincide con el `Host` de la petición.", "Falta `index index.html;`, que obliga a Nginx a buscar el nombre del fichero."], "correct": 0, "exp": "`nginx -t` valida la sintaxis y algunas referencias, pero no si las carpetas de `root` o `alias` existen.", "ref": "Apartado de la teoría: §5.2."}, {"n": 43, "q": "Pones `root /usr/share/nginx/sitios/principal;` en el `server` y no repites `root` en cada `location`. ¿Qué ocurre con las `location` que no lo definen?", "opts": ["Responden con un 404 hasta que definan su propio `root`.", "Usan el `root` de la imagen oficial, `/usr/share/nginx/html`.", "Heredan el `root` del `server`.", "Nginx rechaza la configuración al ejecutar `nginx -t`."], "correct": 2, "exp": "Las directivas se heredan de los bloques exteriores, como se vio en 3.1.1.", "ref": "Apartado de la teoría: §3.1.1 §3.3."}, {"n": 44, "q": "Has migrado `/blog` a `/articulos` de forma definitiva y quieres que los buscadores trasladen la posición a la URL nueva. ¿Qué código usas?", "opts": ["302, porque indica que el recurso está ahora en otra URL.", "301, porque indica que el cambio es permanente.", "303, porque obliga al cliente a pedir la nueva URL con `GET`.", "307, porque mantiene el método de la petición original."], "correct": 1, "exp": "301 = Moved Permanently: es el que entienden los buscadores como traslado definitivo.", "ref": "Apartado de la teoría: §6.1."}, {"n": 45, "q": "Corriges una redirección 301 equivocada en Nginx, pero tu navegador sigue yendo al destino antiguo. ¿Cómo compruebas qué responde ahora el servidor?", "opts": ["Con `curl -I`, que no usa la caché del navegador (o con una ventana privada).", "Con `nginx -t`, que muestra las redirecciones activas.", "Con `docker logs`, que muestra a dónde manda Nginx a cada cliente.", "Esperando a que el navegador renueve la redirección, que caduca a los 90 días."], "correct": 0, "exp": "Los navegadores recuerdan los 301. `curl` no tiene caché, así que ve la respuesta real.", "ref": "Apartado de la teoría: §6.1."}, {"n": 46, "q": "¿En qué se diferencian 302 y 307?", "opts": ["El 307 es permanente y el 302 temporal, sin otras diferencias.", "El 307 solo funciona dentro del mismo dominio de la web.", "El 307 mantiene el método; el 302 puede cambiar `POST` a `GET`.", "El 307 obliga al navegador a guardar la respuesta en caché."], "correct": 2, "exp": "307 y 308 son las versiones de 302 y 301 que conservan el método.", "ref": "Apartado de la teoría: §6.1."}, {"n": 47, "q": "Una API recibe `POST` en una URL que has movido para siempre. Los clientes deben repetir el `POST` en la nueva dirección. ¿Qué código usas?", "opts": ["301, porque es permanente y los navegadores mantienen siempre el método.", "308, porque es permanente y mantiene el método.", "302, porque mantiene el método y es la redirección más extendida.", "303, porque pide al cliente repetir la petición en la nueva URL."], "correct": 1, "exp": "En 301 y 302 los clientes pueden cambiar `POST` por `GET`. 308 es el permanente que lo conserva.", "ref": "Apartado de la teoría: §6.1."}, {"n": 48, "q": "¿Qué hace este `server`? `server { listen 80; server_name www.localhost; return 301 http://localhost$request_uri; }`", "opts": ["Redirige a `http://localhost/` y pierde la ruta pedida.", "Sirve la misma web en `www.localhost` y en `localhost`, sin redirigir.", "Redirige `localhost` a `www.localhost` con un 301.", "Redirige `www.localhost` a `localhost` con 301, conservando la ruta."], "correct": 3, "exp": "Comprobado: `/hola/?a=1&b=2` acaba en `http://localhost/hola/?a=1&b=2`.", "ref": "Apartado de la teoría: §6.3."}, {"n": 49, "q": "Dentro de `location /vieja/` escribes `rewrite ^/vieja/(.*)$ /nuevo/$1 last;`. Se pide `/vieja/z`. ¿Qué valen `$uri` y `$request_uri` después?", "opts": ["`$uri` vale `/vieja/z` y `$request_uri` pasa a `/nuevo/z`.", "Los dos valen `/nuevo/z`, porque `rewrite` cambia todas las variables.", "Los dos conservan `/vieja/z`, porque `last` no modifica la URL.", "`$uri` vale `/nuevo/z` y `$request_uri` conserva `/vieja/z`."], "correct": 3, "exp": "Comprobado: `$uri` es la ruta ya reescrita; `$request_uri` es la original que envió el cliente.", "ref": "Apartado de la teoría: §6.4."}, {"n": 50, "q": "¿Qué diferencia hay, para el cliente, entre `rewrite ^/vieja/(.*)$ /nuevo/$1 last;` y `rewrite ^/vieja/(.*)$ /nuevo/$1 redirect;`?", "opts": ["Con `last` recibe un 301 con `Location`; con `redirect`, un 302.", "Con `last` el cambio es interno; `redirect` es idéntico, pero con otro nombre.", "Con `last` el cambio es interno (200); con `redirect`, 302 con `Location`.", "Con `last` recibe un 302 y con `redirect` un 301 permanente."], "correct": 2, "exp": "Comprobado: `last` da 200 con el contenido de `/nuevo/…`; `redirect` da 302.", "ref": "Apartado de la teoría: §6.4."}, {"n": 51, "q": "Escribes `location /ciclo { rewrite ^ /ciclo; }`. Al pedir `/ciclo`, ¿qué ocurre?", "opts": ["El cliente recibe un 301 en bucle hasta que `curl -L` se rinde a las 50.", "Nginx responde 500: el log dice `rewrite or internal redirection cycle`.", "Nginx sirve `/ciclo` una vez y la reescritura se ignora.", "`nginx -t` rechaza la configuración por una regla recursiva."], "correct": 1, "exp": "La reescritura interna se repite y Nginx la corta tras unas pocas vueltas con un 500. A diferencia de un bucle con 301, el cliente no ve redirecciones.", "ref": "Apartado de la teoría: §6.6."}, {"n": 52, "q": "Con `curl -sIL http://localhost/a` ves `301 Location: /b`, luego `301 Location: /a`, y se repite. ¿Qué diagnóstico es correcto?", "opts": ["Hay un bucle: `/a` redirige a `/b` y `/b` vuelve a `/a`.", "La caché del navegador guarda la redirección anterior.", "El `default_server` intercepta las peticiones y las devuelve al cliente.", "Nginx añade una barra final a cada URL y la repite en cada petición."], "correct": 0, "exp": "`curl -IL` muestra cada salto. Si el destino de uno es el origen de otro, es un bucle.", "ref": "Apartado de la teoría: §6.6."}, {"n": 53, "q": "¿Qué redirección envía todo el tráfico HTTP a HTTPS conservando el nombre y la ruta?", "opts": ["`return 301 https://localhost/;`", "`rewrite ^ https://$host redirect;`", "`return 301 https://$host$request_uri;`", "`return 200 https://$host$request_uri;`"], "correct": 2, "exp": "`$host` mantiene el nombre pedido y `$request_uri`, la ruta con parámetros.", "ref": "Apartado de la teoría: §6.5."}, {"n": 54, "q": "Quieres ver solo la URL a la que redirige una página, sin seguirla ni leer las cabeceras. ¿Qué comando usas?", "opts": ["`curl -sL -o /dev/null -w '%{url_effective}\\n' http://localhost/viejo`", "`curl -I http://localhost/viejo | grep Host`", "`curl -s http://localhost/viejo | grep redirect`", "`curl -s -o /dev/null -w '%{redirect_url}\\n' http://localhost/viejo`"], "correct": 3, "exp": "Comprobado: `%{redirect_url}` imprime el destino sin seguir la redirección.", "ref": "Apartado de la teoría: §6.2."}, {"n": 55, "q": "Publicas `-p 8080:80` y pruebas `curl -L http://localhost:8080/viejo`. Falla con `Failed to connect to localhost port 80`. ¿Por qué?", "opts": ["`curl -L` no admite redirecciones cuando la URL original lleva un puerto.", "Nginx devuelve `Location` con el puerto 8080, que Docker no ha publicado.", "Nginx manda `Location: http://localhost/…` sin el 8080, porque usa su 80.", "El `server_name` no incluye el puerto 8080 y Nginx rechaza la petición."], "correct": 2, "exp": "Comprobado: `port_in_redirect` usa el puerto en el que escucha Nginx (el 80 del contenedor), no el de tu `-p`.", "ref": "Apartado de la teoría: §6."}, {"n": 56, "q": "¿Qué efecto tiene `absolute_redirect off;` en un `server`?", "opts": ["Nginx deja de generar redirecciones 301 automáticas para las carpetas.", "`Location` lleva solo la ruta (`/nuevo.html`), sin esquema, host ni puerto.", "Las redirecciones pasan a ser internas y el cliente no las ve.", "El `Location` se construye con el `server_name` en lugar del `Host`."], "correct": 1, "exp": "Comprobado: `Location: /nuevo.html`. Es útil cuando hay un proxy o un puerto publicado distinto delante.", "ref": "Apartado de la teoría: §6."}, {"n": 57, "q": "En Apache tienes `Redirect 301 /viejo /nuevo`. ¿Qué pasa con una petición a `/viejo/a/b.html`?", "opts": ["Redirige a `/nuevo`: `Redirect` descarta la ruta restante.", "Redirige a `/nuevo/a/b.html`: `Redirect` conserva el resto de la ruta.", "Da un 404, porque `Redirect` solo coincide con la URL exacta `/viejo`.", "Redirige a `/nuevo/viejo/a/b.html`."], "correct": 1, "exp": "Comprobado con `httpd:2.4`: `/viejo/a/b.html` → `/nuevo/a/b.html`; en cambio `/viejoX` no coincide.", "ref": "Apartado de la teoría: §8."}, {"n": 58, "q": "Con `location = /viejo { return 301 /nuevo; }`, ¿qué ocurre al pedir `/viejo/otra`?", "opts": ["Redirige a `/nuevo`, porque `=` también incluye las rutas de dentro.", "Redirige a `/nuevo/otra`, porque `return` conserva el resto de la ruta.", "Nginx rechaza la petición con un 400 por tener una barra de más.", "No coincide con la exacta: la atiende otra `location` o da 404."], "correct": 3, "exp": "`=` exige coincidencia exacta; para limitarlo a una carpeta o un prefijo se usa `location /viejo/`.", "ref": "Apartado de la teoría: §4.2, §6."}, {"n": 59, "q": "Un formulario envía un `POST` y, al terminar, quieres llevar al usuario a una página de confirmación que se pida con `GET`, para que al recargar no se repita el envío. ¿Qué código usas?", "opts": ["303, que indica al cliente que pida la nueva URL con `GET`.", "301, porque es permanente y mantiene siempre el método `POST`.", "307, porque mantiene el método y evita repetir el envío.", "308, porque es permanente y obliga a repetir el `POST`."], "correct": 0, "exp": "303 See Other está pensado para este caso. 307 y 308, al conservar el método, repetirían el `POST`.", "ref": "Apartado de la teoría: §6.1."}, {"n": 60, "q": "Vas a poner la web en mantenimiento unas horas y redirigirás todas las peticiones a `/aviso.html`. ¿Qué es lo más prudente?", "opts": ["Usar un 302, que no queda guardado de forma permanente en las cachés.", "Usar un 301, que las cachés actualizan rápido al volver a la normalidad.", "Usar un 308, para que no se cambie el método en las peticiones `POST`.", "Usar `return 444`, que cierra la conexión a los clientes durante el aviso."], "correct": 0, "exp": "Una redirección temporal debe ser 302 (o 307): un 301 equivocado queda en las cachés de los navegadores.", "ref": "Apartado de la teoría: §6.1."}, {"n": 61, "q": "Defines `error_page 404 /errores/404.html;` con una página propia. ¿Qué código recibe el cliente ante una URL inexistente?", "opts": ["Un 200, porque la página propia existe en el servidor.", "Un 302, que redirige al cliente a `/errores/404.html`.", "Un 500, porque la página de error es una petición interna.", "Un 404: `error_page` cambia el contenido, no el código."], "correct": 3, "exp": "El código sigue siendo 404, lo correcto para los buscadores.", "ref": "Apartado de la teoría: §7."}, {"n": 62, "q": "¿Qué efecto tiene `error_page 404 =200 /w404;`?", "opts": ["Sirve `/w404` solo si el cliente repite la petición con un 200.", "Sirve `/w404` con 404, y `=200` solo lo escribe en el log.", "Redirige al cliente a `/w404` con un 200 en lugar de un 302.", "Sirve `/w404` y cambia el código de respuesta a 200."], "correct": 3, "exp": "Comprobado: con `=200` la respuesta pasa a ser un 200. Es poco recomendable (los buscadores indexarían páginas inexistentes).", "ref": "Apartado de la teoría: §7."}, {"n": 63, "q": "Con `error_page 404 /errores/404.html;`, `location /errores/ { alias …; internal; }` y una regex `~ \\.html$ { … }`, sale la 404 de Nginx y no la tuya. ¿Por qué?", "opts": ["La regex `\\.html$` atiende la petición interna; se arregla con `^~ /errores/`.", "`internal;` impide que Nginx sirva esa página como respuesta a un error 404.", "`error_page` no admite ficheros `.html` dentro de una carpeta con `alias`.", "La regex se aplica solo a las peticiones externas, no a las internas."], "correct": 0, "exp": "La redirección interna vuelve a evaluar las `location`. Comprobado en la práctica.", "ref": "Apartado de la teoría: §4.2, §7."}, {"n": 64, "q": "¿Qué hace `internal;` en una `location`?", "opts": ["Solo sirve como destino interno de Nginx; pedirla directamente da 404.", "Solo permite peticiones que llegan desde la red interna del servidor.", "Oculta esa `location` del listado que muestra `nginx -T`.", "Obliga a que las peticiones a esa ruta lleguen cifradas con TLS."], "correct": 0, "exp": "Comprobado: pedir `/errores/404.html` directamente devuelve 404.", "ref": "Apartado de la teoría: §7."}, {"n": 65, "q": "El `server_name` de un `server` es `a.localhost b.localhost;` y llega `Host: b.localhost`. Dentro de una `location`, ¿qué valen `$host` y `$server_name`?", "opts": ["Los dos valen `b.localhost`, el nombre con el que se ha pedido.", "`$host` es `b.localhost` y `$server_name` es `a.localhost`.", "`$host` vale `a.localhost` y `$server_name` vale `b.localhost`.", "Los dos valen `a.localhost`, el primer nombre del `server`."], "correct": 1, "exp": "Comprobado: `$host` sale de la petición y `$server_name` es el primer nombre del `server` elegido.", "ref": "Apartado de la teoría: §6."}, {"n": 66, "q": "En `return 200 \"…$request_uri…\"`, se pide `/info?x=1`. ¿Qué contiene `$request_uri` y qué contiene `$uri`?", "opts": ["`$request_uri` contiene `/info` y `$uri` contiene `/info?x=1`.", "Los dos contienen `/info?x=1`.", "`$request_uri` contiene `/info?x=1` y `$uri` contiene `/info`.", "Los dos contienen `/info`, y los argumentos se guardan en `$args`."], "correct": 2, "exp": "Comprobado: `ruri=/info?x=1|uri=/info|args=x=1`.", "ref": "Apartado de la teoría: §6.3."}, {"n": 67, "q": "Migras un sitio de Apache a Nginx. En un `.htaccess` había `Redirect 301 /viejo /nuevo`. ¿Dónde lo pones en Nginx?", "opts": ["En un fichero `.htaccess` en la misma carpeta, que Nginx leerá si activas `AllowOverride`.", "En un fichero `.nginx` dentro de la carpeta, que Nginx busca en cada petición.", "En el `server`, con una `location`: `location = /viejo { return 301 /nuevo; }`.", "En `nginx.conf`, dentro de `events`, que controla las conexiones."], "correct": 2, "exp": "Nginx no tiene `.htaccess`: todas las reglas van en los ficheros de configuración del servidor.", "ref": "Apartado de la teoría: §8."}, {"n": 68, "q": "Un `.htaccess` con reglas de redirección no hace nada en un servidor Apache. ¿Qué es lo más probable?", "opts": ["`AllowOverride` está en `None`: Apache ignora ese fichero.", "Falta `RewriteEngine Off`, que activa la lectura del `.htaccess`.", "El módulo `mod_alias` sustituye siempre las reglas del `.htaccess`.", "Apache solo lee `.htaccess` en la carpeta raíz, no en subcarpetas."], "correct": 0, "exp": "`AllowOverride` controla qué directivas permite cada carpeta; con `None`, el `.htaccess` se ignora.", "ref": "Apartado de la teoría: §8."}, {"n": 69, "q": "En Apache, un `RewriteRule` escrito en un `.htaccess` y el mismo en un `<VirtualHost>`: ¿qué diferencia hay en el patrón?", "opts": ["En `.htaccess` el patrón no lleva barra inicial; en el `VirtualHost`, sí.", "Ninguna: el patrón es el mismo en los dos casos.", "En el `VirtualHost` el patrón no lleva barra inicial; en el `.htaccess` sí.", "En el `.htaccess` solo se admiten patrones exactos, sin expresiones regulares."], "correct": 0, "exp": "En contexto de directorio, Apache quita la ruta de la carpeta y la barra inicial antes de comparar.", "ref": "Apartado de la teoría: §8."}, {"n": 70, "q": "Con `Alias /docs /var/docs` en Apache, `/docs/` da un 403. La carpeta existe y tiene permisos. ¿Qué falta?", "opts": ["Un bloque `<Directory /var/docs>` con `Require all granted`.", "`ServerAlias /docs`, que declara la ruta como alias del `VirtualHost`.", "`AllowOverride All`, que activa los alias de rutas.", "`Options +Indexes` en el `VirtualHost`, que habilita las carpetas."], "correct": 0, "exp": "Apache deniega por defecto las carpetas fuera del `DocumentRoot` hasta que se permiten con `Require`.", "ref": "Apartado de la teoría: §8."}, {"n": 71, "q": "Un `server_name a.com b.com;` en Nginx, ¿cómo se escribiría en Apache?", "opts": ["`ServerName a.com b.com` en una sola línea del `<VirtualHost>`.", "`ServerAlias a.com b.com` y se omite el `ServerName` principal.", "`ServerName a.com` y `ServerAlias b.com` en el `<VirtualHost>`.", "`<VirtualHost a.com b.com>` y no hace falta más directivas."], "correct": 2, "exp": "`ServerName` es el nombre principal; `ServerAlias` añade los demás nombres.", "ref": "Apartado de la teoría: §8."}, {"n": 72, "q": "Tienes `server_name localhost;` (con `location /hola/ { }`) y `server_name tienda.localhost;` (solo `root`). ¿Qué responde `curl -i http://tienda.localhost/hola/`?", "opts": ["Un 200 con la web de `/hola/`, porque `location /hola/` es de todo el servidor.", "Un 301 a `http://localhost/hola/`, porque Nginx busca el `server` que la define.", "Un 404: `tienda.localhost` no tiene `/hola/`.", "Un 403, porque la tienda no tiene la `location /hola/` y no hay índice."], "correct": 2, "exp": "Las `location` pertenecen a un `server`. Cada host virtual tiene las suyas.", "ref": "Apartado de la teoría: §2, §4."}, {"n": 73, "q": "En un `server` has escrito `return 301 /nuevo.html` (sin `;`) y ejecutas `nginx -s reload` sin `nginx -t`. ¿Qué ocurre?", "opts": ["El `reload` se aplica a medias: solo se cargan los `server` que están antes del error.", "Nginx se detiene y deja el servicio caído hasta que se corrige el fichero.", "Falla con un `[emerg]` y el servidor sigue funcionando con la configuración anterior.", "Nginx ignora la línea y recarga el resto de la configuración."], "correct": 2, "exp": "`reload` rechaza una configuración rota y mantiene la anterior. Un `restart`, en cambio, la dejaría caída.", "ref": "Apartado de la teoría: §3.1.1 §5."}, {"n": 74, "q": "Rompes un fichero de `conf.d/` y haces `docker compose restart web`. ¿Qué ocurre?", "opts": ["No arranca: Nginx falla al leer la configuración y queda caído.", "El contenedor arranca con la última configuración que funcionó.", "El contenedor arranca y Nginx ignora el fichero roto.", "El contenedor arranca, pero solo sirve el `default_server`."], "correct": 0, "exp": "Al reiniciar no hay configuración anterior en memoria: si la nueva es inválida, el servicio no arranca.", "ref": "Apartado de la teoría: §3.1.1 §5.3."}, {"n": 75, "q": "Con `location /tmp { return 302 /nuevo.html; }` y `/nuevo.html` existente, ¿qué devuelve `curl -sL http://localhost/tmp`?", "opts": ["Un 302 sin cuerpo, porque curl no sigue las redirecciones sin `-i`.", "Un 404, porque `-L` no admite redirecciones a rutas relativas.", "El contenido de `/tmp`, porque `-L` revierte las redirecciones.", "El contenido de `/nuevo.html`, tras seguir el 302."], "correct": 3, "exp": "`-L` hace que curl siga el `Location` y muestre la página de destino.", "ref": "Apartado de la teoría: §6.2."}, {"n": 76, "q": "En una VM, el NSG solo permite 22, 80 y 443. Publicas `-p 8080:80` y `curl http://tunombre.me:8080/` desde fuera da *timeout*. ¿Por qué?", "opts": ["`ufw` bloquea el puerto 8080 de la VM aunque Docker lo publique.", "El NSG bloquea el 8080: todas las capas deben abrir el puerto.", "Nginx escucha en el 80 y no atiende peticiones recibidas por el 8080.", "El `server_name` no incluye el puerto, y Nginx descarta la petición."], "correct": 1, "exp": "En 3.1.1 vimos las cuatro capas de un puerto; en Azure, quien filtra de verdad es el NSG.", "ref": "Apartado de la teoría: §3.1.1 §2.4."}, {"n": 77, "q": "Quieres que `http://localhost/viejo` redirija con 301 a `/nuevo` **y** que `/viejo/foto.png` no se redirija. ¿Qué configuración sirve?", "opts": ["`location /viejo { return 301 /nuevo; }`, porque el prefijo excluye las imágenes.", "`location = /viejo { return 301 /nuevo; }`, porque solo coincide con esa URL.", "`location ^~ /viejo { return 301 /nuevo; }`, porque `^~` solo coincide con la ruta exacta.", "`location ~ /viejo { return 301 /nuevo; }`, porque `~` solo coincide con el final."], "correct": 1, "exp": "Solo la `location` exacta limita la redirección a esa URL; los demás tipos coinciden con `/viejo/foto.png`.", "ref": "Apartado de la teoría: §4.2."}, {"n": 78, "q": "Quieres servir `/mundo/` desde otra carpeta y que `/mundo/index.html` funcione. ¿Cuál de estas es correcta?", "opts": ["`location /mundo/ { alias /sitios/docs; }`", "`location /mundo { alias /sitios/docs/; }`", "`location /mundo/ { root /sitios/docs/; }`", "`location /mundo/ { alias /sitios/docs/; }`"], "correct": 3, "exp": "La barra final debe coincidir entre la `location` y el `alias`. Con `root`, la ruta `/mundo/` se añade a la carpeta.", "ref": "Apartado de la teoría: §5.2."}, {"n": 79, "q": "Un script `bash` recorre una lista de URL con `curl -sI` y solo quiere ver el código de estado de cada una. ¿Qué argumentos son más adecuados?", "opts": ["`curl -sL URL | grep -m1 HTTP | cut -d' ' -f2`", "`curl -s URL | grep -c 200 | cut -c1-3`", "`curl -s -w '%{url_effective}\\n' -o /dev/null URL`", "`curl -s -o /dev/null -w '%{http_code}' URL`"], "correct": 3, "exp": "`-w '%{http_code}'` imprime el código de estado y `-o /dev/null` descarta el cuerpo.", "ref": "Apartado de la teoría: §6.2."}, {"n": 80, "q": "Tu `compose.yaml` monta `./conf.d` y `./sitios` con `:ro`. Cambias un fichero de `sitios/` y el cambio se ve al instante. ¿Por qué no hace falta recargar Nginx?", "opts": ["Porque `:ro` hace que Nginx vuelva a leer los ficheros cada vez que cambian.", "Porque Docker sincroniza el volumen y avisa a Nginx de forma automática.", "Los ficheros se leen en cada petición; solo la configuración exige `reload`.", "Porque `sitios/` se monta como `tmpfs` y siempre está en memoria."], "correct": 2, "exp": "Nginx lee los ficheros de la web en cada petición (salvo caché explícita). La configuración solo se lee al arrancar o recargar.", "ref": "Apartado de la teoría: §9."}];
+
+const LETTERS = ["A", "B", "C", "D"];
+
+let quiz = [];
+let currentIndex = 0;
+let answers = [];
+let score = 0;
+
+const startScreen = document.getElementById("start-screen");
+const quizScreen = document.getElementById("quiz-screen");
+const resultsScreen = document.getElementById("results-screen");
+
+const progressLabel = document.getElementById("progress-label");
+const scoreLabel = document.getElementById("score-label");
+const progressFill = document.getElementById("progress-fill");
+const questionText = document.getElementById("question-text");
+const optionsList = document.getElementById("options-list");
+const nextBtn = document.getElementById("next-btn");
+const explanationBox = document.getElementById("explanation");
+
+const scoreNumber = document.getElementById("score-number");
+const scorePercent = document.getElementById("score-percent");
+const reviewList = document.getElementById("review-list");
+
+document.getElementById("start-btn").addEventListener("click", startQuiz);
+document.getElementById("restart-btn").addEventListener("click", startQuiz);
+nextBtn.addEventListener("click", goNext);
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderInline(str) {
+  const escaped = escapeHtml(str);
+  return escaped
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>");
+}
+
+function renderExplanation(item) {
+  if (!item.exp) return "";
+  const paras = item.exp.split("\n\n").map(p =>
+    `<p>${renderInline(p)}</p>`);
+  if (item.ref) paras.push(`<p class="ref">${renderInline(item.ref)}</p>`);
+  return paras.join("");
+}
+
+function buildQuiz() {
+  const picked = shuffle(ALL_QUESTIONS).slice(0, 20);
+  return picked.map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    const opts = order.map(i => q.opts[i]);
+    const correct = order.indexOf(q.correct);
+    return { n: q.n, q: q.q, opts: opts, correct: correct, exp: q.exp, ref: q.ref };
+  });
+}
+
+function switchScreen(screen) {
+  [startScreen, quizScreen, resultsScreen].forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function startQuiz() {
+  quiz = buildQuiz();
+  currentIndex = 0;
+  answers = new Array(quiz.length).fill(null);
+  score = 0;
+  switchScreen(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = quiz[currentIndex];
+  progressLabel.textContent = `Pregunta ${currentIndex + 1}/${quiz.length}`;
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  progressFill.style.width = `${(currentIndex / quiz.length) * 100}%`;
+  questionText.innerHTML = renderInline(item.q);
+
+  optionsList.innerHTML = "";
+  item.opts.forEach((optText, idx) => {
+    const li = document.createElement("li");
+    li.className = "option";
+    li.innerHTML = `<span class="letter">${LETTERS[idx]}</span><span>${renderInline(optText)}</span>`;
+    li.addEventListener("click", () => selectOption(idx));
+    optionsList.appendChild(li);
+  });
+
+  explanationBox.innerHTML = "";
+  nextBtn.disabled = true;
+  nextBtn.textContent = currentIndex === quiz.length - 1 ? "Finalizar" : "Siguiente";
+}
+
+function selectOption(idx) {
+  if (answers[currentIndex] !== null) return;
+
+  const item = quiz[currentIndex];
+  answers[currentIndex] = idx;
+  if (idx === item.correct) score++;
+
+  const optionEls = optionsList.querySelectorAll(".option");
+  optionEls.forEach((el, i) => {
+    el.classList.add("disabled");
+    if (i === item.correct) el.classList.add("correct");
+    else if (i === idx) el.classList.add("incorrect");
+  });
+
+  scoreLabel.textContent = `Aciertos: ${score}`;
+  explanationBox.innerHTML = renderExplanation(item);
+  nextBtn.disabled = false;
+}
+
+function goNext() {
+  if (currentIndex < quiz.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    progressFill.style.width = "100%";
+    showResults();
+  }
+}
+
+function showResults() {
+  switchScreen(resultsScreen);
+  scoreNumber.textContent = `${score}/${quiz.length}`;
+  scorePercent.textContent = `${Math.round((score / quiz.length) * 100)}% de aciertos`;
+
+  reviewList.innerHTML = "";
+  quiz.forEach((item, i) => {
+    const userIdx = answers[i];
+    const isOk = userIdx === item.correct;
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">
+        <span class="review-badge ${isOk ? "ok" : "ko"}">${isOk ? "Correcta" : "Incorrecta"}</span>
+        ${i + 1}. ${renderInline(item.q)}
+      </div>
+      <div class="review-line">Tu respuesta: <span class="${isOk ? "val-ok" : "val-ko"}">${LETTERS[userIdx]}) ${renderInline(item.opts[userIdx])}</span></div>
+      ${isOk ? "" : `<div class="review-line">Respuesta correcta: <span class="val-ok">${LETTERS[item.correct]}) ${renderInline(item.opts[item.correct])}</span></div>`}
+      <div class="explanation">${renderExplanation(item)}</div>
+    `;
+    reviewList.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>

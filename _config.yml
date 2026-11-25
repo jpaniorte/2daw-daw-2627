@@ -148,6 +148,11 @@ nav:
                   - { title: "Simulacro", url: "/UD3/3.1%20Configuraci%C3%B3n%20de%20servidores%20web/3.1.1%20Apache%20y%20Nginx/3_1_1_simulacro.html", external: true }
               - id: u3b1s2
                 title: "3.1.2 Hosts virtuales y redirecciones"
+                pages:
+                  - { title: "Teoría", url: "https://gamma.app/docs/312-Hosts-virtuales-y-redirecciones-wdjwuaczgvwb0sm", external: true }
+                  - { title: "Prácticas", url: "/servidores-web/semana-2/practicas/" }
+                  - { title: "Test", url: "/servidores-web/semana-2/test/" }
+                  - { title: "Simulacro", url: "/UD3/3.1%20Configuraci%C3%B3n%20de%20servidores%20web/3.1.2%20Hosts%20virtuales%20y%20redirecciones/3_1_2_simulacro.html", external: true }
           - id: u3b2
             title: "3.2 Seguridad y rendimiento"
             subs:
