@@ -8,6 +8,8 @@ permalink: /servidores-web/semana-2/practicas/
 
 **Módulo:** Despliegue de Aplicaciones Web (0614) · 2º DAW · UD3: Administración de servidores web
 
+<p><a href="https://gamma.app/docs/312-Una-cocina-varias-marcas-h5xk74s9hp0g3b0" target="_blank" rel="noopener" style="display:inline-block;background:var(--brand);color:#fff;padding:10px 20px;border-radius:8px;font-weight:600;text-decoration:none;">▶ Abrir la presentación de la práctica</a></p>
+
 ## Objetivos
 
 - Alojar **varias webs en un mismo Nginx** con **hosts virtuales** por nombre.
