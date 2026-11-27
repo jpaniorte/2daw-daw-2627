@@ -193,7 +193,7 @@ contesta en su hoja, apuntando en un bloque nuevo la píldora y la versión que 
   `~/workspace/autocorrector_test`, variable `AUTOCORRECTOR_DIR`), junta las soluciones de **todas las versiones de todas
   las píldoras** en `data/soluciones_pildoras.md`, lee con Claude cada control (admite **cuadernillos** con nombre y
   respuestas rodeadas y **hojas de respuestas**; ignora las caras en blanco y los bloques vacíos), decide APTO / NO APTO
-  (5 o más de 10; si se repite una píldora cuenta el último intento) y regenera la página
+  (5 o más de 10; un APTO no se vuelve a corregir; tras un NO APTO cuenta el nuevo intento) y regenera la página
   `digitalizacion/pildoras_resultados.md` (`/digitalizacion/pildoras/resultados/`): tabla con **Alumno** (iniciales,
   p. ej. J.A.E.), **Total** y **P1…P74** (`APTO`, `NO APTO` o `-`).
 

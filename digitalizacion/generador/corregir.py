@@ -7,7 +7,7 @@
     python corregir.py publicar               # regenera digitalizacion/pildoras_resultados.md
     python corregir.py iniciales              # muestra las iniciales de cada alumno
 
-APTO con 5 o más aciertos de 10. Si un alumno repite una píldora, cuenta el último intento.
+APTO con 5 o más aciertos de 10. Un APTO no se vuelve a corregir; si el alumno tenía NO APTO, el nuevo intento lo sustituye.
 Lo normal es lanzarlo todo con corregir.sh.
 
 Variables de entorno: AUTOCORRECTOR_DIR (def. ~/workspace/autocorrector_test: de ahí salen la lista de alumnos
@@ -94,6 +94,47 @@ def cmd_claves(_):
 
 # ------------------------------------------------------------------ lectura con IA
 
+def heredar_nombres(lecturas: list) -> int:
+    """Una hoja de respuestas es un folio a doble cara y el nombre suele estar solo en una cara.
+    Una cara sin nombre toma el de la cara complementaria (1/2 con 2/2) de una página contigua, que puede
+    ir antes o después según cómo entrara la hoja en el escáner. Solo se asigna si no hay duda: si hay dos
+    candidatas posibles, se deja sin nombre para que lo revise una persona."""
+    def num(archivo):
+        try:
+            return int(str(archivo).rsplit("_", 1)[1])
+        except (IndexError, ValueError):
+            return None
+    comp = {"1/2": "2/2", "2/2": "1/2"}
+    info = {}
+    for e in lecturas:
+        n = num(e.get("archivo"))
+        if n is not None and e.get("cara") in comp:
+            d = info.setdefault(n, {"cara": e["cara"], "nombre": None})
+            d["nombre"] = d["nombre"] or e.get("nombre")
+
+    def completa(m):    # cara con nombre cuya hoja ya tiene otra cara con nombre
+        return any(info.get(v, {}).get("cara") == comp[info[m]["cara"]] and info[v]["nombre"] for v in (m - 1, m + 1))
+
+    usadas, cambios = set(), 0
+    for n in sorted(info):
+        d = info[n]
+        if d["nombre"]:
+            continue
+        cand = [m for m in (n - 1, n + 1) if info.get(m, {}).get("cara") == comp[d["cara"]]
+                and info[m]["nombre"] and m not in usadas and not completa(m)]
+        if len(cand) != 1:
+            continue
+        m = cand[0]
+        usadas.add(m)
+        d["nombre"] = info[m]["nombre"]
+        for e in lecturas:
+            if num(e.get("archivo")) == n and not e.get("nombre"):
+                e["nombre"] = d["nombre"]
+                e.setdefault("dudas", {})["nombre"] = f"tomado de pag_{m:03d} (otra cara de la misma hoja)"
+                cambios += 1
+    return cambios
+
+
 def validar(lecturas: list, claves: dict, lista: list[str]) -> list[str]:
     errores = []
     for i, e in enumerate(lecturas, 1):
@@ -137,6 +178,8 @@ def cmd_leer(a):
                   add_dirs=[lectura, carpeta])
     lecturas = json.loads(salida.read_text())
     print(f"{len(lecturas)} controles leídos -> {salida}")
+    if heredar_nombres(lecturas):
+        salida.write_text(json.dumps(lecturas, ensure_ascii=False, indent=1))
     errores = validar(lecturas, claves, alumnos())
     for e in errores:
         print(f"  ¡Revisar! {e}")
@@ -160,28 +203,44 @@ def cmd_corregir(a):
     if errores:
         sys.exit("Hay lecturas inválidas:\n  " + "\n  ".join(errores))
     resultados = json.loads(RESULTADOS.read_text()) if RESULTADOS.exists() else {}
-    vistos = set()
+    vistos = {}                      # (alumno, píldora) -> resultado en esta pasada
+    corregidos = omitidos = mejorados = 0
     for e in lecturas:
         p, v = str(e["pildora"]), str(e["version"]).zfill(2)
+        quien = f"{iniciales(e['nombre'])} · P{p}"
+        previo = resultados.get(e["nombre"], {}).get(p)
+        # un APTO de otro lote no se vuelve a corregir ni se pisa; si es de este lote, se recalcula (lecturas editadas)
+        if previo and previo["resultado"] == "APTO" and previo["lote"] != a.lote:
+            print(f"  {quien}: ya APTO en {previo['lote']}; se omite")
+            omitidos += 1
+            continue
+        if vistos.get((e["nombre"], p)) == "APTO":
+            print(f"  {quien}: ya APTO en este lote; se omite")
+            omitidos += 1
+            continue
         correctas = claves[p][v]
         falladas = [i + 1 for i in range(PREGUNTAS) if e["respuestas"][i] != correctas[i]]
         aciertos = PREGUNTAS - len(falladas)
         resultado = "APTO" if aciertos >= UMBRAL else "NO APTO"
-        previo = resultados.get(e["nombre"], {}).get(p)
         nota = ""
         if (e["nombre"], p) in vistos:
             nota = " (repetido en este lote: cuenta el último)"
         elif previo and previo["lote"] > a.lote:
-            print(f"  {iniciales(e['nombre'])} · P{p}: ya hay un intento posterior ({previo['lote']}); se ignora")
+            print(f"  {quien}: ya hay un intento posterior ({previo['lote']}); se ignora")
             continue
-        vistos.add((e["nombre"], p))
+        if previo and previo["resultado"] == "NO APTO" and resultado == "APTO":
+            mejorados += 1
+            nota += " (antes NO APTO)"
+        vistos[(e["nombre"], p)] = resultado
         resultados.setdefault(e["nombre"], {})[p] = {
             "resultado": resultado, "aciertos": aciertos, "version": v, "lote": a.lote}
-        print(f"  {iniciales(e['nombre'])} · P{p} · V{v}: {aciertos}/{PREGUNTAS} -> {resultado}"
+        corregidos += 1
+        print(f"  {quien} · V{v}: {aciertos}/{PREGUNTAS} -> {resultado}"
               f" · errores: {','.join(map(str, falladas)) or 'ninguno'}{nota}")
     D.mkdir(parents=True, exist_ok=True)
     RESULTADOS.write_text(json.dumps(resultados, ensure_ascii=False, indent=1, sort_keys=True))
-    print(f"{len(lecturas)} controles corregidos -> {RESULTADOS}")
+    print(f"{len(lecturas)} controles leídos: {corregidos} corregidos, {omitidos} omitidos por ya APTO, "
+          f"{mejorados} de NO APTO a APTO -> {RESULTADOS}")
 
 
 # ------------------------------------------------------------------ página publicada
@@ -231,7 +290,7 @@ permalink: /digitalizacion/pildoras/resultados/
 # Resultados de los controles de las píldoras
 
 Cada alumno aparece con sus iniciales. **APTO** = 5 o más aciertos sobre 10; **NO APTO** = menos de 5;
-**-** = todavía no examinado. Si se repite un control, cuenta el último intento. El **Total** es el número de
+**-** = todavía no examinado. Un APTO no se vuelve a corregir; tras un NO APTO, cuenta el nuevo intento. El **Total** es el número de
 controles superados (hay que llegar a 36). Última actualización: {hoy}.
 
 [Volver a las píldoras]({{{{ '/digitalizacion/pildoras/' | relative_url }}}})

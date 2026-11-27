@@ -4,7 +4,7 @@
 #   -> digitalizacion/pildoras_resultados.md  (/digitalizacion/pildoras/resultados/)
 #
 # Entran cuadernillos (nombre manuscrito y respuestas rodeadas) y hojas de respuestas (hoja_respuestas.pdf).
-# APTO con 5 o más aciertos de 10. Si un alumno repite una píldora, cuenta el último intento.
+# APTO con 5 o más aciertos de 10. Un APTO no se vuelve a corregir; si tenía NO APTO, el nuevo intento lo sustituye.
 #
 # Uso: ./corregir.sh [--lote NOMBRE] [--sin-escanear [CARPETA]] [--modelo sonnet] [--solo-publicar] [--commit]
 #   --lote NOMBRE            nombre del lote (def. pildoras_AAAAMMDD_HHMM); si ya existe, se retoma
